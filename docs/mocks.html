@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ResizeMe – Layout Variations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Outfit', sans-serif; background: #111; color: #e2e8f0; }
+
+/* ─── Picker nav ─── */
+.picker {
+  position: sticky; top: 0; z-index: 9999;
+  background: rgba(11,15,20,0.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 12px 24px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+}
+.picker h1 { font-size: 14px; font-weight: 600; color: #94a3b8; margin-right: 16px; white-space: nowrap; }
+.picker a {
+  font-size: 13px; font-weight: 500; padding: 6px 14px; border-radius: 9999px;
+  color: #e2e8f0; text-decoration: none; background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08); transition: all 0.15s;
+}
+.picker a:hover { background: rgba(255,127,80,0.15); border-color: rgba(255,127,80,0.3); color: #ff7f50; }
+
+/* ─── Section base ─── */
+.mock {
+  min-height: 100vh; position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  background: #0b0f14;
+}
+.mock-label {
+  position: absolute; top: 16px; left: 24px; z-index: 10;
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 1.2px; color: #64748b;
+  background: rgba(11,15,20,0.8); padding: 4px 10px; border-radius: 4px;
+}
+
+/* ─── Shared elements ─── */
+.grain {
+  position: absolute; inset: 0; pointer-events: none; opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.glow-c {
+  position: absolute; width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(255,127,80,0.18) 0%, transparent 70%);
+  filter: blur(80px); pointer-events: none;
+}
+.glow-a {
+  position: absolute; width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(14,165,233,0.12) 0%, transparent 70%);
+  filter: blur(80px); pointer-events: none;
+}
+
+.wm { font-family: 'JetBrains Mono', monospace; font-weight: 800; letter-spacing: -0.07em; color: #e2e8f0; }
+.wm .dot { color: #84cc16; }
+
+.keys { display: inline-flex; gap: 8px; }
+.keys kbd {
+  font-family: 'JetBrains Mono', monospace; font-weight: 700;
+  padding: 12px 18px; border-radius: 10px;
+  background: #111820; border: 2px solid rgba(255,255,255,0.08);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.04) inset;
+  color: #e2e8f0;
+}
+.keys kbd.acc { border-color: rgba(255,127,80,0.5); color: #ff7f50; box-shadow: 0 4px 16px rgba(255,127,80,0.15); }
+
+.pill {
+  display: inline-flex; align-items: center; gap: 12px;
+  background: #111820; border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 9999px; padding: 10px 10px 10px 20px;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #64748b;
+}
+.pill .btn {
+  background: linear-gradient(135deg, #ff7f50, #0ea5e9); color: #fff; font-weight: 600;
+  padding: 9px 20px; border-radius: 9999px; font-size: 13px; text-decoration: none;
+  font-family: 'Outfit', sans-serif; box-shadow: 0 4px 12px rgba(14,165,233,0.25);
+  transition: transform 0.2s;
+}
+.pill .btn:hover { transform: translateY(-2px); }
+
+.tag { font-size: 16px; color: #64748b; line-height: 1.65; }
+.meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #334155; letter-spacing: 0.5px; }
+
+.stats { display: flex; gap: 40px; }
+.stats .s { text-align: center; }
+.stats .s .v { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 700; color: #e2e8f0; }
+.stats .s .l { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-top: 4px; }
+
+/* ═══════════════════════════════════════════
+   1 – Centered vertical (the original combo)
+   ═══════════════════════════════════════════ */
+#m1 .inner { position: relative; z-index: 2; text-align: center; padding: 60px 32px; max-width: 880px; }
+#m1 .wm { font-size: clamp(4rem, 14vw, 11rem); line-height: 0.85; margin-bottom: 28px; }
+#m1 .tag { margin-bottom: 40px; }
+#m1 .keys { margin-bottom: 44px; }
+#m1 .keys kbd { font-size: clamp(20px, 4vw, 30px); }
+#m1 .pill { margin-bottom: 48px; }
+#m1 .glow-c { top: -120px; right: -80px; }
+#m1 .glow-a { bottom: -140px; left: -60px; }
+
+/* ═══════════════════════════════════════════
+   2 – Left-aligned, keys stacked right
+   ═══════════════════════════════════════════ */
+#m2 .inner {
+  position: relative; z-index: 2; max-width: 1100px; padding: 80px 48px;
+  display: grid; grid-template-columns: 1.3fr 1fr; gap: 64px; align-items: center;
+}
+#m2 .left .wm { font-size: clamp(3.5rem, 10vw, 8rem); line-height: 0.85; margin-bottom: 20px; text-align: left; }
+#m2 .left .tag { text-align: left; margin-bottom: 32px; }
+#m2 .left .pill { margin-bottom: 24px; }
+#m2 .left .meta { text-align: left; }
+#m2 .right { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+#m2 .right .keys kbd { font-size: 36px; padding: 20px 28px; border-radius: 14px; }
+#m2 .right .hint { font-size: 13px; color: #64748b; font-family: 'JetBrains Mono', monospace; }
+#m2 .glow-c { top: -80px; right: 10%; }
+#m2 .glow-a { bottom: -100px; left: -5%; }
+
+/* ═══════════════════════════════════════════
+   3 – Wordmark as background watermark, content foreground
+   ═══════════════════════════════════════════ */
+#m3 .watermark {
+  position: absolute; z-index: 1;
+  font-family: 'JetBrains Mono', monospace; font-weight: 800;
+  font-size: clamp(8rem, 20vw, 18rem); letter-spacing: -0.07em;
+  color: rgba(255,255,255,0.03); white-space: nowrap;
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+}
+#m3 .inner { position: relative; z-index: 2; text-align: center; padding: 80px 32px; max-width: 600px; }
+#m3 .keys { margin-bottom: 32px; }
+#m3 .keys kbd { font-size: 28px; padding: 16px 24px; }
+#m3 h2 { font-size: 28px; font-weight: 700; margin-bottom: 16px; letter-spacing: -0.5px; }
+#m3 .tag { margin-bottom: 40px; font-size: 15px; }
+#m3 .glow-c { top: -100px; left: 30%; }
+
+/* ═══════════════════════════════════════════
+   4 – Compact utility, everything tight
+   ═══════════════════════════════════════════ */
+#m4 { min-height: 80vh; }
+#m4 .inner { position: relative; z-index: 2; text-align: center; padding: 60px 32px; max-width: 520px; }
+#m4 .wm { font-size: clamp(2.5rem, 8vw, 5rem); line-height: 1; margin-bottom: 12px; }
+#m4 .tag { font-size: 14px; margin-bottom: 28px; }
+#m4 .keys { margin-bottom: 28px; }
+#m4 .keys kbd { font-size: 16px; padding: 8px 14px; border-radius: 8px; }
+#m4 .pill { margin-bottom: 28px; font-size: 12px; padding: 8px 8px 8px 16px; }
+#m4 .pill .btn { padding: 7px 16px; font-size: 12px; }
+#m4 .stats { justify-content: center; gap: 32px; }
+#m4 .stats .s .v { font-size: 20px; }
+#m4 .glow-c { top: -150px; right: -150px; opacity: 0.7; }
+
+/* ═══════════════════════════════════════════
+   5 – Horizontal band, wordmark left, keys + CTA right
+   ═══════════════════════════════════════════ */
+#m5 { min-height: auto; padding: 100px 0; }
+#m5 .inner {
+  position: relative; z-index: 2; max-width: 1200px; margin: 0 auto; padding: 60px 48px;
+  display: flex; align-items: center; justify-content: space-between; gap: 40px;
+  background: #111820; border: 1px solid rgba(255,255,255,0.04); border-radius: 24px;
+}
+#m5 .wm { font-size: clamp(3rem, 6vw, 5rem); line-height: 1; }
+#m5 .right { display: flex; flex-direction: column; align-items: flex-end; gap: 20px; }
+#m5 .right .keys kbd { font-size: 20px; padding: 10px 16px; }
+#m5 .right .pill { font-size: 12px; }
+#m5 .glow-c { top: -200px; left: 20%; }
+#m5 .glow-a { bottom: -200px; right: 10%; }
+
+/* ═══════════════════════════════════════════
+   6 – Stacked blocks: wordmark → divider → keys → divider → CTA
+   ═══════════════════════════════════════════ */
+#m6 .inner { position: relative; z-index: 2; text-align: center; padding: 80px 32px; max-width: 700px; }
+#m6 .wm { font-size: clamp(3.5rem, 10vw, 7rem); line-height: 0.9; margin-bottom: 40px; }
+#m6 .divider { width: 60px; height: 2px; background: rgba(255,255,255,0.08); margin: 0 auto 40px; }
+#m6 .keys { margin-bottom: 40px; }
+#m6 .keys kbd { font-size: 24px; padding: 14px 22px; }
+#m6 .tag { margin-bottom: 40px; max-width: 400px; margin-left: auto; margin-right: auto; }
+#m6 .glow-c { bottom: -100px; right: -100px; }
+#m6 .glow-a { top: -100px; left: -100px; }
+
+/* ═══════════════════════════════════════════
+   7 – Giant keys hero, wordmark small above
+   ═══════════════════════════════════════════ */
+#m7 .inner { position: relative; z-index: 2; text-align: center; padding: 80px 32px; max-width: 880px; }
+#m7 .wm { font-size: 24px; letter-spacing: -0.04em; margin-bottom: 48px; color: #94a3b8; }
+#m7 .wm .dot { color: #84cc16; }
+#m7 .keys { margin-bottom: 40px; }
+#m7 .keys kbd { font-size: clamp(32px, 6vw, 56px); padding: 24px 36px; border-radius: 16px; }
+#m7 h2 { font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 700; letter-spacing: -1px; margin-bottom: 20px; }
+#m7 .tag { margin-bottom: 44px; }
+#m7 .dl-btn-standalone {
+  display: inline-block; padding: 16px 36px; border-radius: 9999px;
+  background: linear-gradient(135deg, #ff7f50, #0ea5e9); color: #fff; font-weight: 600;
+  font-size: 15px; text-decoration: none;
+  box-shadow: 0 4px 12px rgba(14,165,233,0.25); transition: transform 0.2s, box-shadow 0.2s;
+}
+#m7 .dl-btn-standalone:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(14,165,233,0.35); }
+#m7 .dl-meta {
+  margin-top: 16px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #64748b;
+}
+#m7 .glow-c { top: 10%; right: -10%; }
+#m7 .glow-a { bottom: 10%; left: -10%; }
+
+/* ═══════════════════════════════════════════
+   8 – Two-row: top has wordmark+tag, bottom has keys+stats+CTA
+   ═══════════════════════════════════════════ */
+#m8 .inner {
+  position: relative; z-index: 2; padding: 80px 48px; max-width: 1000px;
+  display: flex; flex-direction: column; gap: 64px;
+}
+#m8 .top { text-align: left; }
+#m8 .top .wm { font-size: clamp(3rem, 8vw, 6rem); line-height: 0.9; margin-bottom: 16px; }
+#m8 .top .tag { max-width: 480px; }
+#m8 .bottom {
+  display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap;
+}
+#m8 .bottom .keys kbd { font-size: 22px; padding: 12px 18px; }
+#m8 .bottom .stats { gap: 32px; }
+#m8 .glow-c { top: -100px; right: -50px; }
+
+/* ═══════════════════════════════════════════
+   9 – Diagonal split: wordmark rotated left, content right
+   ═══════════════════════════════════════════ */
+#m9 .inner {
+  position: relative; z-index: 2; max-width: 1100px; padding: 80px 48px;
+  display: grid; grid-template-columns: auto 1fr; gap: 80px; align-items: center;
+}
+#m9 .wm-col .wm {
+  font-size: clamp(3rem, 8vw, 6rem); line-height: 0.85;
+  writing-mode: vertical-lr; transform: rotate(180deg);
+}
+#m9 .content-col { display: flex; flex-direction: column; gap: 28px; }
+#m9 .content-col h2 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; letter-spacing: -1.5px; }
+#m9 .content-col .tag { max-width: 440px; }
+#m9 .content-col .keys kbd { font-size: 20px; padding: 10px 16px; }
+#m9 .glow-c { top: -80px; right: 0; }
+#m9 .glow-a { bottom: -120px; left: 20%; }
+
+/* ═══════════════════════════════════════════
+   10 – Card-in-void: everything inside a floating glass card
+   ═══════════════════════════════════════════ */
+#m10 .glow-c { top: 20%; left: 30%; }
+#m10 .glow-a { bottom: 20%; right: 20%; }
+#m10 .card {
+  position: relative; z-index: 2; text-align: center;
+  background: rgba(17,24,32,0.8); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 24px; padding: 64px 48px; max-width: 560px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03);
+}
+#m10 .card .wm { font-size: clamp(2.5rem, 8vw, 4.5rem); line-height: 1; margin-bottom: 16px; }
+#m10 .card .tag { margin-bottom: 32px; font-size: 15px; }
+#m10 .card .keys { margin-bottom: 32px; }
+#m10 .card .keys kbd { font-size: 20px; padding: 10px 16px; }
+#m10 .card .pill { margin-bottom: 32px; }
+#m10 .card .stats { justify-content: center; }
+#m10 .card .meta { margin-top: 32px; }
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+  #m2 .inner, #m9 .inner { grid-template-columns: 1fr; }
+  #m5 .inner { flex-direction: column; align-items: center; text-align: center; }
+  #m5 .right { align-items: center; }
+  #m8 .bottom { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<nav class="picker">
+  <h1>ResizeMe Variations</h1>
+  <a href="#m1">1</a><a href="#m2">2</a><a href="#m3">3</a><a href="#m4">4</a><a href="#m5">5</a>
+  <a href="#m6">6</a><a href="#m7">7</a><a href="#m8">8</a><a href="#m9">9</a><a href="#m10">10</a>
+</nav>
+
+<!-- 1 – Centered vertical -->
+<section id="m1" class="mock">
+  <span class="mock-label">1 – Centered Vertical</span>
+  <div class="grain"></div>
+  <div class="glow-c"></div><div class="glow-a"></div>
+  <div class="inner">
+    <div class="wm">resize<span class="dot">.</span>me</div>
+    <p class="tag">Pixel-exact window sizing for people who ship pixels.<br/>One shortcut. Perfect size. Every time.</p>
+    <div class="keys"><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd class="acc">R</kbd></div>
+    <br/><br/>
+    <div class="pill"><span>v1.0 · Windows · 4.2 MB</span><a href="#" class="btn">Download Free</a></div>
+    <br/><br/>
+    <div class="stats" style="justify-content:center;">
+      <div class="s"><div class="v">18</div><div class="l">Presets</div></div>
+      <div class="s"><div class="v">1</div><div class="l">Hotkey</div></div>
+      <div class="s"><div class="v">0</div><div class="l">CPU</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 – Left-aligned, keys right -->
+<section id="m2" class="mock">
+  <span class="mock-label">2 – Split Left/Right</span>
+  <div class="grain"></div>
+  <div class="glow-c"></div><div class="glow-a"></div>
+  <div class="inner">
+    <div class="left">
+      <div class="wm">resize<span class="dot">.</span>me</div>
+      <p class="tag">One shortcut resizes any window to exact pixel dimensions. Built for devs who record, stream, and screenshot.</p>
+      <div class="pill"><span>v1.0 · Windows</span><a href="#" class="btn">Download</a></div>
+      <br/>
+      <p class="meta">No install required · No data collected</p>
+    </div>
+    <div class="right">
+      <div class="keys"><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd class="acc">R</kbd></div>
+      <span class="hint">press anywhere →</span>
+    </div>
+  </div>
+</section>
+
+<!-- 3 – Watermark background -->
+<section id="m3" class="mock">
+  <span class="mock-label">3 – Watermark Background</span>
+  <div class="grain"></div>
+  <div class="glow-c"></div>
+  <div class="watermark">resize.me</div>
+  <div class="inner">
+    <div class="keys"><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd class="acc">R</kbd></div>
+    <br/>
+    <h2>Pixel-perfect windows in one keystroke</h2>
+    <p class="tag">18 presets from 360p to 4K. Resizes and centers any window instantly.</p>
+    <div class="pill"><span>Windows · 4.2 MB</span><a href="#" class="btn">Download Free</a></div>
+  </div>
+</section>
+
+<!-- 4 – Compact utility -->
+<section id="m4" class="mock">
+  <span class="mock-label">4 – Compact</span>
+  <div class="grain"></div>
+  <div class="glow-c"></div>
+  <div class="inner">
+    <div class="wm">resize<span class="dot">.</span>me</div>
+    <p class="tag">Exact window sizing. One hotkey.</p>
+    <div class="keys"><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd class="acc">R</kbd></div>
+    <br/><br/>
+    <div class="pill"><span>v1.0</span><a href="#" class="btn">Get it</a></div>
+    <br/><br/>
+    <div class="stats" style="justify-content:center;">
+      <div class="s"><div class="v">18</div><div class="l">Presets</div></div>
+      <div class="s"><div class="v">4.2</div><div class="l">MB</div></div>
+      <div class="s"><div class="v">0</div><div class="l">Data</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 – Horizontal band -->
+<section id="m5" class="mock">
+  <span class="mock-label">5 – Horizontal Band</span>
+  <div class="grain"></div>
+  <div class="glow-c"></div><div class="glow-a"></div>
+  <div class="inner">
+    <div class="wm">resize<span class="dot">.</span>me</div>
+    <div class="right">
+      <div class="keys"><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd class="acc">R</kbd></div>
+      <div class="pill"><span>Windows · 4.2 MB</span><a href="#" class="btn">Download</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 – Stacked with dividers -->
+<section id="m6" class="mock">
+  <span class="mock-label">6 – Stacked Dividers</span>
+  <div class="grain"></div>
+  <div class="glow-c"></div><div class="glow-a"></div>
+  <div class="inner">
+    <div class="wm">resize<span class="dot">.</span>me</div>
+    <div class="divider"></div>
+    <div class="keys"><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd class="acc">R</kbd></div>
+    <div class="divider"></div>
+    <p class="tag">Snap any window to exact pixel dimensions. 18 presets. Zero overhead. Lives in your system tray.</p>
+    <div class="pill"><span>v1.0 · Windows · Free</span><a href="#" class="btn">Download</a></div>
+  </div>
+</section>
+
+<!-- 7 – Giant keys, small wordmark -->
+<section id="m7" class="mock">
+  <span class="mock-label">7 – Giant Keys</span>
+  <div class="grain"></div>
+  <div class="glow-c"></div><div class="glow-a"></div>
+  <div class="inner">
+    <div class="wm">resize<span class="dot">.</span>me</div>
+    <div class="keys"><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd class="acc">R</kbd></div>
+    <h2>One shortcut. Any window. Exact size.</h2>
+    <p class="tag">Easily resize windows to the exact dimensions you need. Only 4.2 MB. No dependencies.</p>
+    <a href="https://github.com/burkeholland/resize-me/releases/latest" class="dl-btn-standalone">Download for Windows</a>
+    <p class="dl-meta">Free · No install required</p>
+  </div>
+</section>
+
+<!-- 8 – Two-row -->
+<section id="m8" class="mock">
+  <span class="mock-label">8 – Two Row</span>
+  <div class="grain"></div>
+  <div class="glow-c"></div>
+  <div class="inner">
+    <div class="top">
+      <div class="wm">resize<span class="dot">.</span>me</div>
+      <p class="tag">Pixel-exact window sizing for content creators. Pick a preset, press the hotkey, ship the screenshot.</p>
+    </div>
+    <div class="bottom">
+      <div class="keys"><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd class="acc">R</kbd></div>
+      <div class="stats">
+        <div class="s"><div class="v">18</div><div class="l">Presets</div></div>
+        <div class="s"><div class="v">0</div><div class="l">CPU</div></div>
+        <div class="s"><div class="v">4.2</div><div class="l">MB</div></div>
+      </div>
+      <div class="pill"><span>Windows</span><a href="#" class="btn">Download</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- 9 – Vertical wordmark left -->
+<section id="m9" class="mock">
+  <span class="mock-label">9 – Vertical Wordmark</span>
+  <div class="grain"></div>
+  <div class="glow-c"></div><div class="glow-a"></div>
+  <div class="inner">
+    <div class="wm-col">
+      <div class="wm">resize<span class="dot">.</span>me</div>
+    </div>
+    <div class="content-col">
+      <h2>Exact window sizing in one keystroke</h2>
+      <p class="tag">18 presets from 360p to 4K. Resize and center any window instantly. Zero CPU. Zero data collection. Just pixels.</p>
+      <div class="keys"><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd class="acc">R</kbd></div>
+      <div class="pill"><span>v1.0 · Windows · Free</span><a href="#" class="btn">Download</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 – Floating card -->
+<section id="m10" class="mock">
+  <span class="mock-label">10 – Floating Card</span>
+  <div class="grain"></div>
+  <div class="glow-c"></div><div class="glow-a"></div>
+  <div class="card">
+    <div class="wm">resize<span class="dot">.</span>me</div>
+    <p class="tag">One hotkey. Exact window sizing.</p>
+    <div class="keys"><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd class="acc">R</kbd></div>
+    <br/><br/>
+    <div class="pill"><span>v1.0 · Windows</span><a href="#" class="btn">Download Free</a></div>
+    <br/><br/>
+    <div class="stats" style="justify-content:center;">
+      <div class="s"><div class="v">18</div><div class="l">Presets</div></div>
+      <div class="s"><div class="v">1</div><div class="l">Hotkey</div></div>
+      <div class="s"><div class="v">0</div><div class="l">CPU</div></div>
+    </div>
+    <p class="meta">No install required · No data collected</p>
+  </div>
+</section>
+
+</body>
+</html>

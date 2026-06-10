@@ -1,0 +1,6 @@
+.tools/
+ResizeMe/frontend/node_modules/
+ResizeMe/frontend/dist/
+ResizeMe/build/bin/
+*.exe
+*.dll

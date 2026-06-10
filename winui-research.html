@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ResizeMe — Ultra-Minimal WinUI Concept</title>
+<style>
+  :root {
+    --text-primary: rgba(0,0,0,0.8956);
+    --text-secondary: rgba(0,0,0,0.6063);
+    --text-disabled: rgba(0,0,0,0.3614);
+    --accent: #005fb8;
+    --accent-hover: rgba(0,95,184,0.9);
+    --control-fill: rgba(255,255,255,0.7);
+    --control-fill-secondary: rgba(249,249,249,0.5);
+    --control-stroke: rgba(0,0,0,0.0578);
+    --control-stroke-secondary: rgba(0,0,0,0.1622);
+    --control-strong-stroke: rgba(0,0,0,0.4458);
+    --card-bg: rgba(255,255,255,0.7);
+    --card-stroke: rgba(0,0,0,0.0578);
+    --subtle-secondary: rgba(0,0,0,0.0373);
+    --subtle-tertiary: rgba(0,0,0,0.0241);
+    --layer-fill: rgba(255,255,255,0.5);
+    --mica: #f3f3f3;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+    font-size: 14px; line-height: 20px;
+    color: var(--text-primary);
+    background: #e0e0e0;
+    padding: 40px;
+  }
+  .doc { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 28px; font-weight: 600; margin-bottom: 4px; }
+  h2 { font-size: 20px; font-weight: 600; margin: 48px 0 12px; border-bottom: 1px solid #ddd; padding-bottom: 8px; }
+  h3 { font-size: 16px; font-weight: 600; margin: 28px 0 8px; }
+  p { margin-bottom: 10px; color: var(--text-secondary); line-height: 1.55; }
+  p.lead { font-size: 15px; color: var(--text-primary); margin-bottom: 20px; }
+
+  .callout {
+    background: rgba(0,95,184,0.05);
+    border-left: 3px solid var(--accent);
+    padding: 10px 14px;
+    margin: 14px 0;
+    border-radius: 0 4px 4px 0;
+    font-size: 13px; line-height: 1.5;
+  }
+  .callout strong { color: var(--accent); }
+
+  ul.points { margin: 8px 0 16px; padding-left: 18px; }
+  ul.points li { margin-bottom: 5px; font-size: 13px; line-height: 1.5; }
+
+  /* ── Mockup chrome ── */
+  .mockup {
+    background: var(--mica);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.10);
+    border: 1px solid rgba(0,0,0,0.06);
+    margin: 16px 0 24px;
+  }
+  .titlebar {
+    height: 32px;
+    display: flex; align-items: center;
+    padding: 0 12px;
+    font-size: 12px; gap: 8px;
+  }
+  .titlebar .icon { width: 16px; height: 16px; border-radius: 3px; background: var(--accent); }
+  .titlebar .caption-btns { margin-left: auto; display: flex; }
+  .titlebar .caption-btns span {
+    width: 46px; height: 32px;
+    display: grid; place-items: center;
+    font-size: 10px; color: var(--text-primary);
+  }
+  .content { background: var(--layer-fill); padding: 20px 24px 24px; }
+
+  /* ── Cards ── */
+  .cards { display: grid; gap: 2px; }
+  .card {
+    display: grid; align-items: center; gap: 12px;
+    min-height: 44px;
+    padding: 10px 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-stroke);
+    border-bottom-color: var(--control-stroke-secondary);
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  .card .t { font-weight: 400; }
+  .card .d { font-size: 12px; color: var(--text-secondary); }
+  .card .t-group { display: grid; gap: 0; }
+
+  /* ── Controls ── */
+  .toggle { width: 40px; height: 20px; border-radius: 10px; position: relative; flex-shrink: 0; }
+  .toggle.off { background: var(--control-fill-secondary); border: 1px solid var(--control-strong-stroke); }
+  .toggle.off .th { width: 12px; height: 12px; border-radius: 50%; background: var(--control-strong-stroke); position: absolute; top: 50%; left: 4px; transform: translateY(-50%); }
+  .toggle.on { background: var(--accent); border: 1px solid transparent; }
+  .toggle.on .th { width: 12px; height: 12px; border-radius: 50%; background: white; position: absolute; top: 50%; left: 22px; transform: translateY(-50%); }
+
+  .radio { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; flex-shrink: 0; }
+  .radio.off { border: 1px solid var(--control-strong-stroke); background: var(--control-fill); }
+  .radio.on { border: 1px solid var(--accent); background: var(--accent); }
+  .radio.on .dot { width: 8px; height: 8px; border-radius: 50%; background: white; }
+
+  .btn {
+    height: 32px; padding: 4px 12px 6px; border-radius: 4px; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .btn-std { background: var(--control-fill); border: 1px solid var(--control-stroke); border-bottom-color: var(--control-stroke-secondary); color: var(--text-primary); }
+  .btn-accent { background: var(--accent); border: 1px solid transparent; border-bottom-color: rgba(0,0,0,0.18); color: white; }
+  .btn-icon { min-width: 32px; width: 32px; padding: 0; background: transparent; border: 1px solid transparent; color: var(--text-secondary); font-size: 13px; }
+  .btn-icon:hover { background: var(--subtle-secondary); border-color: var(--control-stroke); }
+  .btn-link { background: transparent; border: 0; color: var(--accent); padding: 4px 0; font-size: 14px; cursor: pointer; }
+
+  .textbox {
+    height: 32px; padding: 5px 10px 6px;
+    border: 1px solid var(--control-stroke); border-bottom: 1px solid var(--control-strong-stroke);
+    border-radius: 4px; background: var(--control-fill);
+    font-size: 14px; color: var(--text-primary); outline: none;
+  }
+
+  .section-label { font-size: 14px; font-weight: 600; margin: 20px 0 6px; }
+  .section-label:first-child { margin-top: 0; }
+
+  .kbd {
+    display: inline-flex; align-items: center;
+    height: 20px; padding: 0 6px;
+    border: 1px solid var(--control-stroke); border-bottom-color: var(--control-stroke-secondary);
+    border-radius: 4px; background: var(--control-fill);
+    font-size: 11px; color: var(--text-primary);
+  }
+
+  /* ── Comparison layout ── */
+  .compare {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+    margin: 20px 0;
+  }
+  .compare > div { text-align: center; }
+  .compare .label { font-size: 12px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .compare .bad .label { color: #c42b1c; }
+  .compare .good .label { color: #0e7a0d; }
+
+  .anno {
+    display: inline-block; background: var(--accent); color: white;
+    font-size: 9px; padding: 1px 5px; border-radius: 3px;
+    font-weight: 600; vertical-align: middle; margin-left: 4px;
+    text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .anno.red { background: #c42b1c; }
+
+  .dim { max-width: 480px; }
+</style>
+</head>
+<body>
+<div class="doc">
+
+<h1>ResizeMe — Ultra-Minimal UI</h1>
+<p class="lead">The guiding principle: <strong>this window is opened rarely</strong>. Users interact with ResizeMe through the tray icon and hotkey 99% of the time. When they do open settings, they should see everything at a glance — no scrolling, no navigation, no separate pages.</p>
+
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<h2>Design Principles</h2>
+
+<ul class="points">
+  <li><strong>Everything visible at once</strong> — no tabs, no navigation, no scrolling needed at default size</li>
+  <li><strong>Immediate-apply</strong> — every change takes effect instantly. No Save/Revert/action bar.</li>
+  <li><strong>Presets are the star</strong> — the preset list dominates. Behavior settings are secondary.</li>
+  <li><strong>Read-only display, edit-on-demand</strong> — presets show as clean read-only rows; editing happens via flyout/dialog</li>
+  <li><strong>Small window</strong> — 480 × 520px. Feels like a utility popover, not a full app.</li>
+</ul>
+
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<h2>The Mockup</h2>
+
+<p>Window size: <strong>480 × ~520px</strong>. Single column. No navigation rail. Titlebar + content only.</p>
+
+<div class="mockup dim">
+  <div class="titlebar">
+    <div class="icon"></div>
+    <span>ResizeMe</span>
+    <div class="caption-btns">
+      <span>─</span>
+      <span>☐</span>
+      <span style="font-size: 12px;">✕</span>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- Status line -->
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+      <div>
+        <div style="font-size: 20px; font-weight: 600; line-height: 28px;">Full HD</div>
+        <div style="font-size: 12px; color: var(--text-secondary);">1920 × 1080 · <span class="kbd">Ctrl+Alt+R</span></div>
+      </div>
+      <button class="btn btn-accent" style="min-width: 90px;">Resize now</button>
+    </div>
+
+    <!-- Presets -->
+    <div class="section-label">Presets</div>
+    <div class="cards">
+      <div class="card" style="grid-template-columns: 20px 1fr auto; background: rgba(0,95,184,0.04);">
+        <div class="radio on"><div class="dot"></div></div>
+        <div class="t-group">
+          <span class="t">Full HD</span>
+          <span class="d">1920 × 1080</span>
+        </div>
+        <button class="btn btn-icon">✕</button>
+      </div>
+      <div class="card" style="grid-template-columns: 20px 1fr auto;">
+        <div class="radio off"></div>
+        <div class="t-group">
+          <span class="t">HD</span>
+          <span class="d">1280 × 720</span>
+        </div>
+        <button class="btn btn-icon">✕</button>
+      </div>
+      <div class="card" style="grid-template-columns: 20px 1fr auto;">
+        <div class="radio off"></div>
+        <div class="t-group">
+          <span class="t">QHD</span>
+          <span class="d">2560 × 1440</span>
+        </div>
+        <button class="btn btn-icon">✕</button>
+      </div>
+      <div class="card" style="grid-template-columns: 20px 1fr auto;">
+        <div class="radio off"></div>
+        <div class="t-group">
+          <span class="t">4K UHD</span>
+          <span class="d">3840 × 2160</span>
+        </div>
+        <button class="btn btn-icon">✕</button>
+      </div>
+      <div class="card" style="grid-template-columns: 20px 1fr auto;">
+        <div class="radio off"></div>
+        <div class="t-group">
+          <span class="t">Portrait HD</span>
+          <span class="d">1080 × 1920</span>
+        </div>
+        <button class="btn btn-icon">✕</button>
+      </div>
+    </div>
+    <div style="margin-top: 6px;">
+      <button class="btn-link">+ Add preset</button>
+    </div>
+
+    <!-- Behavior -->
+    <div class="section-label">Options</div>
+    <div class="cards">
+      <div class="card" style="grid-template-columns: 1fr auto;">
+        <div class="t-group">
+          <span class="t">Hotkey</span>
+        </div>
+        <input class="textbox" value="Ctrl+Alt+R" style="width: 120px; text-align: center;">
+      </div>
+      <div class="card" style="grid-template-columns: 1fr auto;">
+        <div class="t-group">
+          <span class="t">Center after resize</span>
+        </div>
+        <div class="toggle on"><div class="th"></div></div>
+      </div>
+      <div class="card" style="grid-template-columns: 1fr auto;">
+        <div class="t-group">
+          <span class="t">Launch at startup</span>
+        </div>
+        <div class="toggle off"><div class="th"></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<h2>Anatomy — What Changed & Why</h2>
+
+<h3>Hero area replaces page header + "active preset" card</h3>
+<p>Instead of a big "ResizeMe" title + description + a separate "Active preset" card (3 visual elements), we combine everything into a single compact hero: the active preset name as a <strong>Subtitle (20px Semibold)</strong>, dimensions + hotkey badge below it, and the "Resize now" button on the right. One row replaces three.</p>
+
+<div class="callout">
+  <strong>Space saved:</strong> ~80px of vertical space eliminated. The user instantly sees what matters: what preset is active, what hotkey triggers it, and a button to test it.
+</div>
+
+<h3>No navigation rail</h3>
+<p>Removed entirely. The 200–320px nav pane consumed a third of the window for 3 items. Everything fits in a single column now.</p>
+
+<h3>Preset rows — radically simplified</h3>
+<p>Each preset is now: <strong>Radio + Name + Dimensions + Delete button</strong>. That's it.</p>
+<ul class="points">
+  <li><strong>No inline editing</strong> — names and dimensions are display-only. Click a preset row to edit (opens a small flyout).</li>
+  <li><strong>No reorder buttons</strong> — the ↑/↓ buttons added 64px of horizontal clutter per row. If ordering matters, drag-and-drop is better UX (but we can skip it for v1).</li>
+  <li><strong>No labels above inputs</strong> — "Name", "Width", "Height" column headers are gone. The layout is self-explanatory.</li>
+  <li><strong>Active row gets subtle blue tint</strong> — <code>rgba(0,95,184,0.04)</code> — the same pattern WinUI uses for selected items.</li>
+</ul>
+
+<h3>No descriptions on behavior cards</h3>
+<p>The old UI had description text under every toggle: "Center on the current monitor", "Start ResizeMe when you sign in." These are unnecessary — the labels are self-explanatory. Removing descriptions saves ~16px per card and reduces visual noise.</p>
+
+<h3>No floating action bar</h3>
+<p>Removed. All settings apply immediately:</p>
+<ul class="points">
+  <li>Selecting a radio button → saves active preset immediately</li>
+  <li>Toggling a switch → saves immediately (already works this way)</li>
+  <li>Editing hotkey → saves on blur or Enter</li>
+  <li>"+ Add preset" → opens a ContentDialog with Name, Width, Height fields</li>
+</ul>
+
+<h3>"+ Add preset" as a text link</h3>
+<p>A WinUI <code>HyperlinkButton</code>-style link sits below the preset list. Much lighter than a full button. Opens a dialog.</p>
+
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<h2>Add Preset Dialog</h2>
+<p>When the user clicks "+ Add preset", a WinUI <code>ContentDialog</code> appears. This is the only place where text inputs for name/width/height live.</p>
+
+<div class="mockup" style="max-width: 380px; margin: 16px 0;">
+  <div style="padding: 24px 24px 16px;">
+    <div style="font-size: 20px; font-weight: 600; margin-bottom: 16px;">Add preset</div>
+    <div style="display: grid; gap: 12px;">
+      <div>
+        <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Name</div>
+        <input class="textbox" value="Custom" style="width: 100%;">
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <div>
+          <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Width</div>
+          <input class="textbox" value="1200" style="width: 100%;">
+        </div>
+        <div>
+          <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Height</div>
+          <input class="textbox" value="800" style="width: 100%;">
+        </div>
+      </div>
+    </div>
+    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+      <button class="btn btn-accent" style="min-width: 80px;">Add</button>
+      <button class="btn btn-std" style="min-width: 80px;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="callout">
+  <strong>WinUI pattern:</strong> ContentDialog with Title, body content, and right-aligned Primary + Secondary buttons. 24px padding, 8px overlay corner radius. Appears centered over the window with a smoke overlay behind it.
+</div>
+
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<h2>Before → After Comparison</h2>
+
+<div class="compare">
+  <div class="bad">
+    <div class="label" style="color: #c42b1c;">❌ Current (v1)</div>
+    <div style="text-align: left; font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
+      <div>• 320px nav rail with 3 fake pages</div>
+      <div>• "Active preset" card with icon bg</div>
+      <div>• Two-column layout (presets + settings)</div>
+      <div>• Each preset: radio + 3 inputs + 3 buttons</div>
+      <div>• Floating save/revert action bar</div>
+      <div>• Description text on every card</div>
+      <div>• ~800×600 window needed</div>
+      <div>• Lots of dead space</div>
+    </div>
+  </div>
+  <div class="good">
+    <div class="label" style="color: #0e7a0d;">✅ Proposed (v2)</div>
+    <div style="text-align: left; font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
+      <div>• No navigation — single column</div>
+      <div>• Compact hero: name + dims + hotkey + button</div>
+      <div>• Single-column, everything visible</div>
+      <div>• Each preset: radio + name + dims + ✕</div>
+      <div>• Immediate-apply, no action bar</div>
+      <div>• No description text (self-explanatory)</div>
+      <div>• 480×520 window, nothing wasted</div>
+      <div>• Every pixel earns its place</div>
+    </div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<h2>Pixel Budget</h2>
+
+<p>Assuming a 520px tall content area (480×520 window minus 32px titlebar = 488px usable):</p>
+
+<table style="width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0 16px;">
+  <tr style="background: rgba(0,0,0,0.04);"><th style="text-align: left; padding: 6px 10px;">Element</th><th style="text-align: right; padding: 6px 10px;">Height</th></tr>
+  <tr><td style="padding: 5px 10px;">Hero area (active preset + button)</td><td style="text-align: right; padding: 5px 10px;">52px</td></tr>
+  <tr><td style="padding: 5px 10px;">Gap + "Presets" section label</td><td style="text-align: right; padding: 5px 10px;">40px</td></tr>
+  <tr><td style="padding: 5px 10px;">5 preset rows × 46px (44px + 2px gap)</td><td style="text-align: right; padding: 5px 10px;">230px</td></tr>
+  <tr><td style="padding: 5px 10px;">"+ Add preset" link</td><td style="text-align: right; padding: 5px 10px;">28px</td></tr>
+  <tr><td style="padding: 5px 10px;">Gap + "Options" section label</td><td style="text-align: right; padding: 5px 10px;">40px</td></tr>
+  <tr><td style="padding: 5px 10px;">3 option cards × 46px</td><td style="text-align: right; padding: 5px 10px;">138px</td></tr>
+  <tr style="border-top: 1px solid #ddd; font-weight: 600;"><td style="padding: 5px 10px;">Total content height</td><td style="text-align: right; padding: 5px 10px;">528px</td></tr>
+  <tr><td style="padding: 5px 10px; color: var(--text-secondary);">Available (520 − 32 titlebar + 44 padding)</td><td style="text-align: right; padding: 5px 10px; color: var(--text-secondary);">~488px</td></tr>
+</table>
+
+<p>With 5 default presets, content just barely scrolls. With fewer presets (which is the common case for a utility), everything fits without scrolling. The window is also resizable — adding a few more presets just extends the list naturally.</p>
+
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<h2>WinUI Components Used</h2>
+
+<table style="width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0;">
+  <tr style="background: rgba(0,0,0,0.04);"><th style="text-align: left; padding: 6px 10px;">Our element</th><th style="text-align: left; padding: 6px 10px;">WinUI equivalent</th><th style="text-align: left; padding: 6px 10px;">Notes</th></tr>
+  <tr><td style="padding: 5px 10px;">Titlebar</td><td style="padding: 5px 10px;">Custom titlebar</td><td style="padding: 5px 10px;">32px, 16×16 icon, caption text</td></tr>
+  <tr><td style="padding: 5px 10px;">Hero area</td><td style="padding: 5px 10px;">TextBlock (Subtitle) + Button</td><td style="padding: 5px 10px;">Not a card — just text + button</td></tr>
+  <tr><td style="padding: 5px 10px;">Section label</td><td style="padding: 5px 10px;">TextBlock (Body Strong)</td><td style="padding: 5px 10px;">14px Semibold</td></tr>
+  <tr><td style="padding: 5px 10px;">Preset row</td><td style="padding: 5px 10px;">SettingsCard + RadioButton</td><td style="padding: 5px 10px;">Radio on left, delete icon on right</td></tr>
+  <tr><td style="padding: 5px 10px;">"+ Add preset"</td><td style="padding: 5px 10px;">HyperlinkButton</td><td style="padding: 5px 10px;">Accent-colored text link</td></tr>
+  <tr><td style="padding: 5px 10px;">Hotkey input</td><td style="padding: 5px 10px;">TextBox</td><td style="padding: 5px 10px;">32px height, accent bottom on focus</td></tr>
+  <tr><td style="padding: 5px 10px;">Center / Startup toggles</td><td style="padding: 5px 10px;">ToggleSwitch</td><td style="padding: 5px 10px;">40×20, immediate apply</td></tr>
+  <tr><td style="padding: 5px 10px;">Add preset dialog</td><td style="padding: 5px 10px;">ContentDialog</td><td style="padding: 5px 10px;">Title + TextBoxes + buttons</td></tr>
+</table>
+
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<h2>Summary of Changes to Implement</h2>
+
+<ol style="margin: 8px 0; padding-left: 18px; font-size: 13px; line-height: 1.7;">
+  <li>Remove NavigationView (nav rail + app-layout grid)</li>
+  <li>Remove page header ("ResizeMe" h1 + description paragraph)</li>
+  <li>Remove two-column content-grid layout</li>
+  <li>Remove "Active preset" card with icon background</li>
+  <li>Add hero area: active preset name (20px Semibold) + dims/hotkey + "Resize now" button</li>
+  <li>Simplify preset rows to: radio + name + "W × H" caption + ✕ icon button</li>
+  <li>Remove inline preset editing (name/width/height inputs)</li>
+  <li>Remove ↑/↓ reorder buttons</li>
+  <li>Add "+ Add preset" HyperlinkButton below preset list</li>
+  <li>Add ContentDialog for add/edit preset (name, width, height fields)</li>
+  <li>Remove descriptions from behavior settings cards</li>
+  <li>Remove floating action bar — all changes save immediately</li>
+  <li>Reduce window to 480×520</li>
+  <li>Reduce card min-height to 44px, padding to 10px 16px</li>
+  <li>Set SettingsCard header weight to 400 (Regular, not Semibold)</li>
+</ol>
+
+</div>
+</body>
+</html>
