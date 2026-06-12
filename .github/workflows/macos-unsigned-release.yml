@@ -1,0 +1,47 @@
+name: Build unsigned macOS release
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'ResizeMeMac/**'
+      - '.github/workflows/macos-unsigned-release.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build-unsigned-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build unsigned Release app
+        working-directory: ResizeMeMac
+        run: |
+          rm -rf .derivedData
+          xcodebuild -project ResizeMe.xcodeproj \
+            -scheme ResizeMe \
+            -configuration Release \
+            -derivedDataPath .derivedData \
+            -destination 'platform=macOS' \
+            CODE_SIGN_IDENTITY='-' \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Package app for download
+        run: |
+          mkdir -p ResizeMeMac/artifacts
+          ditto -c -k --keepParent \
+            "ResizeMeMac/.derivedData/Build/Products/Release/ResizeMe.app" \
+            "ResizeMeMac/artifacts/ResizeMe-macos-unsigned.zip"
+
+      - name: Upload unsigned build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ResizeMe-macos-unsigned
+          path: ResizeMeMac/artifacts/ResizeMe-macos-unsigned.zip
+          if-no-files-found: error
