@@ -1,0 +1,31 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Swift: Build ResizeMe",
+      "type": "shell",
+      "command": "cd ${workspaceFolder}/ResizeMeMac && xcodebuild -project ResizeMe.xcodeproj -scheme ResizeMe -configuration Debug -derivedDataPath .derivedData build CODE_SIGN_IDENTITY='-'",
+      "problemMatcher": [
+        "$xcodebuild"
+      ],
+      "group": "build"
+    },
+    {
+      "label": "Swift: Run ResizeMe",
+      "type": "shell",
+      "command": "cd ${workspaceFolder}/ResizeMeMac && rm -rf .derivedData && xcodebuild -project ResizeMe.xcodeproj -scheme ResizeMe -configuration Debug -derivedDataPath .derivedData build CODE_SIGN_IDENTITY='-' && open .derivedData/Build/Products/Debug/ResizeMe.app",
+      "problemMatcher": [
+        "$xcodebuild"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    }
+  ]
+}

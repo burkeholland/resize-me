@@ -1,0 +1,551 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0B94932378A7384DAE693624 /* PermissionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9652E476B836027E2D070A02 /* PermissionService.swift */; };
+		11505F77D832E11BF7201DC6 /* ConfigNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C166FE08B21FFC23428A8A /* ConfigNormalizer.swift */; };
+		38B5E69FF19EA35DE7C6351F /* WindowGeometryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7A3317E857A2EF206433EFE /* WindowGeometryService.swift */; };
+		4A89DC6A4842FB19EF98976B /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F93087D8060D0233EDB4698 /* Log.swift */; };
+		6549199C3C58128F2211BEB4 /* MenuContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06CC6227B48748EBD216D65B /* MenuContentView.swift */; };
+		7546AE7392A426A69B41DB08 /* ResizeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8842857F89CCBCAAA87E5413 /* ResizeService.swift */; };
+		7A11422CAC77DAB172E066C1 /* SettingsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6367580124465F92D8298AE4 /* SettingsStoreTests.swift */; };
+		8489CDBB347443BB1E650BCF /* WindowGeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FD3EBAFFF738C76A4A737F8 /* WindowGeometryTests.swift */; };
+		85070288E6F5EE0F64A74C99 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 474CF2521A9884343C22E9FA /* AppState.swift */; };
+		8B0CCCC045CF3BE2CF221FFC /* HotkeyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C9F422DB4ED40404747E698 /* HotkeyService.swift */; };
+		9123264EB4E231254F6F292C /* HotkeyMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E4755055EAF3C54E1C00B5C /* HotkeyMapper.swift */; };
+		934B3B4F10A51B54D9E6D270 /* ResizeMeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F95E00E262D5FBC14131B948 /* ResizeMeApp.swift */; };
+		9609E55AA116F3A69930C530 /* Preset.swift in Sources */ = {isa = PBXBuildFile; fileRef = F28165D1C4B70DD22F04C57A /* Preset.swift */; };
+		B97E662028F9528FBE155A07 /* ConfigNormalizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2B464B465009376E3408010 /* ConfigNormalizerTests.swift */; };
+		C291F5780F9269C46173E406 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01D938D3DABEC07DB71A6B97 /* OnboardingView.swift */; };
+		C341768D587FB699A450BA73 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = DE643FBE07D3BF5B3FAC3AD3 /* KeyboardShortcuts */; };
+		C78E69B07967312A28943223 /* LaunchAtLoginService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CCC082D38ED7548A997BE65 /* LaunchAtLoginService.swift */; };
+		CA4820C91D9380D66C180C03 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8100B5119971EBA1D8BD5F96 /* Assets.xcassets */; };
+		D5F212E3A7BB30531B3E2FE0 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30770A0652B380DD28549326 /* AppConfig.swift */; };
+		F8C65A56FB72381143A2E63E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC5E8B499DDF43B95B9C45B2 /* SettingsView.swift */; };
+		FC08AC16CA2782D23B6AC3C6 /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B3CDA3B2AC1824D47BAE099 /* SettingsStore.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		287DA73E5E6ED32ACA023821 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3215CEF548B7A4138CC219D4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 28D3C96ED2B92EB1D08D79AD;
+			remoteInfo = ResizeMe;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		01D938D3DABEC07DB71A6B97 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		06CC6227B48748EBD216D65B /* MenuContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuContentView.swift; sourceTree = "<group>"; };
+		0CCC082D38ED7548A997BE65 /* LaunchAtLoginService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginService.swift; sourceTree = "<group>"; };
+		2FBB535BBC1420719B239E3B /* ResizeMe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ResizeMe.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		30770A0652B380DD28549326 /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
+		35C166FE08B21FFC23428A8A /* ConfigNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigNormalizer.swift; sourceTree = "<group>"; };
+		3B3CDA3B2AC1824D47BAE099 /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
+		474CF2521A9884343C22E9FA /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		4C9F422DB4ED40404747E698 /* HotkeyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyService.swift; sourceTree = "<group>"; };
+		5F93087D8060D0233EDB4698 /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
+		6367580124465F92D8298AE4 /* SettingsStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStoreTests.swift; sourceTree = "<group>"; };
+		64DF06BB54A034BCC890A08A /* ResizeMeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ResizeMeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		6E4755055EAF3C54E1C00B5C /* HotkeyMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyMapper.swift; sourceTree = "<group>"; };
+		6FD3EBAFFF738C76A4A737F8 /* WindowGeometryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowGeometryTests.swift; sourceTree = "<group>"; };
+		8100B5119971EBA1D8BD5F96 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		8842857F89CCBCAAA87E5413 /* ResizeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResizeService.swift; sourceTree = "<group>"; };
+		9652E476B836027E2D070A02 /* PermissionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionService.swift; sourceTree = "<group>"; };
+		C7A3317E857A2EF206433EFE /* WindowGeometryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowGeometryService.swift; sourceTree = "<group>"; };
+		CC5E8B499DDF43B95B9C45B2 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		F28165D1C4B70DD22F04C57A /* Preset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Preset.swift; sourceTree = "<group>"; };
+		F2B464B465009376E3408010 /* ConfigNormalizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigNormalizerTests.swift; sourceTree = "<group>"; };
+		F95E00E262D5FBC14131B948 /* ResizeMeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResizeMeApp.swift; sourceTree = "<group>"; };
+		F9627C7D45917B09131F92BE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C9DDD263AEDE47C5ECA4EAE7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C341768D587FB699A450BA73 /* KeyboardShortcuts in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		45628ED23BCD4AC9F1E9CB04 = {
+			isa = PBXGroup;
+			children = (
+				C95B76A64096247BC984595B /* ResizeMe */,
+				FF57E514D2564CBAC5541F70 /* Tests */,
+				6BEDC4B97705285AA110FE40 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		6A9DCE308497E218A54710CF /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F9627C7D45917B09131F92BE /* Info.plist */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		6BEDC4B97705285AA110FE40 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2FBB535BBC1420719B239E3B /* ResizeMe.app */,
+				64DF06BB54A034BCC890A08A /* ResizeMeTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		C95B76A64096247BC984595B /* ResizeMe */ = {
+			isa = PBXGroup;
+			children = (
+				474CF2521A9884343C22E9FA /* AppState.swift */,
+				8100B5119971EBA1D8BD5F96 /* Assets.xcassets */,
+				F95E00E262D5FBC14131B948 /* ResizeMeApp.swift */,
+				F40F03FDF442EA9AFB882AAF /* Models */,
+				6A9DCE308497E218A54710CF /* Resources */,
+				DD4E592F63FD8F662BC434F9 /* Services */,
+				D128B174DD4CB9819CD316F2 /* Views */,
+			);
+			path = ResizeMe;
+			sourceTree = "<group>";
+		};
+		D128B174DD4CB9819CD316F2 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				06CC6227B48748EBD216D65B /* MenuContentView.swift */,
+				01D938D3DABEC07DB71A6B97 /* OnboardingView.swift */,
+				CC5E8B499DDF43B95B9C45B2 /* SettingsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		DD4E592F63FD8F662BC434F9 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				6E4755055EAF3C54E1C00B5C /* HotkeyMapper.swift */,
+				4C9F422DB4ED40404747E698 /* HotkeyService.swift */,
+				0CCC082D38ED7548A997BE65 /* LaunchAtLoginService.swift */,
+				5F93087D8060D0233EDB4698 /* Log.swift */,
+				9652E476B836027E2D070A02 /* PermissionService.swift */,
+				8842857F89CCBCAAA87E5413 /* ResizeService.swift */,
+				3B3CDA3B2AC1824D47BAE099 /* SettingsStore.swift */,
+				C7A3317E857A2EF206433EFE /* WindowGeometryService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		F40F03FDF442EA9AFB882AAF /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				30770A0652B380DD28549326 /* AppConfig.swift */,
+				35C166FE08B21FFC23428A8A /* ConfigNormalizer.swift */,
+				F28165D1C4B70DD22F04C57A /* Preset.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		FF57E514D2564CBAC5541F70 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				F2B464B465009376E3408010 /* ConfigNormalizerTests.swift */,
+				6367580124465F92D8298AE4 /* SettingsStoreTests.swift */,
+				6FD3EBAFFF738C76A4A737F8 /* WindowGeometryTests.swift */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1A53B168F3786E05E312E95C /* ResizeMeTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 59588849A2B1123662AA7CBE /* Build configuration list for PBXNativeTarget "ResizeMeTests" */;
+			buildPhases = (
+				D20AA5751A3542DFD7211794 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C8FCD1998C6D36A3470A3126 /* PBXTargetDependency */,
+			);
+			name = ResizeMeTests;
+			packageProductDependencies = (
+			);
+			productName = ResizeMeTests;
+			productReference = 64DF06BB54A034BCC890A08A /* ResizeMeTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		28D3C96ED2B92EB1D08D79AD /* ResizeMe */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 32FA46F64F775C6E6173E354 /* Build configuration list for PBXNativeTarget "ResizeMe" */;
+			buildPhases = (
+				0AADD23D8C557F6EB2887221 /* Sources */,
+				8484841BDCD43CA269D550CC /* Resources */,
+				C9DDD263AEDE47C5ECA4EAE7 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ResizeMe;
+			packageProductDependencies = (
+				DE643FBE07D3BF5B3FAC3AD3 /* KeyboardShortcuts */,
+			);
+			productName = ResizeMe;
+			productReference = 2FBB535BBC1420719B239E3B /* ResizeMe.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		3215CEF548B7A4138CC219D4 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					28D3C96ED2B92EB1D08D79AD = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = C45051B8D82E1ECD1B569185 /* Build configuration list for PBXProject "ResizeMe" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 45628ED23BCD4AC9F1E9CB04;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				DAD5371044166918CD547CAE /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */,
+			);
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				28D3C96ED2B92EB1D08D79AD /* ResizeMe */,
+				1A53B168F3786E05E312E95C /* ResizeMeTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8484841BDCD43CA269D550CC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CA4820C91D9380D66C180C03 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0AADD23D8C557F6EB2887221 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D5F212E3A7BB30531B3E2FE0 /* AppConfig.swift in Sources */,
+				85070288E6F5EE0F64A74C99 /* AppState.swift in Sources */,
+				11505F77D832E11BF7201DC6 /* ConfigNormalizer.swift in Sources */,
+				9123264EB4E231254F6F292C /* HotkeyMapper.swift in Sources */,
+				8B0CCCC045CF3BE2CF221FFC /* HotkeyService.swift in Sources */,
+				C78E69B07967312A28943223 /* LaunchAtLoginService.swift in Sources */,
+				4A89DC6A4842FB19EF98976B /* Log.swift in Sources */,
+				6549199C3C58128F2211BEB4 /* MenuContentView.swift in Sources */,
+				C291F5780F9269C46173E406 /* OnboardingView.swift in Sources */,
+				0B94932378A7384DAE693624 /* PermissionService.swift in Sources */,
+				9609E55AA116F3A69930C530 /* Preset.swift in Sources */,
+				934B3B4F10A51B54D9E6D270 /* ResizeMeApp.swift in Sources */,
+				7546AE7392A426A69B41DB08 /* ResizeService.swift in Sources */,
+				FC08AC16CA2782D23B6AC3C6 /* SettingsStore.swift in Sources */,
+				F8C65A56FB72381143A2E63E /* SettingsView.swift in Sources */,
+				38B5E69FF19EA35DE7C6351F /* WindowGeometryService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D20AA5751A3542DFD7211794 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B97E662028F9528FBE155A07 /* ConfigNormalizerTests.swift in Sources */,
+				7A11422CAC77DAB172E066C1 /* SettingsStoreTests.swift in Sources */,
+				8489CDBB347443BB1E650BCF /* WindowGeometryTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		C8FCD1998C6D36A3470A3126 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 28D3C96ED2B92EB1D08D79AD /* ResizeMe */;
+			targetProxy = 287DA73E5E6ED32ACA023821 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		1EE76F47DB803BC1E0BD3DA1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		656BE941E399946194729B7D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = ResizeMe/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.resizeme.mac;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		7369BA946A0A195E47A8607A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.resizeme.ResizeMeTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ResizeMe.app/Contents/MacOS/ResizeMe";
+			};
+			name = Release;
+		};
+		8B98265D8D7DF5FFFA0035EB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = ResizeMe/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.resizeme.mac;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		BB0D003085DDECD7D13F8B23 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.resizeme.ResizeMeTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ResizeMe.app/Contents/MacOS/ResizeMe";
+			};
+			name = Debug;
+		};
+		BE6C876DD7825688072C2807 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		32FA46F64F775C6E6173E354 /* Build configuration list for PBXNativeTarget "ResizeMe" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8B98265D8D7DF5FFFA0035EB /* Debug */,
+				656BE941E399946194729B7D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		59588849A2B1123662AA7CBE /* Build configuration list for PBXNativeTarget "ResizeMeTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB0D003085DDECD7D13F8B23 /* Debug */,
+				7369BA946A0A195E47A8607A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C45051B8D82E1ECD1B569185 /* Build configuration list for PBXProject "ResizeMe" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1EE76F47DB803BC1E0BD3DA1 /* Debug */,
+				BE6C876DD7825688072C2807 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		DAD5371044166918CD547CAE /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sindresorhus/KeyboardShortcuts";
+			requirement = {
+				kind = revision;
+				revision = 81caa542dc81b058a2c30daab3cb2fbd6a90db7b;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		DE643FBE07D3BF5B3FAC3AD3 /* KeyboardShortcuts */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DAD5371044166918CD547CAE /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */;
+			productName = KeyboardShortcuts;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 3215CEF548B7A4138CC219D4 /* Project object */;
+}

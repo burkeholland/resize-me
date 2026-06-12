@@ -1,6 +1,44 @@
-.tools/
-ResizeMe/frontend/node_modules/
-ResizeMe/frontend/dist/
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Xcode / Swift
+DerivedData/
+*.xcworkspace
+*.xcodeproj/project.xcworkspace/
+*.xcodeproj/xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xcodeproj/*.pbxuser
+*.xcodeproj/*.mode1v3
+*.xcodeproj/*.mode2v3
+*.xcodeproj/*.perspectivev3
+
+# Swift package / build outputs
+.build/
+.swiftpm/
+.derivedData/
+
+# Go
 ResizeMe/build/bin/
 *.exe
 *.dll
+*.so
+*.dylib
+*.test
+
+# Logs
+*.log
+
+# Node / frontend
+ResizeMe/frontend/node_modules/
+ResizeMe/frontend/dist/
+
+# VS Code
+.vscode/*
+!.vscode/tasks.json
+
+# Temporary files
+*.tmp
+*.temp

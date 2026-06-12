@@ -1,0 +1,61 @@
+name: ResizeMe
+options:
+  bundleIdPrefix: com.resizeme
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+packages:
+  KeyboardShortcuts:
+    url: https://github.com/sindresorhus/KeyboardShortcuts
+    revision: 81caa542dc81b058a2c30daab3cb2fbd6a90db7b
+targets:
+  ResizeMe:
+    type: application
+    platform: macOS
+    sources:
+      - path: ResizeMe
+    dependencies:
+      - package: KeyboardShortcuts
+    info:
+      path: ResizeMe/Resources/Info.plist
+      properties:
+        CFBundleName: ResizeMe
+        CFBundleDisplayName: ResizeMe
+        CFBundleShortVersionString: "1.0.0"
+        CFBundleVersion: "1"
+        LSUIElement: true
+        LSMinimumSystemVersion: "14.0"
+        NSHumanReadableCopyright: "© 2026 ResizeMe contributors"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.resizeme.mac
+        SWIFT_VERSION: "5.0"
+        ENABLE_HARDENED_RUNTIME: YES
+        ENABLE_APP_SANDBOX: NO
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: "-"
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+  ResizeMeTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests
+    dependencies:
+      - target: ResizeMe
+    settings:
+      base:
+        SWIFT_VERSION: "5.0"
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  ResizeMe:
+    build:
+      targets:
+        ResizeMe: all
+        ResizeMeTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - ResizeMeTests
