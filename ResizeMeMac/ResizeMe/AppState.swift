@@ -16,6 +16,7 @@ final class AppState: ObservableObject {
     let resizeService = ResizeService()
     let launchAtLoginService = LaunchAtLoginService()
     let hotkeyService = HotkeyService()
+    let updateService = SparkleUpdateService()
 
     private let store: SettingsStore
     private var permissionCancellable: AnyCancellable?

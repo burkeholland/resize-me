@@ -10,6 +10,7 @@
 		0B94932378A7384DAE693624 /* PermissionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9652E476B836027E2D070A02 /* PermissionService.swift */; };
 		11505F77D832E11BF7201DC6 /* ConfigNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C166FE08B21FFC23428A8A /* ConfigNormalizer.swift */; };
 		38B5E69FF19EA35DE7C6351F /* WindowGeometryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7A3317E857A2EF206433EFE /* WindowGeometryService.swift */; };
+		3FD99DA2E9E6E752F63EDE82 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 0BDF8C7B074EA146E8789578 /* Sparkle */; };
 		4A89DC6A4842FB19EF98976B /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F93087D8060D0233EDB4698 /* Log.swift */; };
 		6549199C3C58128F2211BEB4 /* MenuContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06CC6227B48748EBD216D65B /* MenuContentView.swift */; };
 		7546AE7392A426A69B41DB08 /* ResizeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8842857F89CCBCAAA87E5413 /* ResizeService.swift */; };
@@ -28,6 +29,7 @@
 		D5F212E3A7BB30531B3E2FE0 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30770A0652B380DD28549326 /* AppConfig.swift */; };
 		F8C65A56FB72381143A2E63E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC5E8B499DDF43B95B9C45B2 /* SettingsView.swift */; };
 		FC08AC16CA2782D23B6AC3C6 /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B3CDA3B2AC1824D47BAE099 /* SettingsStore.swift */; };
+		FF9A68CF1C370CA23F716F8C /* SparkleUpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BF996636B4702B5B7CF512 /* SparkleUpdateService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +59,7 @@
 		6FD3EBAFFF738C76A4A737F8 /* WindowGeometryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowGeometryTests.swift; sourceTree = "<group>"; };
 		8100B5119971EBA1D8BD5F96 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8842857F89CCBCAAA87E5413 /* ResizeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResizeService.swift; sourceTree = "<group>"; };
+		95BF996636B4702B5B7CF512 /* SparkleUpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SparkleUpdateService.swift; sourceTree = "<group>"; };
 		9652E476B836027E2D070A02 /* PermissionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionService.swift; sourceTree = "<group>"; };
 		C7A3317E857A2EF206433EFE /* WindowGeometryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowGeometryService.swift; sourceTree = "<group>"; };
 		CC5E8B499DDF43B95B9C45B2 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -72,6 +75,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C341768D587FB699A450BA73 /* KeyboardShortcuts in Frameworks */,
+				3FD99DA2E9E6E752F63EDE82 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -138,6 +142,7 @@
 				9652E476B836027E2D070A02 /* PermissionService.swift */,
 				8842857F89CCBCAAA87E5413 /* ResizeService.swift */,
 				3B3CDA3B2AC1824D47BAE099 /* SettingsStore.swift */,
+				95BF996636B4702B5B7CF512 /* SparkleUpdateService.swift */,
 				C7A3317E857A2EF206433EFE /* WindowGeometryService.swift */,
 			);
 			path = Services;
@@ -199,6 +204,7 @@
 			name = ResizeMe;
 			packageProductDependencies = (
 				DE643FBE07D3BF5B3FAC3AD3 /* KeyboardShortcuts */,
+				0BDF8C7B074EA146E8789578 /* Sparkle */,
 			);
 			productName = ResizeMe;
 			productReference = 2FBB535BBC1420719B239E3B /* ResizeMe.app */;
@@ -230,6 +236,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				DAD5371044166918CD547CAE /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */,
+				2FAEF9E299116DEDCB355EB5 /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
@@ -272,6 +279,7 @@
 				7546AE7392A426A69B41DB08 /* ResizeService.swift in Sources */,
 				FC08AC16CA2782D23B6AC3C6 /* SettingsStore.swift in Sources */,
 				F8C65A56FB72381143A2E63E /* SettingsView.swift in Sources */,
+				FF9A68CF1C370CA23F716F8C /* SparkleUpdateService.swift in Sources */,
 				38B5E69FF19EA35DE7C6351F /* WindowGeometryService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -529,6 +537,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		2FAEF9E299116DEDCB355EB5 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.6.4;
+			};
+		};
 		DAD5371044166918CD547CAE /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/sindresorhus/KeyboardShortcuts";
@@ -540,6 +556,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		0BDF8C7B074EA146E8789578 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2FAEF9E299116DEDCB355EB5 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
 		DE643FBE07D3BF5B3FAC3AD3 /* KeyboardShortcuts */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = DAD5371044166918CD547CAE /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */;

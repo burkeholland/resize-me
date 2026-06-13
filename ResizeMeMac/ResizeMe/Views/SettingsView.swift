@@ -25,7 +25,10 @@ struct SettingsView: View {
                 ShortcutsTab(draftShortcut: $draftShortcut)
                     .tabItem { Label("Shortcuts", systemImage: "keyboard") }
 
-                AboutTab()
+                UpdatesTab(appState: appState)
+                    .tabItem { Label("Updates", systemImage: "arrow.triangle.2.circlepath") }
+
+                AboutTab(appState: appState)
                     .tabItem { Label("About", systemImage: "info.circle") }
             }
             .frame(width: 520, height: 400)
@@ -258,9 +261,39 @@ private struct ShortcutsTab: View {
     }
 }
 
+// MARK: - Updates
+
+private struct UpdatesTab: View {
+    let appState: AppState
+
+    var body: some View {
+        Form {
+            Section("Sparkle updates") {
+                Label("Automatic update checks are enabled and point at the appcast feed configured in the app bundle.", systemImage: "sparkles")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+
+                Button("Check for Updates…") {
+                    appState.updateService.checkForUpdates()
+                }
+                .buttonStyle(.borderedProminent)
+            }
+
+            Section("Release notes") {
+                Text("The current feed URL is https://burkeholland.github.io/resize-me/appcast.xml. Replace this with your signed release appcast when you publish the first notarized build.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .formStyle(.grouped)
+    }
+}
+
 // MARK: - About
 
 private struct AboutTab: View {
+    let appState: AppState
+
     private var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev"
     }
@@ -289,6 +322,11 @@ private struct AboutTab: View {
             Link(destination: URL(string: "https://github.com/burkeholland/resize-me")!) {
                 Label("View on GitHub", systemImage: "link")
             }
+
+            Button("Check for Updates…") {
+                appState.updateService.checkForUpdates()
+            }
+            .buttonStyle(.bordered)
 
             Spacer()
 

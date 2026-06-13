@@ -8,6 +8,9 @@ packages:
   KeyboardShortcuts:
     url: https://github.com/sindresorhus/KeyboardShortcuts
     revision: 81caa542dc81b058a2c30daab3cb2fbd6a90db7b
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: 2.6.4
 targets:
   ResizeMe:
     type: application
@@ -16,6 +19,7 @@ targets:
       - path: ResizeMe
     dependencies:
       - package: KeyboardShortcuts
+      - package: Sparkle
     info:
       path: ResizeMe/Resources/Info.plist
       properties:
@@ -26,6 +30,9 @@ targets:
         LSUIElement: true
         LSMinimumSystemVersion: "14.0"
         NSHumanReadableCopyright: "© 2026 ResizeMe contributors"
+        SUFeedURL: "https://burkeholland.github.io/resize-me/appcast.xml"
+        SUPublicEDKey: "REPLACE_WITH_SPARKLE_PUBLIC_KEY"
+        SUEnableAutomaticChecks: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.resizeme.mac

@@ -53,6 +53,10 @@ struct MenuContentView: View {
             }
             .keyboardShortcut(",")
 
+            Button("Check for Updates…") {
+                appState.updateService.checkForUpdates()
+            }
+
             Button("About ResizeMe") {
                 NSApp.activate(ignoringOtherApps: true)
                 NSApp.orderFrontStandardAboutPanel(nil)
