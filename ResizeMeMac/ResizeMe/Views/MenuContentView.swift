@@ -3,7 +3,7 @@ import SwiftUI
 
 struct MenuContentView: View {
     @EnvironmentObject var appState: AppState
-    @Environment(\.openSettings) private var openSettings
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         Group {
@@ -49,7 +49,7 @@ struct MenuContentView: View {
 
             Button("Settings…") {
                 NSApp.activate(ignoringOtherApps: true)
-                openSettings()
+                openWindow(id: "settings")
             }
             .keyboardShortcut(",")
 

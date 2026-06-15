@@ -38,9 +38,10 @@ struct ResizeMeApp: App {
             MenuContentView()
                 .environmentObject(appState)
         }
-        Settings {
+        Window("Settings", id: "settings") {
             SettingsView()
                 .environmentObject(appState)
         }
+        .windowResizability(.contentMinSize)
     }
 }

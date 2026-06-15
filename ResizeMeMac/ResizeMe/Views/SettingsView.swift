@@ -2,11 +2,36 @@ import AppKit
 import KeyboardShortcuts
 import SwiftUI
 
+private enum SettingsTab: String, CaseIterable {
+    case general = "General"
+    case presets = "Presets"
+    case shortcuts = "Shortcuts"
+    case updates = "Updates"
+    case about = "About"
+
+    var icon: String {
+        switch self {
+        case .general:
+            return "gearshape"
+        case .presets:
+            return "square.grid.2x2"
+        case .shortcuts:
+            return "keyboard"
+        case .updates:
+            return "arrow.triangle.2.circlepath"
+        case .about:
+            return "info.circle"
+        }
+    }
+}
+
 struct SettingsView: View {
     @EnvironmentObject var appState: AppState
 
     @State private var draft: AppConfig = .default
     @State private var draftShortcut: KeyboardShortcuts.Shortcut?
+    @State private var selectedTab: SettingsTab? = .general
+    @State private var splitVisibility: NavigationSplitViewVisibility = .all
 
     private var hasChanges: Bool {
         draft != appState.config
@@ -14,58 +39,66 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            TabView {
-                GeneralTab(draft: $draft, appState: appState)
-                    .tabItem { Label("General", systemImage: "gearshape") }
-
-                PresetsTab(draft: $draft)
-                    .tabItem { Label("Presets", systemImage: "square.grid.2x2") }
-
-                ShortcutsTab(draftShortcut: $draftShortcut)
-                    .tabItem { Label("Shortcuts", systemImage: "keyboard") }
-
-                UpdatesTab(appState: appState)
-                    .tabItem { Label("Updates", systemImage: "arrow.triangle.2.circlepath") }
-
-                AboutTab(appState: appState)
-                    .tabItem { Label("About", systemImage: "info.circle") }
+        NavigationSplitView(columnVisibility: $splitVisibility) {
+            List(SettingsTab.allCases, id: \.self, selection: $selectedTab) { tab in
+                Label(tab.rawValue, systemImage: tab.icon)
+                    .tag(tab as SettingsTab?)
             }
-            .frame(width: 520, height: 400)
-
-            Divider()
-
-            HStack(spacing: 12) {
-                if let status = appState.lastStatusMessage {
-                    Label(status, systemImage: "checkmark.circle")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                }
-
-                Spacer()
-
-                Button("Revert") {
-                    revertDraft()
-                }
-                .disabled(!hasChanges)
-
-                Button("Save") {
-                    var next = draft
-                    // Cleared shortcut falls back to the default hotkey via normalization.
-                    next.hotkey = HotkeyMapper.configString(from: draftShortcut)
-                    if appState.saveConfig(next) {
-                        revertDraft()
+            .listStyle(.sidebar)
+            .navigationSplitViewColumnWidth(min: 160, ideal: 180, max: 220)
+        } detail: {
+            VStack(spacing: 0) {
+                Group {
+                    switch selectedTab ?? .general {
+                    case .general:
+                        GeneralTab(draft: $draft, appState: appState)
+                    case .presets:
+                        PresetsTab(draft: $draft)
+                    case .shortcuts:
+                        ShortcutsTab(draftShortcut: $draftShortcut)
+                    case .updates:
+                        UpdatesTab(appState: appState)
+                    case .about:
+                        AboutTab(appState: appState)
                     }
                 }
-                .buttonStyle(.borderedProminent)
-                .keyboardShortcut(.defaultAction)
-                .disabled(!hasChanges)
+
+                Divider()
+
+                HStack(spacing: 12) {
+                    if let status = appState.lastStatusMessage {
+                        Label(status, systemImage: "checkmark.circle")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+
+                    Spacer()
+
+                    Button("Revert") {
+                        revertDraft()
+                    }
+                    .disabled(!hasChanges)
+
+                    Button("Save") {
+                        var next = draft
+                        // Cleared shortcut falls back to the default hotkey via normalization.
+                        next.hotkey = HotkeyMapper.configString(from: draftShortcut)
+                        if appState.saveConfig(next) {
+                            revertDraft()
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .keyboardShortcut(.defaultAction)
+                    .disabled(!hasChanges)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(.bar)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(.bar)
         }
+        .navigationSplitViewStyle(.balanced)
+        .frame(minWidth: 720, minHeight: 460)
         .onAppear {
             revertDraft()
         }
