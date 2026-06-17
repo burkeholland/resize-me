@@ -45,7 +45,7 @@ struct MenuContentView: View {
 
             Divider()
 
-            Picker("Preset", selection: Binding(get: {
+            Picker("", selection: Binding(get: {
                 appState.config.activePresetId
             }, set: { newValue in
                 appState.setActivePreset(newValue)
@@ -67,6 +67,7 @@ struct MenuContentView: View {
                 }
             }
             .pickerStyle(.inline)
+            .labelsHidden()
 
             Divider()
 
