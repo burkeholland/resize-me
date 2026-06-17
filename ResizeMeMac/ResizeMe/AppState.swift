@@ -108,6 +108,24 @@ final class AppState: ObservableObject {
         _ = saveConfig(next)
     }
 
+    func isFavoritePreset(_ id: String) -> Bool {
+        config.favoritePresetIds.contains(id)
+    }
+
+    func toggleFavoritePreset(_ id: String) {
+        guard config.hasPreset(id: id) else {
+            lastStatusMessage = "Preset no longer exists"
+            return
+        }
+        var next = config
+        if let index = next.favoritePresetIds.firstIndex(of: id) {
+            next.favoritePresetIds.remove(at: index)
+        } else {
+            next.favoritePresetIds.append(id)
+        }
+        _ = saveConfig(next)
+    }
+
     @discardableResult
     func saveConfig(_ next: AppConfig) -> Bool {
         let current = config

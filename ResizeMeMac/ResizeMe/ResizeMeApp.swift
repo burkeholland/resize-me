@@ -42,6 +42,7 @@ struct ResizeMeApp: App {
             SettingsView()
                 .environmentObject(appState)
         }
+        .defaultSize(width: 640, height: 460)
         .windowResizability(.contentMinSize)
     }
 }

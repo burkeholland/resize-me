@@ -5,6 +5,18 @@ struct MenuContentView: View {
     @EnvironmentObject var appState: AppState
     @Environment(\.openWindow) private var openWindow
 
+    private var favoritePresetIDs: Set<String> {
+        Set(appState.config.favoritePresetIds)
+    }
+
+    private var favoritePresets: [Preset] {
+        appState.config.favoritePresetIds.compactMap { appState.config.findPreset(id: $0) }
+    }
+
+    private var otherPresets: [Preset] {
+        appState.config.presets.filter { !favoritePresetIDs.contains($0.id) }
+    }
+
     var body: some View {
         Group {
             if let name = appState.frontmostAppName {
@@ -38,9 +50,20 @@ struct MenuContentView: View {
             }, set: { newValue in
                 appState.setActivePreset(newValue)
             })) {
-                ForEach(appState.config.presets) { preset in
-                    Text("\(preset.name) (\(preset.width)×\(preset.height))")
-                        .tag(preset.id)
+                if !favoritePresets.isEmpty {
+                    Section("Favorites") {
+                        ForEach(favoritePresets) { preset in
+                            Text("\(preset.name) (\(preset.width)×\(preset.height))")
+                                .tag(preset.id)
+                        }
+                    }
+                }
+
+                Section("All Presets") {
+                    ForEach(otherPresets) { preset in
+                        Text("\(preset.name) (\(preset.width)×\(preset.height))")
+                            .tag(preset.id)
+                    }
                 }
             }
             .pickerStyle(.inline)
@@ -53,8 +76,10 @@ struct MenuContentView: View {
             }
             .keyboardShortcut(",")
 
-            Button("Check for Updates…") {
-                appState.updateService.checkForUpdates()
+            if appState.updateService.canCheckForUpdates {
+                Button("Check for Updates…") {
+                    appState.updateService.checkForUpdates()
+                }
             }
 
             Button("About ResizeMe") {

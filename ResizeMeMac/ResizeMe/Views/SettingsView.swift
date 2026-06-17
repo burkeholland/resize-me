@@ -29,6 +29,7 @@ struct SettingsView: View {
     @EnvironmentObject var appState: AppState
 
     @State private var draft: AppConfig = .default
+    @State private var draftBase: AppConfig = .default
     @State private var draftShortcut: KeyboardShortcuts.Shortcut?
     @State private var selectedTab: SettingsTab? = .general
     @State private var splitVisibility: NavigationSplitViewVisibility = .all
@@ -38,14 +39,21 @@ struct SettingsView: View {
             || draftShortcut != HotkeyMapper.shortcut(fromConfigString: appState.config.hotkey)
     }
 
+    private var tabs: [SettingsTab] {
+        if appState.updateService.canCheckForUpdates {
+            return SettingsTab.allCases
+        }
+        return SettingsTab.allCases.filter { $0 != .updates }
+    }
+
     var body: some View {
         NavigationSplitView(columnVisibility: $splitVisibility) {
-            List(SettingsTab.allCases, id: \.self, selection: $selectedTab) { tab in
+            List(tabs, id: \.self, selection: $selectedTab) { tab in
                 Label(tab.rawValue, systemImage: tab.icon)
                     .tag(tab as SettingsTab?)
             }
             .listStyle(.sidebar)
-            .navigationSplitViewColumnWidth(min: 160, ideal: 180, max: 220)
+            .navigationSplitViewColumnWidth(min: 150, ideal: 170, max: 200)
         } detail: {
             VStack(spacing: 0) {
                 Group {
@@ -81,6 +89,11 @@ struct SettingsView: View {
                     .disabled(!hasChanges)
 
                     Button("Save") {
+                        if appState.config != draftBase {
+                            appState.lastStatusMessage = "Settings changed elsewhere. Review latest values before saving."
+                            revertDraft()
+                            return
+                        }
                         var next = draft
                         // Cleared shortcut falls back to the default hotkey via normalization.
                         next.hotkey = HotkeyMapper.configString(from: draftShortcut)
@@ -98,14 +111,18 @@ struct SettingsView: View {
             }
         }
         .navigationSplitViewStyle(.balanced)
-        .frame(minWidth: 720, minHeight: 460)
+        .frame(minWidth: 620, minHeight: 460)
         .onAppear {
             revertDraft()
+            if selectedTab == .updates && !appState.updateService.canCheckForUpdates {
+                selectedTab = .general
+            }
         }
     }
 
     private func revertDraft() {
         draft = appState.config
+        draftBase = appState.config
         draftShortcut = HotkeyMapper.shortcut(fromConfigString: appState.config.hotkey)
     }
 }
@@ -168,7 +185,9 @@ private struct PresetsTab: View {
                     PresetRow(
                         preset: $preset,
                         isActive: preset.id == draft.activePresetId,
-                        makeActive: { draft.activePresetId = preset.id }
+                        makeActive: { draft.activePresetId = preset.id },
+                        isFavorite: draft.favoritePresetIds.contains(preset.id),
+                        toggleFavorite: { toggleFavorite(preset.id) }
                     )
                     .tag(preset.id)
                 }
@@ -223,6 +242,15 @@ private struct PresetsTab: View {
         if removedIds.contains(draft.activePresetId) {
             draft.activePresetId = draft.presets.first?.id ?? ""
         }
+        draft.favoritePresetIds.removeAll(where: { removedIds.contains($0) })
+    }
+
+    private func toggleFavorite(_ id: String) {
+        if let index = draft.favoritePresetIds.firstIndex(of: id) {
+            draft.favoritePresetIds.remove(at: index)
+        } else {
+            draft.favoritePresetIds.append(id)
+        }
     }
 }
 
@@ -230,6 +258,8 @@ private struct PresetRow: View {
     @Binding var preset: Preset
     let isActive: Bool
     let makeActive: () -> Void
+    let isFavorite: Bool
+    let toggleFavorite: () -> Void
 
     var body: some View {
         HStack(spacing: 10) {
@@ -239,6 +269,13 @@ private struct PresetRow: View {
             }
             .buttonStyle(.plain)
             .help(isActive ? "Active preset" : "Make this the active preset")
+
+            Button(action: toggleFavorite) {
+                Image(systemName: isFavorite ? "star.fill" : "star")
+                    .foregroundStyle(isFavorite ? Color.yellow : Color.secondary)
+            }
+            .buttonStyle(.plain)
+            .help(isFavorite ? "Remove from favorites" : "Add to favorites")
 
             TextField("Name", text: $preset.name)
                 .textFieldStyle(.roundedBorder)
@@ -356,10 +393,12 @@ private struct AboutTab: View {
                 Label("View on GitHub", systemImage: "link")
             }
 
-            Button("Check for Updates…") {
-                appState.updateService.checkForUpdates()
+            if appState.updateService.canCheckForUpdates {
+                Button("Check for Updates…") {
+                    appState.updateService.checkForUpdates()
+                }
+                .buttonStyle(.bordered)
             }
-            .buttonStyle(.bordered)
 
             Spacer()
 

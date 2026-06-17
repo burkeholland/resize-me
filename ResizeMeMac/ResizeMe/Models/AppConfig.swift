@@ -6,6 +6,7 @@ struct AppConfig: Codable, Equatable, Sendable {
     var schemaVersion: Int
     var presets: [Preset]
     var activePresetId: String
+    var favoritePresetIds: [String]
     var centerAfterResize: Bool
     var hotkey: String
     var autoStart: Bool
@@ -14,6 +15,7 @@ struct AppConfig: Codable, Equatable, Sendable {
     init(schemaVersion: Int = 1,
          presets: [Preset] = [],
          activePresetId: String = "",
+         favoritePresetIds: [String] = [],
          centerAfterResize: Bool = true,
          hotkey: String = "",
          autoStart: Bool = false,
@@ -21,6 +23,7 @@ struct AppConfig: Codable, Equatable, Sendable {
         self.schemaVersion = schemaVersion
         self.presets = presets
         self.activePresetId = activePresetId
+        self.favoritePresetIds = favoritePresetIds
         self.centerAfterResize = centerAfterResize
         self.hotkey = hotkey
         self.autoStart = autoStart
@@ -32,6 +35,7 @@ struct AppConfig: Codable, Equatable, Sendable {
         schemaVersion = try container.decodeIfPresent(Int.self, forKey: .schemaVersion) ?? 1
         presets = try container.decodeIfPresent([Preset].self, forKey: .presets) ?? []
         activePresetId = try container.decodeIfPresent(String.self, forKey: .activePresetId) ?? ""
+        favoritePresetIds = try container.decodeIfPresent([String].self, forKey: .favoritePresetIds) ?? []
         centerAfterResize = try container.decodeIfPresent(Bool.self, forKey: .centerAfterResize) ?? true
         hotkey = try container.decodeIfPresent(String.self, forKey: .hotkey) ?? ""
         autoStart = try container.decodeIfPresent(Bool.self, forKey: .autoStart) ?? false
@@ -42,6 +46,7 @@ struct AppConfig: Codable, Equatable, Sendable {
         case schemaVersion
         case presets
         case activePresetId
+        case favoritePresetIds
         case centerAfterResize
         case hotkey
         case autoStart
@@ -72,6 +77,7 @@ struct AppConfig: Codable, Equatable, Sendable {
                 Preset(id: "4k-portrait", name: "4K Portrait", width: 2160, height: 3840)
             ],
             activePresetId: "1080p-landscape",
+            favoritePresetIds: [],
             centerAfterResize: true,
             hotkey: AppConfig.defaultHotkey,
             autoStart: false,

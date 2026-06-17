@@ -17,7 +17,7 @@ final class SettingsStoreTests: XCTestCase {
 
     func testSaveThenLoadRoundTrips() {
         let store = makeStore()
-        let config = AppConfig(schemaVersion: 1, presets: [Preset(id: "custom", name: "Custom", width: 800, height: 600)], activePresetId: "custom", centerAfterResize: false, hotkey: "Ctrl+Shift+X", autoStart: false, firstRun: false)
+        let config = AppConfig(schemaVersion: 1, presets: [Preset(id: "custom", name: "Custom", width: 800, height: 600)], activePresetId: "custom", favoritePresetIds: ["custom"], centerAfterResize: false, hotkey: "Ctrl+Shift+X", autoStart: false, firstRun: false)
         try? store.save(config)
         let result = store.load()
         XCTAssertEqual(result.config, config)
@@ -43,6 +43,7 @@ final class SettingsStoreTests: XCTestCase {
         XCTAssertEqual(result.config.presets.count, 1)
         XCTAssertEqual(result.config.presets[0].id, "a")
         XCTAssertEqual(result.config.activePresetId, "a")
+        XCTAssertTrue(result.config.favoritePresetIds.isEmpty)
         XCTAssertFalse(result.config.centerAfterResize)
         XCTAssertEqual(result.config.schemaVersion, 1)
     }

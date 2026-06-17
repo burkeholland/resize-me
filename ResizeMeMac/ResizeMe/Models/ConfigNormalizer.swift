@@ -63,6 +63,15 @@ enum ConfigNormalizer {
             }
         }
 
+        var seenFavoriteIDs = Set<String>()
+        next.favoritePresetIds = next.favoritePresetIds.filter { id in
+            guard next.hasPreset(id: id), !seenFavoriteIDs.contains(id) else {
+                return false
+            }
+            seenFavoriteIDs.insert(id)
+            return true
+        }
+
         return next
     }
 
