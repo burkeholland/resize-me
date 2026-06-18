@@ -189,8 +189,11 @@ jobs:
             --ed-key-file sparkle-private-key.txt \
             --download-url-prefix "https://github.com/burkeholland/resize-me/releases/download/${GITHUB_REF_NAME}/" \
             --release-notes-url-prefix "https://github.com/burkeholland/resize-me/releases/tag/${GITHUB_REF_NAME}" \
-            --output appcast.xml \
             sparkle-archives
+          if [ ! -f sparkle-archives/appcast.xml ]; then
+            echo 'Sparkle appcast was not generated.' >&2
+            exit 1
+          fi
           mkdir -p docs
           cp sparkle-archives/appcast.xml docs/appcast.xml
 
