@@ -91,7 +91,8 @@ Quick reference for releasing ResizeMe on macOS. See [macos-build-sign-release.m
 
 | Issue | Fix |
 |-------|-----|
-| Notarization fails | Check hardened runtime enabled; verify `--timestamp` in codesign |
+| Notarization fails | Check the notary log; verify hardened runtime, `--timestamp`, and that embedded code is signed before the app |
+| Stapler fails on ZIP | Staple `ResizeMe.app`, validate it, then recreate `ResizeMe.zip` from the stapled app |
 | Sparkle not detecting update | Verify public key matches; check appcast.xml reachable at `SUFeedURL` |
 | Code signature invalid | Re-sign: `codesign --force --sign "Developer ID..." --options runtime --timestamp /Applications/ResizeMe.app` |
 | Cask install fails | Verify SHA256 in cask matches; ensure ZIP signature is intact |

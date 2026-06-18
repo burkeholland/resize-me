@@ -12,8 +12,8 @@ ResizeMe uses a **direct-download distribution model** with **Sparkle** for auto
 
 1. **Build** — Compile the native Swift app in Release mode
 2. **Sign** — Code-sign with Developer ID Application certificate (Hardened Runtime enabled)
-3. **Notarize** — Submit to Apple for notarization, then staple the ticket
-4. **Package** — Create a distributable ZIP archive
+3. **Notarize** — Submit a ZIP to Apple for notarization
+4. **Staple** — Staple the ticket to the `.app`, then create the distributable ZIP archive
 5. **Update Feed** — Generate and sign the Sparkle appcast
 6. **Release** — Publish to GitHub Releases
 7. **Cask** — Submit to Homebrew for optional package distribution
@@ -552,14 +552,26 @@ codesign \
 codesign -v -v .derivedData/Build/Products/Release/ResizeMe.app
 ```
 
-### 3. Create Distributable Archive
+### 3. Create Notarization Archive
 
 ```bash
 # Create ZIP
 ditto -c -k --sequesterRsrc \
   .derivedData/Build/Products/Release/ResizeMe.app \
   ResizeMe.zip
+```
 
+Submit `ResizeMe.zip` to Apple notarization, staple the accepted ticket to the app, then recreate `ResizeMe.zip` from the stapled app. `stapler` cannot staple ZIP archives directly.
+
+```bash
+xcrun stapler staple .derivedData/Build/Products/Release/ResizeMe.app
+xcrun stapler validate .derivedData/Build/Products/Release/ResizeMe.app
+ditto -c -k --sequesterRsrc \
+  .derivedData/Build/Products/Release/ResizeMe.app \
+  ResizeMe.zip
+```
+
+```bash
 # Create DMG (optional)
 mkdir dmg_temp
 cp -r .derivedData/Build/Products/Release/ResizeMe.app dmg_temp/
@@ -791,6 +803,8 @@ Store release notes in `CHANGELOG.md` using semantic versioning:
 **Solution:**
 - Verify hardened runtime is enabled: `ENABLE_HARDENED_RUNTIME = YES` in Xcode build settings
 - Ensure timestamp server is used during signing: `--timestamp` in codesign
+- Sign embedded frameworks, XPC services, and dylibs before signing the outer app
+- Staple the accepted notarization ticket to `ResizeMe.app`; ZIP archives cannot be stapled directly
 - Check system clock synchronization
 
 ### Sparkle Update Not Detected
