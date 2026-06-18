@@ -31,7 +31,7 @@ targets:
         LSMinimumSystemVersion: "14.0"
         NSHumanReadableCopyright: "© 2026 ResizeMe contributors"
         SUFeedURL: "https://burkeholland.github.io/resize-me/appcast.xml"
-        SUPublicEDKey: "REPLACE_WITH_SPARKLE_PUBLIC_KEY"
+        SUPublicEDKey: "ku/dANkXw41Qjmff/fWAOs5ndybKdw65hOWYtinpEeQ="
         SUEnableAutomaticChecks: true
     settings:
       base:
