@@ -143,18 +143,25 @@ You need two certificates for macOS distribution:
 # - Set a password when prompted (use a strong, random password)
 
 # Or via command line:
-security export-identity-and-key \
-  -k ~/Library/Keychains/login.keychain \
-  -t pkcs12 \
-  -f pemseq \
+security export \
+  -k ~/Library/Keychains/login.keychain-db \
+  -t identities \
+  -f pkcs12 \
   -P "YOUR_P12_PASSWORD" \
   -o developer-id-app.p12
+
+openssl pkcs12 \
+  -in developer-id-app.p12 \
+  -passin pass:"YOUR_P12_PASSWORD" \
+  -nokeys \
+  -clcerts \
+  -noout
 ```
 
 4. **Base64 encode** for GitHub Actions:
 
 ```bash
-base64 < developer-id-app.p12 | pbcopy
+base64 -i developer-id-app.p12 | pbcopy
 ```
 
 This copies the encoded certificate to your clipboard for use in GitHub secrets.

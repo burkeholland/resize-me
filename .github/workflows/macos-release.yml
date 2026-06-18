@@ -26,6 +26,45 @@ jobs:
         with:
           xcode-version: '26.2'
 
+      - name: Import Developer ID certificate
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.DEVELOPER_ID_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_CERTIFICATE_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          echo -n "$CERTIFICATE_BASE64" | base64 --decode -o certificate.p12
+          CERTIFICATE_SIZE=$(wc -c < certificate.p12 | tr -d ' ')
+          echo "Decoded certificate.p12 (${CERTIFICATE_SIZE} bytes)."
+          if [ "$CERTIFICATE_SIZE" -lt 1000 ]; then
+            echo "::error::DEVELOPER_ID_CERTIFICATE_BASE64 decoded to a very small file. Re-export the Developer ID Application identity as a .p12 and base64-encode that file."
+            exit 1
+          fi
+          if ! openssl pkcs12 \
+            -in certificate.p12 \
+            -passin "pass:$CERTIFICATE_PASSWORD" \
+            -nokeys \
+            -clcerts \
+            -noout >/dev/null; then
+            echo "::error::Decoded certificate is not a valid password-protected PKCS#12 identity. Check DEVELOPER_ID_CERTIFICATE_BASE64 and DEVELOPER_ID_CERTIFICATE_PASSWORD."
+            exit 1
+          fi
+          security import certificate.p12 \
+            -k build.keychain \
+            -P "$CERTIFICATE_PASSWORD" \
+            -A \
+            -t cert \
+            -f pkcs12 \
+            -T /usr/bin/codesign \
+            -T /usr/bin/security \
+            -T /usr/bin/productbuild
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+            -k "$KEYCHAIN_PASSWORD" \
+            build.keychain
+          rm -f certificate.p12
+
       - name: Build Release app
         working-directory: ResizeMeMac
         run: |
@@ -40,30 +79,6 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
             build
-
-      - name: Import Developer ID certificate
-        env:
-          CERTIFICATE_BASE64: ${{ secrets.DEVELOPER_ID_CERTIFICATE_BASE64 }}
-          CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_CERTIFICATE_PASSWORD }}
-          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-        run: |
-          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-          echo -n "$CERTIFICATE_BASE64" | base64 --decode -o certificate.p12
-          security import certificate.p12 \
-            -k build.keychain \
-            -P "$CERTIFICATE_PASSWORD" \
-            -A \
-            -t cert \
-            -f pkcs12 \
-            -T /usr/bin/codesign \
-            -T /usr/bin/security \
-            -T /usr/bin/productbuild
-          security set-key-partition-list -S apple-tool:,apple:,codesign: \
-            -k "$KEYCHAIN_PASSWORD" \
-            build.keychain
-          rm -f certificate.p12
 
       - name: Sign app
         working-directory: ResizeMeMac
@@ -111,7 +126,7 @@ jobs:
           cp ResizeMe.zip sparkle-archives/
           VERSION="${GITHUB_REF_NAME#v}"
           echo "Release notes for ${GITHUB_REF_NAME}" > "sparkle-archives/ResizeMe ${VERSION}.txt"
-          echo "$SPARKLE_PRIVATE_KEY" | base64 -d > sparkle-private-key.txt
+          echo "$SPARKLE_PRIVATE_KEY" > sparkle-private-key.txt
           "$SPARKLE_BIN/generate_appcast" \
             --ed-key-file sparkle-private-key.txt \
             --download-url-prefix "https://github.com/burkeholland/resize-me/releases/download/${GITHUB_REF_NAME}/" \
