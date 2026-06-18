@@ -416,6 +416,7 @@ body::before {
       <h2 id="mac-install-title">Install ResizeMe for macOS</h2>
       <p>Homebrew is the easiest way to install the signed, notarized app and keep it updated.</p>
       <pre><code>brew tap burkeholland/resize-me https://github.com/burkeholland/resize-me
+brew trust burkeholland/resize-me 2&gt;/dev/null || true
 brew install --cask resizeme</code></pre>
       <p>Already installed?</p>
       <pre><code>brew update

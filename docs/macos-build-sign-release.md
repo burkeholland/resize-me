@@ -199,6 +199,7 @@ The repository also includes a Homebrew cask at `Casks/resizeme.rb`. Because thi
 
 ```bash
 brew tap burkeholland/resize-me https://github.com/burkeholland/resize-me
+brew trust burkeholland/resize-me 2>/dev/null || true
 brew install --cask resizeme
 ```
 
@@ -420,6 +421,7 @@ jobs:
             **Homebrew:**
             ```bash
             brew tap burkeholland/resize-me https://github.com/burkeholland/resize-me
+            brew trust burkeholland/resize-me 2>/dev/null || true
             brew install --cask resizeme
             ```
             
@@ -639,6 +641,7 @@ Because this repository is not named `homebrew-resize-me`, tap it with the expli
 
 ```bash
 brew tap burkeholland/resize-me https://github.com/burkeholland/resize-me
+brew trust burkeholland/resize-me 2>/dev/null || true
 brew install --cask resizeme
 ```
 
@@ -695,6 +698,7 @@ Before shipping to users, verify the end-to-end update flow:
 ```bash
 # On a clean machine or VM
 brew tap burkeholland/resize-me https://github.com/burkeholland/resize-me
+brew trust burkeholland/resize-me 2>/dev/null || true
 brew install --cask resizeme
 # or manually extract ResizeMe.zip
 ```

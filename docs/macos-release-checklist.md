@@ -128,6 +128,7 @@ shasum -a 256 ResizeMe.zip
 
 # Homebrew install/update
 brew tap burkeholland/resize-me https://github.com/burkeholland/resize-me
+brew trust burkeholland/resize-me 2>/dev/null || true
 brew install --cask resizeme
 brew update && brew upgrade --cask resizeme
 
