@@ -4,33 +4,14 @@ This repository contains two related apps:
 - `ResizeMe/` — the original Go/Wails app
 - `ResizeMeMac/` — the native Swift menu-bar app for macOS
 
-If a request does not clearly say which app is meant, ask for clarification before making changes.
+## Generic repository rules
+- If a request does not clearly say which app is meant, ask which project to work on before making changes.
+- If the user says “the app”, “the windows app”, or otherwise leaves the target ambiguous, prompt for clarification instead of guessing.
+- Prefer the existing project structure and current naming patterns over introducing new abstractions.
+- Keep changes surgical and consistent with the surrounding code.
+- Update docs when behavior or setup changes.
+- Use the app-specific guidance files in `.github/instructions/` when the task is focused on one implementation path.
 
-## Target selection
-- Default to `ResizeMeMac/` for macOS-native work and menu-bar behavior.
-- Use `ResizeMe/` only when the request explicitly references the original Go/Wails app or the cross-platform frontend.
-- If the user says “the app” or “the window app” without naming the target, ask which one they mean.
-
-## Architecture and state
-- Keep the source of truth in `AppState` and `AppConfig` for the Swift app.
-- Preserve `ConfigNormalizer` as the validation boundary for persisted settings.
-- Reuse existing services (`ResizeService`, `PermissionService`, `SettingsStore`, `SparkleUpdateService`) instead of duplicating platform logic in views.
-- Prefer explicit failure handling and user-visible status updates via `AppState.lastStatusMessage`.
-
-## SwiftUI and menu bar behavior
-- Keep menu actions lightweight and delegate side effects to services or `AppState`.
-- For macOS UX, use menu-friendly controls and avoid adding complex modal flows for simple actions.
-- Maintain accessibility-related guidance and permission checks before resize actions.
-
-## Persistence and compatibility
-- Treat `settings.json` compatibility as a hard requirement; load with tolerant decoding and normalize to the current schema.
-- When extending config, include backward-compatible decoding defaults and update tests under `ResizeMeMac/Tests/`.
-
-## Updates and build mode
-- Do not trigger Sparkle checks in debug builds.
-- Keep update actions gated by `SparkleUpdateService.canCheckForUpdates` so debug/dev builds cannot accidentally hit release appcasts.
-
-## Quality bar
-- Prefer surgical changes that match current naming/patterns.
-- Add or update tests when behavior changes.
-- Keep code ASCII unless an existing file already requires Unicode content.
+## App-specific guidance
+- Use `.github/instructions/macos-swift.instructions.md` for native macOS Swift work in `ResizeMeMac/`.
+- Use `.github/instructions/go-wails.instructions.md` for the original Go/Wails implementation in `ResizeMe/`.
