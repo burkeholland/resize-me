@@ -137,7 +137,8 @@ You need two certificates for macOS distribution:
 
 ```bash
 # In Keychain Access:
-# - Find your Developer ID Application certificate
+# - Select the login keychain, then My Certificates
+# - Find your Developer ID Application certificate with a private key nested under it
 # - Right-click → Export "Developer ID Application: Your Name"
 # - Save as `developer-id-app.p12`
 # - Set a password when prompted (use a strong, random password)
@@ -161,7 +162,7 @@ openssl pkcs12 \
 4. **Base64 encode** for GitHub Actions:
 
 ```bash
-base64 -i developer-id-app.p12 | pbcopy
+base64 -i developer-id-app.p12 | tr -d '\n' | pbcopy
 ```
 
 This copies the encoded certificate to your clipboard for use in GitHub secrets.
