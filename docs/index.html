@@ -236,6 +236,89 @@ body::before {
   background: rgba(255,255,255,0.08);
 }
 
+.install-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(3,7,12,0.72);
+  backdrop-filter: blur(14px);
+}
+
+.install-modal.open {
+  display: flex;
+}
+
+.install-dialog {
+  width: min(560px, 100%);
+  text-align: left;
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: linear-gradient(180deg, rgba(17,24,32,0.98), rgba(11,15,20,0.98));
+  box-shadow: 0 24px 70px rgba(0,0,0,0.5);
+  padding: 28px;
+}
+
+.install-dialog h2 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.install-dialog p {
+  color: #94a3b8;
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+
+.install-dialog pre {
+  overflow-x: auto;
+  padding: 16px;
+  margin-bottom: 16px;
+  border-radius: 14px;
+  background: #05080d;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.install-dialog code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: #d9f99d;
+  line-height: 1.7;
+}
+
+.install-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.install-actions a,
+.install-actions button {
+  border: 0;
+  cursor: pointer;
+  border-radius: 9999px;
+  padding: 10px 16px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.manual-link {
+  color: #fff;
+  background: linear-gradient(135deg, #ff7f50, #0ea5e9);
+}
+
+.close-modal {
+  color: #cbd5e1;
+  background: rgba(255,255,255,0.08);
+}
+
 /* Stats row */
 .stats {
   display: flex;
@@ -328,6 +411,22 @@ body::before {
     <p class="meta">Download the app for your OS · No data collected · Lives in your menu bar or tray</p>
   </div>
 
+  <div class="install-modal" id="mac-install-modal" role="dialog" aria-modal="true" aria-labelledby="mac-install-title" aria-hidden="true">
+    <div class="install-dialog">
+      <h2 id="mac-install-title">Install ResizeMe for macOS</h2>
+      <p>Homebrew is the easiest way to install the signed, notarized app and keep it updated.</p>
+      <pre><code>brew tap burkeholland/resize-me https://github.com/burkeholland/resize-me
+brew install --cask resizeme</code></pre>
+      <p>Already installed?</p>
+      <pre><code>brew update
+brew upgrade --cask resizeme</code></pre>
+      <div class="install-actions">
+        <a class="manual-link" href="https://github.com/burkeholland/resize-me/releases?q=-mac">Manual ZIP download</a>
+        <button class="close-modal" id="mac-install-close" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     (function () {
       const ua = navigator.userAgent || '';
@@ -340,6 +439,22 @@ body::before {
       const windowsLink = document.getElementById('windows-link');
       const downloadMenu = document.getElementById('download-menu');
       const downloadToggle = document.getElementById('download-toggle');
+      const macInstallModal = document.getElementById('mac-install-modal');
+      const macInstallClose = document.getElementById('mac-install-close');
+      let modalReturnFocus = downloadToggle;
+
+      function openMacInstallModal() {
+        modalReturnFocus = document.activeElement || downloadToggle;
+        macInstallModal.classList.add('open');
+        macInstallModal.setAttribute('aria-hidden', 'false');
+        macInstallClose.focus();
+      }
+
+      function closeMacInstallModal() {
+        macInstallModal.classList.remove('open');
+        macInstallModal.setAttribute('aria-hidden', 'true');
+        modalReturnFocus.focus();
+      }
 
       if (isMac) {
         key1.textContent = '⌃';
@@ -362,8 +477,29 @@ body::before {
         downloadToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
       });
 
+      macLink.addEventListener('click', function (event) {
+        event.preventDefault();
+        downloadMenu.classList.remove('open');
+        downloadToggle.setAttribute('aria-expanded', 'false');
+        openMacInstallModal();
+      });
+
+      macInstallClose.addEventListener('click', closeMacInstallModal);
+
+      macInstallModal.addEventListener('click', function (event) {
+        if (event.target === macInstallModal) {
+          closeMacInstallModal();
+        }
+      });
+
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && macInstallModal.classList.contains('open')) {
+          closeMacInstallModal();
+        }
+      });
+
       document.addEventListener('click', function (event) {
-        if (!downloadMenu.contains(event.target)) {
+        if (!downloadMenu.contains(event.target) && event.target !== macInstallModal) {
           downloadMenu.classList.remove('open');
           downloadToggle.setAttribute('aria-expanded', 'false');
         }

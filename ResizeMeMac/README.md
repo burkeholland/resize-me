@@ -25,6 +25,24 @@ If a request does not clearly say whether you mean this native macOS app or the 
 - Xcode 15 or later
 - Accessibility permission granted to ResizeMe
 
+## Install
+
+Install the signed, notarized macOS release with Homebrew:
+
+```sh
+brew tap burkeholland/resize-me https://github.com/burkeholland/resize-me
+brew install --cask resizeme
+```
+
+Update it later with:
+
+```sh
+brew update
+brew upgrade --cask resizeme
+```
+
+You can also download `ResizeMe.zip` manually from the [latest macOS release](https://github.com/burkeholland/resize-me/releases?q=-mac).
+
 ## Build and run
 
 From the project root:

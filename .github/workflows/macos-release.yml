@@ -132,7 +132,7 @@ jobs:
       - name: Package notarization ZIP
         working-directory: ResizeMeMac
         run: |
-          ditto -c -k --sequesterRsrc \
+          ditto -c -k --sequesterRsrc --keepParent \
             .derivedData/Build/Products/Release/ResizeMe.app \
             ../ResizeMe.zip
 
@@ -168,7 +168,7 @@ jobs:
           xcrun stapler staple "$APP_PATH"
           xcrun stapler validate "$APP_PATH"
           rm -f ResizeMe.zip
-          ditto -c -k --sequesterRsrc "$APP_PATH" ResizeMe.zip
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" ResizeMe.zip
 
       - name: Generate Sparkle appcast
         env:
@@ -202,6 +202,15 @@ jobs:
           shasum -a 256 ResizeMe.zip > ResizeMe.zip.sha256
           cat ResizeMe.zip.sha256
 
+      - name: Update Homebrew Cask
+        run: |
+          set -euo pipefail
+          RELEASE_VERSION="${GITHUB_REF_NAME#v}"
+          CASK_VERSION="${RELEASE_VERSION%-mac}"
+          RELEASE_SHA=$(awk '{print $1}' ResizeMe.zip.sha256)
+          sed -i '' "s/version \".*\"/version \"$CASK_VERSION\"/" Casks/resizeme.rb
+          sed -i '' "s/sha256 \".*\"/sha256 \"$RELEASE_SHA\"/" Casks/resizeme.rb
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -211,6 +220,18 @@ jobs:
             ## Release Notes
 
             See the changelog for details.
+
+            ### Install with Homebrew
+            ```sh
+            brew tap burkeholland/resize-me https://github.com/burkeholland/resize-me
+            brew install --cask resizeme
+            ```
+
+            ### Update with Homebrew
+            ```sh
+            brew update
+            brew upgrade --cask resizeme
+            ```
 
             ### Downloads
             - `ResizeMe.zip` — direct macOS app archive
@@ -226,8 +247,8 @@ jobs:
         run: |
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
-          git add docs/appcast.xml
-          git commit -m "chore: update appcast for $GITHUB_REF_NAME" || true
+          git add docs/appcast.xml Casks/resizeme.rb
+          git commit -m "chore: update release metadata for $GITHUB_REF_NAME" || true
           git push origin HEAD:main || true
 
       - name: Cleanup keychain

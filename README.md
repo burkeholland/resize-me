@@ -19,6 +19,20 @@ Choose the build for your platform:
 - [Download for macOS](https://github.com/burkeholland/resize-me/releases/latest)
 - [Download for Windows](https://github.com/burkeholland/resize-me/releases/latest)
 
+Install the macOS app with Homebrew:
+
+```sh
+brew tap burkeholland/resize-me https://github.com/burkeholland/resize-me
+brew install --cask resizeme
+```
+
+Update it later with:
+
+```sh
+brew update
+brew upgrade --cask resizeme
+```
+
 The website landing page in [docs/index.html](docs/index.html) also detects your OS and highlights the right download path automatically.
 
 ## Repository layout

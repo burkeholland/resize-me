@@ -28,9 +28,10 @@ Quick reference for releasing ResizeMe on macOS. See [macos-build-sign-release.m
   - Settings → Pages → Source: Deploy from branch (main)
   - Branch: main, folder: /docs
 
-- [ ] **Create Homebrew tap** (optional)
-  - Create `homebrew-tap` repository
-  - Create `Casks/resizeme.rb` cask file
+- [ ] **Homebrew cask support**
+  - Keep `Casks/resizeme.rb` in this repository
+  - Install with `brew tap burkeholland/resize-me https://github.com/burkeholland/resize-me`
+  - Release workflow updates the cask version and SHA256 for each `v*.*.*-mac` tag
 
 ## For Each Release
 
@@ -71,10 +72,10 @@ Quick reference for releasing ResizeMe on macOS. See [macos-build-sign-release.m
 
 ### After Release
 
-- [ ] **Update Homebrew cask** (if using custom tap):
-  - Update SHA256: `shasum -a 256 ResizeMe.zip`
-  - Update version in `Casks/resizeme.rb`
-  - Push to homebrew-tap repository
+- [ ] **Verify Homebrew cask**
+  - Confirm `Casks/resizeme.rb` was updated on `main`
+  - Install with `brew install --cask resizeme`
+  - Update existing installs with `brew update && brew upgrade --cask resizeme`
 
 - [ ] **Announce release**
   - Twitter/social media
@@ -120,10 +121,15 @@ codesign --force --sign "Developer ID Application: Your Name" \
   --options runtime --timestamp ResizeMe.app
 
 # Create ZIP
-ditto -c -k --sequesterRsrc ResizeMe.app ResizeMe.zip
+ditto -c -k --sequesterRsrc --keepParent ResizeMe.app ResizeMe.zip
 
 # Calculate SHA256
 shasum -a 256 ResizeMe.zip
+
+# Homebrew install/update
+brew tap burkeholland/resize-me https://github.com/burkeholland/resize-me
+brew install --cask resizeme
+brew update && brew upgrade --cask resizeme
 
 # Verify signature
 codesign -v -v ResizeMe.app

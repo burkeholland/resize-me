@@ -195,6 +195,15 @@ Add these repository secrets to enable signing and notarization:
 | `APP_PASSWORD` | App-specific password for notarization | Generate at appleid.apple.com → Security → App Passwords |
 | `APPLE_TEAM_ID` | Your Apple Developer Team ID | From developer.apple.com → Membership |
 
+The repository also includes a Homebrew cask at `Casks/resizeme.rb`. Because this repository is not named `homebrew-resize-me`, tap it with the explicit URL:
+
+```bash
+brew tap burkeholland/resize-me https://github.com/burkeholland/resize-me
+brew install --cask resizeme
+```
+
+The release workflow updates the cask version and SHA256 after it creates the notarized ZIP.
+
 ### Generate App Password for Notarization
 
 1. Visit [appleid.apple.com](https://appleid.apple.com)
@@ -348,7 +357,7 @@ jobs:
         working-directory: ResizeMeMac
         run: |
           APP_PATH=".derivedData/Build/Products/Release/ResizeMe.app"
-          ditto -c -k --sequesterRsrc "$APP_PATH" ../ResizeMe.zip
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" ../ResizeMe.zip
 
       - name: Calculate SHA256
         working-directory: ResizeMeMac
@@ -410,8 +419,8 @@ jobs:
             
             **Homebrew:**
             ```bash
-            brew tap burkeholland/tap
-            brew install resize-me
+            brew tap burkeholland/resize-me https://github.com/burkeholland/resize-me
+            brew install --cask resizeme
             ```
             
             **Direct:**
@@ -556,7 +565,7 @@ codesign -v -v .derivedData/Build/Products/Release/ResizeMe.app
 
 ```bash
 # Create ZIP
-ditto -c -k --sequesterRsrc \
+ditto -c -k --sequesterRsrc --keepParent \
   .derivedData/Build/Products/Release/ResizeMe.app \
   ResizeMe.zip
 ```
@@ -566,7 +575,7 @@ Submit `ResizeMe.zip` to Apple notarization, staple the accepted ticket to the a
 ```bash
 xcrun stapler staple .derivedData/Build/Products/Release/ResizeMe.app
 xcrun stapler validate .derivedData/Build/Products/Release/ResizeMe.app
-ditto -c -k --sequesterRsrc \
+ditto -c -k --sequesterRsrc --keepParent \
   .derivedData/Build/Products/Release/ResizeMe.app \
   ResizeMe.zip
 ```
@@ -624,70 +633,23 @@ This will trigger the `.github/workflows/macos-release.yml` workflow because the
 
 ## Step 7: Homebrew Cask Distribution
 
-Once you have a stable, signed release, you can distribute via Homebrew Cask.
+ResizeMe ships a repository-local cask in `Casks/resizeme.rb`. The release workflow updates its `version` and `sha256` after creating the notarized `ResizeMe.zip`.
 
-### Option A: Create Your Own Tap (Recommended)
-
-1. **Create a tap repository:**
+Because this repository is not named `homebrew-resize-me`, tap it with the explicit repository URL:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/homebrew-tap.git
-cd homebrew-tap
-mkdir -p Casks
+brew tap burkeholland/resize-me https://github.com/burkeholland/resize-me
+brew install --cask resizeme
 ```
 
-2. **Create a cask file:**
-
-**File:** `Casks/resizeme.rb`
-
-```ruby
-cask "resizeme" do
-  version "1.0.0"
-  sha256 "REPLACE_WITH_SHA256_FROM_RELEASE"
-
-  url "https://github.com/burkeholland/resize-me/releases/download/v#{version}/ResizeMe.zip"
-  name "ResizeMe"
-  desc "Quickly resize windows on macOS"
-  homepage "https://github.com/burkeholland/resize-me"
-
-  depends_on macos: ">= :sonoma"
-
-  app "ResizeMe.app"
-
-  postflight do
-    # Remove quarantine attributes
-    system_command "xattr",
-      args: ["-dr", "com.apple.quarantine", "#{staged_path}/ResizeMe.app"]
-  end
-
-  uninstall delete: "/Applications/ResizeMe.app"
-
-  zap trash: [
-    "~/Library/Preferences/com.resizeme.mac.plist",
-    "~/Library/Caches/com.resizeme.mac",
-  ]
-end
-```
-
-3. **Commit and push:**
+Update an existing install with:
 
 ```bash
-git add Casks/resizeme.rb
-git commit -m "feat: add resizeme cask v1.0.0"
-git push
+brew update
+brew upgrade --cask resizeme
 ```
 
-4. **Test the cask:**
-
-```bash
-brew tap YOUR_USERNAME/tap
-brew install YOUR_USERNAME/tap/resizeme
-
-# Verify installation
-/Applications/ResizeMe.app/Contents/MacOS/ResizeMe --version
-```
-
-### Option B: Submit to Official Homebrew Cask Repository
+### Submit to Official Homebrew Cask Repository
 
 Once your app is stable and widely used, you can submit to [homebrew-cask](https://github.com/Homebrew/homebrew-cask):
 
@@ -710,7 +672,7 @@ cp Casks/resizeme.rb path/to/homebrew-cask/Casks/resizeme.rb
 
 ```bash
 # Download your latest release
-wget https://github.com/burkeholland/resize-me/releases/download/v1.0.0/ResizeMe.zip
+wget https://github.com/burkeholland/resize-me/releases/download/v1.0.0-mac/ResizeMe.zip
 
 # Calculate SHA256
 shasum -a 256 ResizeMe.zip
@@ -732,7 +694,8 @@ Before shipping to users, verify the end-to-end update flow:
 
 ```bash
 # On a clean machine or VM
-brew install burkeholland/tap/resize-me
+brew tap burkeholland/resize-me https://github.com/burkeholland/resize-me
+brew install --cask resizeme
 # or manually extract ResizeMe.zip
 ```
 
