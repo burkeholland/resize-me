@@ -18,8 +18,9 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  overflow: hidden;
+  justify-content: flex-start;
+  overflow-x: hidden;
+  overflow-y: auto;
   position: relative;
 }
 
@@ -49,6 +50,16 @@ body::before {
   max-width: 880px;
 }
 
+.action-stack {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 42px;
+}
+
 /* Giant mono wordmark */
 .wordmark {
   font-family: 'JetBrains Mono', monospace;
@@ -70,11 +81,78 @@ body::before {
   line-height: 1.6;
 }
 
+/* Animated resize demo */
+.morph-demo {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+  margin-bottom: 24px;
+}
+
+.morph-frame {
+  position: relative;
+  width: min(540px, 92vw);
+  height: 230px;
+  border-radius: 18px;
+  background: transparent;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.morph-window {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 320px;
+  height: 190px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(17,24,32,0.98) 0%, rgba(11,15,20,0.95) 100%);
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow: 0 18px 44px rgba(0,0,0,0.38), 0 1px 0 rgba(255,255,255,0.04) inset;
+  overflow: hidden;
+  transform: translate(-50%, -50%) scale(1);
+  transform-origin: center center;
+  animation: resizeMorph 3.6s ease-in-out infinite;
+}
+
+.morph-window::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 28px;
+  background: linear-gradient(90deg, rgba(255,127,80,0.25), rgba(14,165,233,0.2));
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.morph-window::after {
+  content: '1920 × 1080  →  1280 × 720';
+  position: absolute;
+  bottom: 10px;
+  right: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.3px;
+  color: rgba(226,232,240,0.72);
+}
+
+@keyframes resizeMorph {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  45%, 55% {
+    transform: translate(-50%, -50%) scale(0.7);
+  }
+}
+
 /* Oversized hotkey display */
 .hotkey-display {
   display: inline-flex;
+  flex-direction: row;
+  align-items: center;
   gap: 10px;
-  margin-bottom: 48px;
+  margin-bottom: 0;
 }
 .hotkey-display kbd {
   font-family: 'JetBrains Mono', monospace;
@@ -97,16 +175,11 @@ body::before {
 /* Install pill */
 .install-pill {
   display: inline-flex;
+  flex-direction: row;
   align-items: center;
-  gap: 14px;
-  background: #111820;
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 9999px;
-  padding: 10px 10px 10px 22px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
-  color: #64748b;
-  margin-bottom: 56px;
+  gap: 0;
+  margin-bottom: 0;
+  position: relative;
 }
 .install-pill .dl-btn {
   background: linear-gradient(135deg, #ff7f50, #0ea5e9);
@@ -123,6 +196,44 @@ body::before {
 .install-pill .dl-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(14,165,233,0.35);
+}
+
+.download-menu {
+  position: relative;
+}
+
+.download-list {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  min-width: 220px;
+  background: #0f1720;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+  display: none;
+  z-index: 10;
+}
+
+.download-menu.open .download-list {
+  display: block;
+}
+
+.download-list a {
+  display: block;
+  color: #e2e8f0;
+  text-decoration: none;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+.download-list a:hover {
+  background: rgba(255,255,255,0.08);
 }
 
 /* Stats row */
@@ -156,10 +267,24 @@ body::before {
 }
 
 @media (max-width: 600px) {
+  .action-stack {
+    gap: 12px;
+  }
+  .morph-frame {
+    height: 190px;
+  }
+  .morph-window {
+    width: 250px;
+    height: 150px;
+  }
   .hotkey-display { gap: 6px; }
   .hotkey-display kbd { padding: 10px 14px; font-size: 18px; }
   .stats { gap: 24px; flex-wrap: wrap; }
-  .install-pill { flex-direction: column; border-radius: 16px; padding: 16px; gap: 12px; }
+  .download-list {
+    left: 0;
+    right: 0;
+    min-width: 0;
+  }
 }
 </style>
 </head>
@@ -172,13 +297,26 @@ body::before {
 
     <p class="tagline">Pixel-exact window sizing for people who ship pixels.<br/>One shortcut. Perfect size. Every time.</p>
 
-    <div class="hotkey-display">
-      <kbd>Ctrl</kbd><kbd>Alt</kbd><kbd class="accent">R</kbd>
+    <div class="action-stack">
+      <div class="hotkey-display">
+        <kbd id="key-1">Ctrl</kbd><kbd id="key-2">Alt</kbd><kbd class="accent" id="key-3">R</kbd>
+      </div>
+
+      <div class="install-pill">
+        <div class="download-menu" id="download-menu">
+          <button id="download-toggle" class="dl-btn" type="button" aria-expanded="false" aria-controls="download-list">Download ▾</button>
+          <ul id="download-list" class="download-list" role="menu" aria-label="Download options">
+            <li role="none"><a role="menuitem" id="mac-link" href="https://github.com/burkeholland/resize-me/releases?q=-mac">macOS</a></li>
+            <li role="none"><a role="menuitem" id="windows-link" href="https://github.com/burkeholland/resize-me/releases/latest">Windows</a></li>
+          </ul>
+        </div>
+      </div>
     </div>
 
-    <div class="install-pill">
-      <span>v1.0 · Windows · ~10 MB</span>
-      <a href="https://github.com/burkeholland/resize-me/releases/latest" class="dl-btn">Download Free</a>
+    <div class="morph-demo" aria-hidden="true">
+      <div class="morph-frame">
+        <div class="morph-window"></div>
+      </div>
     </div>
 
     <div class="stats">
@@ -187,7 +325,50 @@ body::before {
       <div class="stat"><div class="val">0</div><div class="label">CPU overhead</div></div>
     </div>
 
-    <p class="meta">No install required · No data collected · Lives in your system tray</p>
+    <p class="meta">Download the app for your OS · No data collected · Lives in your menu bar or tray</p>
   </div>
+
+  <script>
+    (function () {
+      const ua = navigator.userAgent || '';
+      const isMac = /Mac/i.test(ua);
+      const isWindows = /Win/i.test(ua);
+      const key1 = document.getElementById('key-1');
+      const key2 = document.getElementById('key-2');
+      const key3 = document.getElementById('key-3');
+      const macLink = document.getElementById('mac-link');
+      const windowsLink = document.getElementById('windows-link');
+      const downloadMenu = document.getElementById('download-menu');
+      const downloadToggle = document.getElementById('download-toggle');
+
+      if (isMac) {
+        key1.textContent = '⌃';
+        key2.textContent = '⌥';
+        key3.textContent = 'R';
+        macLink.style.color = '#ffb08f';
+      } else if (isWindows) {
+        key1.textContent = 'Ctrl';
+        key2.textContent = 'Alt';
+        key3.textContent = 'R';
+        windowsLink.style.color = '#9edbff';
+      } else {
+        key1.textContent = 'Ctrl';
+        key2.textContent = 'Alt/Option';
+        key3.textContent = 'R';
+      }
+
+      downloadToggle.addEventListener('click', function () {
+        const isOpen = downloadMenu.classList.toggle('open');
+        downloadToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      });
+
+      document.addEventListener('click', function (event) {
+        if (!downloadMenu.contains(event.target)) {
+          downloadMenu.classList.remove('open');
+          downloadToggle.setAttribute('aria-expanded', 'false');
+        }
+      });
+    })();
+  </script>
 </body>
 </html>

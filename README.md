@@ -12,6 +12,15 @@ If a request does not clearly say which app is meant, ask for clarification befo
 - For the native macOS app, see [ResizeMeMac/README.md](ResizeMeMac/README.md)
 - For the original Go/Wails app, see [ResizeMe/README.md](ResizeMe/README.md)
 
+## Download
+
+Choose the build for your platform:
+
+- [Download for macOS](https://github.com/burkeholland/resize-me/releases/latest)
+- [Download for Windows](https://github.com/burkeholland/resize-me/releases/latest)
+
+The website landing page in [docs/index.html](docs/index.html) also detects your OS and highlights the right download path automatically.
+
 ## Repository layout
 
 - `ResizeMe/` — cross-platform Go/Wails implementation and frontend
