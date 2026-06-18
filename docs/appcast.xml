@@ -1,0 +1,14 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>ResizeMe</title>
+        <item>
+            <title>1.0.0</title>
+            <pubDate>Thu, 18 Jun 2026 15:12:27 +0000</pubDate>
+            <sparkle:version>1</sparkle:version>
+            <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/burkeholland/resize-me/releases/download/v0.0.1-mac/ResizeMe.zip" length="2202899" type="application/octet-stream" sparkle:edSignature="XZm1E88i9BtsxStSeGp8K1GO+8DwxarRDkmw8kktviNVGrDeDqzyKbIA/8LP/FLVP4kjH2YVYbemEH8McqNOAw=="/>
+        </item>
+    </channel>
+</rss>
