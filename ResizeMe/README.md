@@ -1,19 +1,32 @@
-# README
+# ResizeMe (Go/Wails app)
+
+This folder contains the original Go + Wails version of ResizeMe.
+
+If a request does not clearly say whether you mean the native macOS Swift app in `ResizeMeMac/` or this Go/Wails app, ask which one they mean before proceeding.
 
 ## About
 
-This is the official Wails Vanilla template.
+This project uses Wails to wrap the existing Go logic with a frontend UI. It is the original cross-platform app pipeline for ResizeMe.
 
-You can configure the project by editing `wails.json`. More information about the project settings can be found
-here: https://wails.io/docs/reference/project-config
+## Live development
 
-## Live Development
+Run the app in development mode from this folder:
 
-To run in live development mode, run `wails dev` in the project directory. This will run a Vite development
-server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
-and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
-to this in your browser, and you can call your Go code from devtools.
+```sh
+wails dev
+```
 
-## Building
+This starts the Vite frontend and the Go/Wails bridge for live iteration.
 
-To build a redistributable, production mode package, use `wails build`.
+## Build
+
+To build a production package:
+
+```sh
+wails build
+```
+
+## Notes
+
+- Use this folder for the original Go/Wails implementation and frontend work.
+- If the request is about macOS menu-bar behavior, accessibility permission flow, or native SwiftUI, switch to `ResizeMeMac/` instead.

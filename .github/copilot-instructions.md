@@ -1,9 +1,18 @@
-# ResizeMe macOS app instructions
+# ResizeMe repository instructions
 
-Focus your changes on `ResizeMeMac/` unless the user asks for another target.
+This repository contains two related apps:
+- `ResizeMe/` — the original Go/Wails app
+- `ResizeMeMac/` — the native Swift menu-bar app for macOS
+
+If a request does not clearly say which app is meant, ask for clarification before making changes.
+
+## Target selection
+- Default to `ResizeMeMac/` for macOS-native work and menu-bar behavior.
+- Use `ResizeMe/` only when the request explicitly references the original Go/Wails app or the cross-platform frontend.
+- If the user says “the app” or “the window app” without naming the target, ask which one they mean.
 
 ## Architecture and state
-- Keep the source of truth in `AppState` and `AppConfig`.
+- Keep the source of truth in `AppState` and `AppConfig` for the Swift app.
 - Preserve `ConfigNormalizer` as the validation boundary for persisted settings.
 - Reuse existing services (`ResizeService`, `PermissionService`, `SettingsStore`, `SparkleUpdateService`) instead of duplicating platform logic in views.
 - Prefer explicit failure handling and user-visible status updates via `AppState.lastStatusMessage`.
