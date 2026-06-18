@@ -152,6 +152,7 @@ security export \
   -o developer-id-app.p12
 
 openssl pkcs12 \
+  -legacy \
   -in developer-id-app.p12 \
   -passin pass:"YOUR_P12_PASSWORD" \
   -nokeys \

@@ -43,6 +43,7 @@ jobs:
             exit 1
           fi
           if ! openssl pkcs12 \
+            -legacy \
             -in certificate.p12 \
             -passin "pass:$CERTIFICATE_PASSWORD" \
             -nokeys \
