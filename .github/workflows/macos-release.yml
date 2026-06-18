@@ -106,30 +106,27 @@ jobs:
         run: |
           set -euo pipefail
           APP_PATH=".derivedData/Build/Products/Release/ResizeMe.app"
+          sign_item() {
+            codesign --force --verify --verbose=2 \
+              --sign "$SIGNING_IDENTITY" \
+              --options runtime \
+              --timestamp "$1"
+          }
           if [ -d "$APP_PATH/Contents/Frameworks" ]; then
-            find "$APP_PATH/Contents/Frameworks" -type d -name "*.xpc" -print | while IFS= read -r ITEM; do
-              codesign --force --verify --verbose=2 \
-                --sign "$SIGNING_IDENTITY" \
-                --options runtime \
-                --timestamp "$ITEM"
+            find "$APP_PATH/Contents/Frameworks" -type f -print | while IFS= read -r ITEM; do
+              if file "$ITEM" | grep -q "Mach-O"; then
+                sign_item "$ITEM"
+              fi
             done
-            find "$APP_PATH/Contents/Frameworks" -type d -name "*.framework" -prune -print | while IFS= read -r ITEM; do
-              codesign --force --verify --verbose=2 \
-                --sign "$SIGNING_IDENTITY" \
-                --options runtime \
-                --timestamp "$ITEM"
-            done
-            find "$APP_PATH/Contents/Frameworks" -type f -name "*.dylib" -print | while IFS= read -r ITEM; do
-              codesign --force --verify --verbose=2 \
-                --sign "$SIGNING_IDENTITY" \
-                --options runtime \
-                --timestamp "$ITEM"
+            find "$APP_PATH/Contents/Frameworks" -type d \( -name "*.app" -o -name "*.xpc" -o -name "*.framework" \) -print \
+              | awk '{ print length, $0 }' \
+              | sort -rn \
+              | cut -d' ' -f2- \
+              | while IFS= read -r ITEM; do
+                sign_item "$ITEM"
             done
           fi
-          codesign --force --verify --verbose=2 \
-            --sign "$SIGNING_IDENTITY" \
-            --options runtime \
-            --timestamp "$APP_PATH"
+          sign_item "$APP_PATH"
           codesign --verify --strict --verbose=2 "$APP_PATH"
 
       - name: Package notarization ZIP

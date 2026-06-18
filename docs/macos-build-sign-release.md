@@ -803,7 +803,7 @@ Store release notes in `CHANGELOG.md` using semantic versioning:
 **Solution:**
 - Verify hardened runtime is enabled: `ENABLE_HARDENED_RUNTIME = YES` in Xcode build settings
 - Ensure timestamp server is used during signing: `--timestamp` in codesign
-- Sign embedded frameworks, XPC services, and dylibs before signing the outer app
+- Sign embedded Mach-O executables, apps, frameworks, XPC services, and dylibs before signing the outer app
 - Staple the accepted notarization ticket to `ResizeMe.app`; ZIP archives cannot be stapled directly
 - Check system clock synchronization
 
