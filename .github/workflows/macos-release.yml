@@ -32,9 +32,12 @@ jobs:
           CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_CERTIFICATE_PASSWORD }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
         run: |
-          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
+          echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security default-keychain -s "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
           echo -n "$CERTIFICATE_BASE64" | base64 --decode -o certificate.p12
           CERTIFICATE_SIZE=$(wc -c < certificate.p12 | tr -d ' ')
           echo "Decoded certificate.p12 (${CERTIFICATE_SIZE} bytes)."
@@ -52,8 +55,17 @@ jobs:
             echo "::error::Decoded certificate is not a valid password-protected PKCS#12 identity. Check DEVELOPER_ID_CERTIFICATE_BASE64 and DEVELOPER_ID_CERTIFICATE_PASSWORD."
             exit 1
           fi
+          if ! openssl pkcs12 \
+            -legacy \
+            -in certificate.p12 \
+            -passin "pass:$CERTIFICATE_PASSWORD" \
+            -nocerts \
+            -noout >/dev/null; then
+            echo "::error::Decoded PKCS#12 file does not contain a readable private key. Export the Developer ID Application identity from Keychain Access > My Certificates, not the certificate alone."
+            exit 1
+          fi
           security import certificate.p12 \
-            -k build.keychain \
+            -k "$KEYCHAIN_PATH" \
             -P "$CERTIFICATE_PASSWORD" \
             -A \
             -t cert \
@@ -63,7 +75,15 @@ jobs:
             -T /usr/bin/productbuild
           security set-key-partition-list -S apple-tool:,apple:,codesign: \
             -k "$KEYCHAIN_PASSWORD" \
-            build.keychain
+            "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH" login.keychain
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+          SIGNING_IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" | grep "Developer ID Application" | head -1 | sed 's/.*"\(.*\)"/\1/')
+          if [ -z "$SIGNING_IDENTITY" ]; then
+            echo "::error::No Developer ID Application signing identity was imported. Re-export the certificate from Keychain Access > My Certificates with its private key."
+            exit 1
+          fi
+          echo "SIGNING_IDENTITY=$SIGNING_IDENTITY" >> "$GITHUB_ENV"
           rm -f certificate.p12
 
       - name: Build Release app
@@ -85,7 +105,6 @@ jobs:
         working-directory: ResizeMeMac
         run: |
           APP_PATH=".derivedData/Build/Products/Release/ResizeMe.app"
-          SIGNING_IDENTITY=$(security find-identity -v -p codesigning build.keychain | grep "Developer ID Application" | head -1 | sed 's/.*"\(.*\)"/\1/')
           codesign --force --verify --verbose=2 \
             --sign "$SIGNING_IDENTITY" \
             --options runtime \
@@ -173,4 +192,4 @@ jobs:
       - name: Cleanup keychain
         if: always()
         run: |
-          security delete-keychain build.keychain || true
+          security delete-keychain "$KEYCHAIN_PATH" || true

@@ -158,6 +158,13 @@ openssl pkcs12 \
   -nokeys \
   -clcerts \
   -noout
+
+openssl pkcs12 \
+  -legacy \
+  -in developer-id-app.p12 \
+  -passin pass:"YOUR_P12_PASSWORD" \
+  -nocerts \
+  -noout
 ```
 
 4. **Base64 encode** for GitHub Actions:
