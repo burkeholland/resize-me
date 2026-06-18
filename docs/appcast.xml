@@ -4,11 +4,11 @@
         <title>ResizeMe</title>
         <item>
             <title>1.0.0</title>
-            <pubDate>Thu, 18 Jun 2026 15:12:27 +0000</pubDate>
+            <pubDate>Thu, 18 Jun 2026 15:19:56 +0000</pubDate>
             <sparkle:version>1</sparkle:version>
             <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <enclosure url="https://github.com/burkeholland/resize-me/releases/download/v0.0.1-mac/ResizeMe.zip" length="2202899" type="application/octet-stream" sparkle:edSignature="XZm1E88i9BtsxStSeGp8K1GO+8DwxarRDkmw8kktviNVGrDeDqzyKbIA/8LP/FLVP4kjH2YVYbemEH8McqNOAw=="/>
+            <enclosure url="https://github.com/burkeholland/resize-me/releases/download/v0.0.1-mac/ResizeMe.zip" length="2202927" type="application/octet-stream" sparkle:edSignature="vR2enLetgHEsYv30Zdp7NJDh/hWaH015eHIlHuPiS3yXNMMqO1Le4FwNPUdpL+71dtdlkC4YZUr6MRqheh75CA=="/>
         </item>
     </channel>
 </rss>

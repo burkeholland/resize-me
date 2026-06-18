@@ -1,6 +1,6 @@
 cask "resizeme" do
   version "0.0.1"
-  sha256 "556ce250650b037f940a018fe6b64af32ee1b354a8c6dadf458b589d527bb59b"
+  sha256 "65514eaa1c7e265acae48ec29297599e169ef6939ee142d2363a41e8ceef1d7d"
 
   url "https://github.com/burkeholland/resize-me/releases/download/v#{version}-mac/ResizeMe.zip"
   name "ResizeMe"
