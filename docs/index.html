@@ -227,7 +227,7 @@ body::before {
   margin-bottom: 0;
   position: relative;
 }
-.install-pill .dl-btn {
+.dl-btn {
   background: linear-gradient(135deg, #ff7f50, #0ea5e9);
   color: #fff;
   font-weight: 600;
@@ -239,9 +239,19 @@ body::before {
   box-shadow: 0 4px 12px rgba(14,165,233,0.25);
   transition: transform 0.2s, box-shadow 0.2s;
 }
-.install-pill .dl-btn:hover {
+.dl-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(14,165,233,0.35);
+}
+
+.github-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow: none;
+}
+
+.github-btn:hover {
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
 }
 
 .download-menu {
@@ -429,6 +439,23 @@ body::before {
   letter-spacing: 0.5px;
 }
 
+.credits {
+  margin-top: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #475569;
+  letter-spacing: 0.5px;
+}
+
+.credits a {
+  color: #94a3b8;
+  text-decoration: none;
+}
+
+.credits a:hover {
+  color: #e2e8f0;
+}
+
 @media (max-width: 600px) {
   .action-stack {
     gap: 12px;
@@ -470,10 +497,11 @@ body::before {
           <button id="download-toggle" class="dl-btn" type="button" aria-expanded="false" aria-controls="download-list">Download ▾</button>
           <ul id="download-list" class="download-list" role="menu" aria-label="Download options">
             <li role="none"><a role="menuitem" id="mac-link" href="https://github.com/burkeholland/resize-me/releases?q=-mac">macOS</a></li>
-            <li role="none"><a role="menuitem" id="windows-link" href="https://github.com/burkeholland/resize-me/releases/tag/v0.1.20260618134843">Windows</a></li>
+            <li role="none"><a role="menuitem" id="windows-link" href="https://github.com/burkeholland/resize-me/releases?q=windows">Windows</a></li>
           </ul>
         </div>
       </div>
+      <a class="dl-btn github-btn" href="https://github.com/burkeholland/resize-me" target="_blank" rel="noopener noreferrer">GitHub</a>
     </div>
 
     <div class="morph-demo" aria-hidden="true">
@@ -489,6 +517,7 @@ body::before {
     </div>
 
     <p class="meta">Download the app for your OS · No data collected · Lives in your menu bar or tray</p>
+    <p class="credits">by <a href="https://x.com/burkeholland" target="_blank" rel="noopener noreferrer">Burke</a> &amp; <a href="https://x.com/jamesmontemagno" target="_blank" rel="noopener noreferrer">James</a></p>
   </div>
 
   <div class="install-modal" id="mac-install-modal" role="dialog" aria-modal="true" aria-labelledby="mac-install-title" aria-hidden="true">
@@ -524,11 +553,43 @@ brew upgrade --cask resizeme</code></pre>
       const key3 = document.getElementById('key-3');
       const macLink = document.getElementById('mac-link');
       const windowsLink = document.getElementById('windows-link');
+      const windowsReleaseApi = 'https://api.github.com/repos/burkeholland/resize-me/releases?per_page=20';
       const downloadMenu = document.getElementById('download-menu');
       const downloadToggle = document.getElementById('download-toggle');
       const macInstallModal = document.getElementById('mac-install-modal');
       const macInstallClose = document.getElementById('mac-install-close');
       let modalReturnFocus = downloadToggle;
+
+      async function updateWindowsReleaseLink() {
+        try {
+          const response = await fetch(windowsReleaseApi, {
+            headers: { Accept: 'application/vnd.github+json' }
+          });
+          if (!response.ok) {
+            return;
+          }
+
+          const releases = await response.json();
+          if (!Array.isArray(releases)) {
+            return;
+          }
+
+          const latestWindowsRelease = releases.find(function (release) {
+            if (release.draft || release.prerelease || !Array.isArray(release.assets)) {
+              return false;
+            }
+            return release.assets.some(function (asset) {
+              return typeof asset.name === 'string' && /windows/i.test(asset.name);
+            });
+          });
+
+          if (latestWindowsRelease && typeof latestWindowsRelease.html_url === 'string') {
+            windowsLink.href = latestWindowsRelease.html_url;
+          }
+        } catch (error) {
+          console.warn('Could not load latest Windows release link:', error);
+        }
+      }
 
       function openMacInstallModal() {
         modalReturnFocus = document.activeElement || downloadToggle;
@@ -558,6 +619,8 @@ brew upgrade --cask resizeme</code></pre>
         key2.textContent = 'Alt/Option';
         key3.textContent = 'R';
       }
+
+      updateWindowsReleaseLink();
 
       downloadToggle.addEventListener('click', function () {
         const isOpen = downloadMenu.classList.toggle('open');
