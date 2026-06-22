@@ -350,6 +350,34 @@ h1.wordmark {
   margin-top: 4px;
 }
 
+.dl-btn {
+  background: linear-gradient(135deg, #ff7f50, #0ea5e9);
+  color: #fff;
+  font-weight: 600;
+  padding: 10px 22px;
+  border-radius: 9999px;
+  font-size: 13px;
+  text-decoration: none;
+  font-family: 'Outfit', sans-serif;
+  box-shadow: 0 4px 12px rgba(14,165,233,0.25);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.dl-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(14,165,233,0.35);
+}
+
+.github-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow: none;
+}
+
+.github-btn:hover {
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
 .promo-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -551,6 +579,23 @@ h1.wordmark {
   }
 }
 
+.credits {
+  margin-top: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #475569;
+  letter-spacing: 0.5px;
+}
+
+.credits a {
+  color: #94a3b8;
+  text-decoration: none;
+}
+
+.credits a:hover {
+  color: #e2e8f0;
+}
+
 @media (max-width: 600px) {
   .action-stack { gap: 12px; }
   .morph-frame { height: 190px; }
@@ -598,6 +643,7 @@ h1.wordmark {
             </ul>
           </div>
         </div>
+        <a class="dl-btn github-btn" href="https://github.com/burkeholland/resize-me" target="_blank" rel="noopener noreferrer">GitHub</a>
       </div>
     </section>
 
@@ -656,6 +702,7 @@ h1.wordmark {
     </section>
 
     <p class="meta">Window resizing app for macOS and Windows · One hotkey workflow · Download from GitHub</p>
+    <p class="credits">by <a href="https://x.com/burkeholland" target="_blank" rel="noopener noreferrer">Burke</a> &amp; <a href="https://x.com/jamesmontemagno" target="_blank" rel="noopener noreferrer">James</a></p>
   </main>
 
   <div class="install-modal" id="mac-install-modal" role="dialog" aria-modal="true" aria-labelledby="mac-install-title" aria-hidden="true">
@@ -691,12 +738,44 @@ brew upgrade --cask resizeme</code></pre>
       const key3 = document.getElementById('key-3');
       const macLink = document.getElementById('mac-link');
       const windowsLink = document.getElementById('windows-link');
+      const windowsReleaseApi = 'https://api.github.com/repos/burkeholland/resize-me/releases?per_page=20';
       const downloadMenu = document.getElementById('download-menu');
       const downloadToggle = document.getElementById('download-toggle');
       const macInstallModal = document.getElementById('mac-install-modal');
       const macInstallClose = document.getElementById('mac-install-close');
       const installDialog = document.querySelector('.install-dialog');
       let modalReturnFocus = downloadToggle;
+
+      async function updateWindowsReleaseLink() {
+        try {
+          const response = await fetch(windowsReleaseApi, {
+            headers: { Accept: 'application/vnd.github+json' }
+          });
+          if (!response.ok) {
+            return;
+          }
+
+          const releases = await response.json();
+          if (!Array.isArray(releases)) {
+            return;
+          }
+
+          const latestWindowsRelease = releases.find(function (release) {
+            if (release.draft || release.prerelease || !Array.isArray(release.assets)) {
+              return false;
+            }
+            return release.assets.some(function (asset) {
+              return typeof asset.name === 'string' && /windows/i.test(asset.name);
+            });
+          });
+
+          if (latestWindowsRelease && typeof latestWindowsRelease.html_url === 'string') {
+            windowsLink.href = latestWindowsRelease.html_url;
+          }
+        } catch (error) {
+          console.warn('Could not load latest Windows release link:', error);
+        }
+      }
 
       function openMacInstallModal() {
         modalReturnFocus = document.activeElement || downloadToggle;
@@ -728,6 +807,8 @@ brew upgrade --cask resizeme</code></pre>
         key2.textContent = 'Alt/Option';
         key3.textContent = 'R';
       }
+
+      updateWindowsReleaseLink();
 
       downloadToggle.addEventListener('click', function () {
         const isOpen = downloadMenu.classList.toggle('open');
