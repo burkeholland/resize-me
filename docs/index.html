@@ -3,10 +3,53 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>ResizeMe</title>
+<title>ResizeMe - Window Resizer App for macOS and Windows</title>
+<meta name="description" content="ResizeMe is a fast window resizer app for macOS and Windows. Snap windows to exact sizes with a single hotkey, built-in presets, and zero telemetry."/>
+<meta name="keywords" content="ResizeMe, window resizer, window manager, macOS window resize, Windows window resize, hotkey window sizing, productivity app"/>
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"/>
+<meta name="author" content="ResizeMe"/>
+<link rel="canonical" href="https://burkeholland.github.io/resize-me/"/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://burkeholland.github.io/resize-me/"/>
+<meta property="og:site_name" content="ResizeMe"/>
+<meta property="og:title" content="ResizeMe - Pixel-perfect window sizing with one hotkey"/>
+<meta property="og:description" content="Resize windows instantly on macOS and Windows using presets and one shortcut. Fast, local, and designed for people who ship pixels."/>
+<meta property="og:image" content="https://burkeholland.github.io/resize-me/og-image.svg"/>
+<meta property="og:image:alt" content="ResizeMe app promo banner"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="ResizeMe - Window Resizer App for macOS and Windows"/>
+<meta name="twitter:description" content="Snap windows to exact sizes with one hotkey. Built for developers, designers, and multitaskers."/>
+<meta name="twitter:image" content="https://burkeholland.github.io/resize-me/og-image.svg"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ResizeMe",
+  "applicationCategory": "UtilityApplication",
+  "operatingSystem": "macOS, Windows",
+  "description": "ResizeMe helps you resize windows to exact dimensions with one shortcut.",
+  "url": "https://burkeholland.github.io/resize-me/",
+  "downloadUrl": "https://github.com/burkeholland/resize-me/releases/latest",
+  "author": {
+    "@type": "Organization",
+    "name": "ResizeMe"
+  },
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "featureList": [
+    "One global hotkey",
+    "Window size presets",
+    "macOS and Windows support",
+    "No telemetry"
+  ]
+}
+</script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -24,19 +67,37 @@ body {
   position: relative;
 }
 
-/* Grain overlay */
 body::before {
   content: '';
   position: fixed; inset: 0; pointer-events: none; opacity: 0.03; z-index: 1;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* Ambient glows */
+.skip-link {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  transform: translateY(-120%);
+  background: #111820;
+  color: #e2e8f0;
+  border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 8px;
+  padding: 8px 10px;
+  z-index: 30;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
 .glow-coral {
   position: absolute; top: -120px; right: -80px; width: 600px; height: 600px;
   background: radial-gradient(circle, rgba(255,127,80,0.18) 0%, transparent 70%);
   filter: blur(80px); pointer-events: none;
 }
+
 .glow-azure {
   position: absolute; bottom: -140px; left: -60px; width: 500px; height: 500px;
   background: radial-gradient(circle, rgba(14,165,233,0.12) 0%, transparent 70%);
@@ -46,8 +107,58 @@ body::before {
 .content {
   position: relative; z-index: 2;
   text-align: center;
-  padding: 60px 32px;
-  max-width: 880px;
+  padding: 38px 24px 64px;
+  max-width: 980px;
+}
+
+.top-banner {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 26px;
+}
+
+.top-banner a {
+  color: #e2e8f0;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.badge-updated { background: rgba(14,165,233,0.2); border: 1px solid rgba(14,165,233,0.45); }
+.badge-mac { background: rgba(132,204,22,0.2); border: 1px solid rgba(132,204,22,0.42); }
+.badge-win { background: rgba(255,127,80,0.2); border: 1px solid rgba(255,127,80,0.42); }
+
+h1.wordmark {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(3.5rem, 12vw, 10rem);
+  font-weight: 800;
+  letter-spacing: -0.07em;
+  line-height: 0.86;
+  color: #e2e8f0;
+  margin-bottom: 28px;
+}
+
+.wordmark .dot { color: #84cc16; }
+
+.tagline {
+  font-size: 17px;
+  color: #94a3b8;
+  margin-bottom: 24px;
+  letter-spacing: 0.2px;
+  line-height: 1.65;
+}
+
+.seo-intro {
+  max-width: 780px;
+  margin: 0 auto 26px;
+  color: #cbd5e1;
+  line-height: 1.7;
+  font-size: 16px;
 }
 
 .action-stack {
@@ -57,36 +168,97 @@ body::before {
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
-  margin-bottom: 42px;
+  margin-bottom: 34px;
 }
 
-/* Giant mono wordmark */
-.wordmark {
+.hotkey-display {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0;
+}
+
+.hotkey-display kbd {
   font-family: 'JetBrains Mono', monospace;
-  font-size: clamp(4rem, 14vw, 11rem);
-  font-weight: 800;
-  letter-spacing: -0.07em;
-  line-height: 0.85;
+  font-size: clamp(20px, 4vw, 32px);
+  font-weight: 700;
+  padding: 14px 22px;
+  border-radius: 12px;
+  background: #111820;
+  border: 2px solid rgba(255,255,255,0.08);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.04) inset;
   color: #e2e8f0;
-  margin-bottom: 32px;
-}
-.wordmark .dot { color: #84cc16; }
-
-/* Tagline */
-.tagline {
-  font-size: 17px;
-  color: #64748b;
-  margin-bottom: 48px;
-  letter-spacing: 0.2px;
-  line-height: 1.6;
 }
 
-/* Animated resize demo */
+.hotkey-display kbd.accent {
+  border-color: rgba(255,127,80,0.5);
+  color: #ff7f50;
+  box-shadow: 0 4px 16px rgba(255,127,80,0.15), 0 1px 0 rgba(255,255,255,0.04) inset;
+}
+
+.install-pill {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  position: relative;
+}
+
+.install-pill .dl-btn {
+  background: linear-gradient(135deg, #ff7f50, #0ea5e9);
+  color: #fff;
+  font-weight: 700;
+  padding: 10px 22px;
+  border-radius: 9999px;
+  border: 0;
+  font-size: 13px;
+  text-decoration: none;
+  font-family: 'Outfit', sans-serif;
+  box-shadow: 0 4px 12px rgba(14,165,233,0.25);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.install-pill .dl-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(14,165,233,0.35);
+}
+
+.download-menu { position: relative; }
+
+.download-list {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  min-width: 220px;
+  background: #0f1720;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+  display: none;
+  z-index: 10;
+}
+
+.download-menu.open .download-list { display: block; }
+
+.download-list a {
+  display: block;
+  color: #e2e8f0;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+.download-list a:hover { background: rgba(255,255,255,0.08); }
+
 .morph-demo {
   display: flex;
   justify-content: center;
-  margin-top: 10px;
-  margin-bottom: 24px;
+  margin-top: 6px;
+  margin-bottom: 20px;
 }
 
 .morph-frame {
@@ -94,8 +266,6 @@ body::before {
   width: min(540px, 92vw);
   height: 230px;
   border-radius: 18px;
-  background: transparent;
-  box-shadow: none;
   overflow: hidden;
 }
 
@@ -127,7 +297,7 @@ body::before {
 }
 
 .morph-window::after {
-  content: '1920 × 1080  →  1280 × 720';
+  content: '1920 x 1080 -> 1280 x 720';
   position: absolute;
   bottom: 10px;
   right: 12px;
@@ -139,94 +309,47 @@ body::before {
 }
 
 @keyframes resizeMorph {
-  0%, 12% {
-    transform: translate(-50%, -50%) scale(1);
-    transform-origin: top left;
-  }
-  18%, 24% {
-    transform: translate(-50%, -50%) scale(0.67);
-    transform-origin: top left;
-  }
-  30%, 37% {
-    transform: translate(-50%, -50%) scale(1);
-    transform-origin: top right;
-  }
-  43%, 49% {
-    transform: translate(-50%, -50%) scale(0.75, 0.83);
-    transform-origin: top right;
-  }
-  55%, 62% {
-    transform: translate(-50%, -50%) scale(1);
-    transform-origin: bottom right;
-  }
-  68%, 74% {
-    transform: translate(-50%, -50%) scale(0.53, 0.71);
-    transform-origin: bottom right;
-  }
-  80%, 87% {
-    transform: translate(-50%, -50%) scale(1);
-    transform-origin: bottom left;
-  }
-  93%, 99% {
-    transform: translate(-50%, -50%) scale(0.42, 0.56);
-    transform-origin: bottom left;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(1);
-    transform-origin: top left;
-  }
+  0%, 12% { transform: translate(-50%, -50%) scale(1); transform-origin: top left; }
+  18%, 24% { transform: translate(-50%, -50%) scale(0.67); transform-origin: top left; }
+  30%, 37% { transform: translate(-50%, -50%) scale(1); transform-origin: top right; }
+  43%, 49% { transform: translate(-50%, -50%) scale(0.75, 0.83); transform-origin: top right; }
+  55%, 62% { transform: translate(-50%, -50%) scale(1); transform-origin: bottom right; }
+  68%, 74% { transform: translate(-50%, -50%) scale(0.53, 0.71); transform-origin: bottom right; }
+  80%, 87% { transform: translate(-50%, -50%) scale(1); transform-origin: bottom left; }
+  93%, 99% { transform: translate(-50%, -50%) scale(0.42, 0.56); transform-origin: bottom left; }
+  100% { transform: translate(-50%, -50%) scale(1); transform-origin: top left; }
 }
 
 @keyframes resizeLabel {
-  0%, 29% {
-    content: '1920 × 1080  →  1280 × 720';
-  }
-  30%, 54% {
-    content: '1920 × 1080  →  1440 × 900';
-  }
-  55%, 79% {
-    content: '1920 × 1080  →  1024 × 768';
-  }
-  80%, 100% {
-    content: '1920 × 1080  →  800 × 600';
-  }
+  0%, 29% { content: '1920 x 1080 -> 1280 x 720'; }
+  30%, 54% { content: '1920 x 1080 -> 1440 x 900'; }
+  55%, 79% { content: '1920 x 1080 -> 1024 x 768'; }
+  80%, 100% { content: '1920 x 1080 -> 800 x 600'; }
 }
 
-/* Oversized hotkey display */
-.hotkey-display {
-  display: inline-flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 0;
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  margin-bottom: 30px;
 }
-.hotkey-display kbd {
+
+.stats .stat { text-align: center; }
+
+.stats .stat .val {
   font-family: 'JetBrains Mono', monospace;
-  font-size: clamp(20px, 4vw, 32px);
+  font-size: 26px;
   font-weight: 700;
-  padding: 14px 22px;
-  border-radius: 12px;
-  background: #111820;
-  border: 2px solid rgba(255,255,255,0.08);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.04) inset;
-  color: #e2e8f0;
-  transition: all 0.15s ease;
-}
-.hotkey-display kbd.accent {
-  border-color: rgba(255,127,80,0.5);
-  color: #ff7f50;
-  box-shadow: 0 4px 16px rgba(255,127,80,0.15), 0 1px 0 rgba(255,255,255,0.04) inset;
 }
 
-/* Install pill */
-.install-pill {
-  display: inline-flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 0;
-  margin-bottom: 0;
-  position: relative;
+.stats .stat .label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #64748b;
+  margin-top: 4px;
 }
+
 .dl-btn {
   background: linear-gradient(135deg, #ff7f50, #0ea5e9);
   color: #fff;
@@ -239,6 +362,7 @@ body::before {
   box-shadow: 0 4px 12px rgba(14,165,233,0.25);
   transition: transform 0.2s, box-shadow 0.2s;
 }
+
 .dl-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(14,165,233,0.35);
@@ -254,42 +378,87 @@ body::before {
   box-shadow: 0 8px 20px rgba(0,0,0,0.3);
 }
 
-.download-menu {
-  position: relative;
+.promo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  text-align: left;
+  margin: 0 auto 28px;
 }
 
-.download-list {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 8px);
-  list-style: none;
-  margin: 0;
-  padding: 8px;
-  min-width: 220px;
-  background: #0f1720;
+.promo-card {
+  border-radius: 14px;
+  background: rgba(17,24,32,0.85);
   border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 12px;
-  box-shadow: 0 12px 32px rgba(0,0,0,0.45);
-  display: none;
-  z-index: 10;
+  padding: 14px;
 }
 
-.download-menu.open .download-list {
-  display: block;
+.promo-card h2 {
+  font-size: 16px;
+  margin-bottom: 8px;
 }
 
-.download-list a {
-  display: block;
-  color: #e2e8f0;
-  text-decoration: none;
-  font-family: 'Outfit', sans-serif;
-  font-weight: 600;
+.promo-card p {
+  font-size: 14px;
+  color: #94a3b8;
+  line-height: 1.55;
+}
+
+.feature-list {
+  list-style: none;
+  margin: 0 auto 30px;
+  max-width: 760px;
+  text-align: left;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+}
+
+.feature-list li {
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(17,24,32,0.6);
   padding: 10px 12px;
-  border-radius: 8px;
+  color: #cbd5e1;
+  font-size: 14px;
 }
 
-.download-list a:hover {
-  background: rgba(255,255,255,0.08);
+.faq {
+  text-align: left;
+  margin: 0 auto 28px;
+  max-width: 760px;
+}
+
+.faq h2 {
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+
+.faq details {
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: rgba(17,24,32,0.6);
+  margin-bottom: 8px;
+}
+
+.faq summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.faq p {
+  color: #94a3b8;
+  margin-top: 8px;
+  line-height: 1.55;
+}
+
+.meta {
+  margin-top: 26px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #475569;
+  letter-spacing: 0.5px;
 }
 
 .install-modal {
@@ -304,9 +473,7 @@ body::before {
   backdrop-filter: blur(14px);
 }
 
-.install-modal.open {
-  display: flex;
-}
+.install-modal.open { display: flex; }
 
 .install-dialog {
   width: min(560px, 100%);
@@ -342,7 +509,6 @@ body::before {
   border-radius: 14px;
   background: #05080d;
   border: 1px solid rgba(255,255,255,0.08);
-  user-select: text;
 }
 
 .install-dialog code {
@@ -360,18 +526,10 @@ body::before {
   border: 1px solid rgba(255,255,255,0.12);
   border-radius: 8px;
   color: #94a3b8;
-  font-family: 'Outfit', sans-serif;
   font-size: 11px;
   font-weight: 600;
   padding: 4px 10px;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-  line-height: 1.6;
-}
-
-.copy-btn:hover {
-  background: rgba(255,255,255,0.13);
-  color: #e2e8f0;
 }
 
 .copy-btn.copied {
@@ -409,34 +567,16 @@ body::before {
   background: rgba(255,255,255,0.08);
 }
 
-/* Stats row */
-.stats {
-  display: flex;
-  justify-content: center;
-  gap: 48px;
-}
-.stats .stat { text-align: center; }
-.stats .stat .val {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 26px;
-  font-weight: 700;
-  color: #e2e8f0;
-}
-.stats .stat .label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: #64748b;
-  margin-top: 4px;
+@media (max-width: 900px) {
+  .promo-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
-/* Meta line */
-.meta {
-  margin-top: 56px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: #334155;
-  letter-spacing: 0.5px;
+@media (max-width: 700px) {
+  .feature-list {
+    grid-template-columns: 1fr;
+  }
 }
 
 .credits {
@@ -457,16 +597,9 @@ body::before {
 }
 
 @media (max-width: 600px) {
-  .action-stack {
-    gap: 12px;
-  }
-  .morph-frame {
-    height: 190px;
-  }
-  .morph-window {
-    width: 250px;
-    height: 150px;
-  }
+  .action-stack { gap: 12px; }
+  .morph-frame { height: 190px; }
+  .morph-window { width: 250px; height: 150px; }
   .hotkey-display { gap: 6px; }
   .hotkey-display kbd { padding: 10px 14px; font-size: 18px; }
   .stats { gap: 24px; flex-wrap: wrap; }
@@ -479,46 +612,98 @@ body::before {
 </style>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   <div class="glow-coral"></div>
   <div class="glow-azure"></div>
 
-  <div class="content">
-    <div class="wordmark">resize<span class="dot">.</span>me</div>
+  <main id="main-content" class="content">
+    <nav class="top-banner" aria-label="Promotion and platform links">
+      <a class="badge-updated" href="https://github.com/burkeholland/resize-me/releases/latest">Latest release</a>
+      <a class="badge-mac" href="https://github.com/burkeholland/resize-me/releases/latest">macOS build</a>
+      <a class="badge-win" href="https://github.com/burkeholland/resize-me/releases/latest">Windows build</a>
+    </nav>
 
-    <p class="tagline">Pixel-exact window sizing for people who ship pixels.<br/>One shortcut. Perfect size. Every time.</p>
+    <header>
+      <h1 class="wordmark">resize<span class="dot">.</span>me</h1>
+      <p class="tagline">Pixel-exact window sizing for people who ship pixels.<br/>One shortcut. Perfect size. Every time.</p>
+      <p class="seo-intro">ResizeMe is a free window resizing utility for macOS and Windows that helps developers, designers, and power users snap windows to exact preset dimensions instantly.</p>
+    </header>
 
-    <div class="action-stack">
-      <div class="hotkey-display">
-        <kbd id="key-1">Ctrl</kbd><kbd id="key-2">Alt</kbd><kbd class="accent" id="key-3">R</kbd>
-      </div>
-
-      <div class="install-pill">
-        <div class="download-menu" id="download-menu">
-          <button id="download-toggle" class="dl-btn" type="button" aria-expanded="false" aria-controls="download-list">Download ▾</button>
-          <ul id="download-list" class="download-list" role="menu" aria-label="Download options">
-            <li role="none"><a role="menuitem" id="mac-link" href="https://github.com/burkeholland/resize-me/releases?q=-mac">macOS</a></li>
-            <li role="none"><a role="menuitem" id="windows-link" href="https://github.com/burkeholland/resize-me/releases?q=windows">Windows</a></li>
-          </ul>
+    <section aria-label="Primary call to action">
+      <div class="action-stack">
+        <div class="hotkey-display" aria-label="Default hotkey display">
+          <kbd id="key-1">Ctrl</kbd><kbd id="key-2">Alt</kbd><kbd class="accent" id="key-3">R</kbd>
         </div>
+        <div class="install-pill">
+          <div class="download-menu" id="download-menu">
+            <button id="download-toggle" class="dl-btn" type="button" aria-expanded="false" aria-controls="download-list">Download ▾</button>
+            <ul id="download-list" class="download-list" role="menu" aria-label="Download options">
+              <li role="none"><a role="menuitem" id="mac-link" href="https://github.com/burkeholland/resize-me/releases/latest">Download for macOS</a></li>
+              <li role="none"><a role="menuitem" id="windows-link" href="https://github.com/burkeholland/resize-me/releases/latest">Download for Windows</a></li>
+            </ul>
+          </div>
+        </div>
+        <a class="dl-btn github-btn" href="https://github.com/burkeholland/resize-me" target="_blank" rel="noopener noreferrer">GitHub</a>
       </div>
-      <a class="dl-btn github-btn" href="https://github.com/burkeholland/resize-me" target="_blank" rel="noopener noreferrer">GitHub</a>
-    </div>
+    </section>
 
-    <div class="morph-demo" aria-hidden="true">
+    <section class="morph-demo" aria-hidden="true">
       <div class="morph-frame">
         <div class="morph-window"></div>
       </div>
-    </div>
+    </section>
 
-    <div class="stats">
+    <section class="stats" aria-label="ResizeMe product stats">
       <div class="stat"><div class="val">18</div><div class="label">Presets</div></div>
       <div class="stat"><div class="val">1</div><div class="label">Hotkey</div></div>
-      <div class="stat"><div class="val">0</div><div class="label">CPU overhead</div></div>
-    </div>
+      <div class="stat"><div class="val">0</div><div class="label">Telemetry</div></div>
+    </section>
 
-    <p class="meta">Download the app for your OS · No data collected · Lives in your menu bar or tray</p>
+    <section class="promo-grid" aria-label="Promotional highlights">
+      <article class="promo-card">
+        <h2>New macOS native app</h2>
+        <p>Install the notarized menu-bar app with Homebrew and keep it updated with a single command.</p>
+      </article>
+      <article class="promo-card">
+        <h2>Fast Windows workflow</h2>
+        <p>Use the same shortcut-driven flow on Windows to keep your app layouts consistent and repeatable.</p>
+      </article>
+      <article class="promo-card">
+        <h2>Built for production focus</h2>
+        <p>ResizeMe stays lightweight, local-first, and distraction-free so you can move windows without friction.</p>
+      </article>
+    </section>
+
+    <section aria-label="Feature list">
+      <ul class="feature-list">
+        <li>One global shortcut to trigger instant resizing</li>
+        <li>Common dimensions for web, desktop, and responsive testing</li>
+        <li>Cross-platform support for macOS and Windows</li>
+        <li>Simple install through Homebrew or GitHub Releases</li>
+        <li>No account setup and no cloud sync required</li>
+        <li>No telemetry collection in the landing experience</li>
+      </ul>
+    </section>
+
+    <section class="faq" aria-label="Frequently asked questions">
+      <h2>Frequently asked questions</h2>
+      <details>
+        <summary>Is ResizeMe free?</summary>
+        <p>Yes. ResizeMe is available as a free download from GitHub Releases.</p>
+      </details>
+      <details>
+        <summary>Does ResizeMe support both macOS and Windows?</summary>
+        <p>Yes. Download links for both operating systems are available in the menu above.</p>
+      </details>
+      <details>
+        <summary>How do I install the macOS version quickly?</summary>
+        <p>Use Homebrew install commands from the macOS install modal for the fastest setup and updates.</p>
+      </details>
+    </section>
+
+    <p class="meta">Window resizing app for macOS and Windows · One hotkey workflow · Download from GitHub</p>
     <p class="credits">by <a href="https://x.com/burkeholland" target="_blank" rel="noopener noreferrer">Burke</a> &amp; <a href="https://x.com/jamesmontemagno" target="_blank" rel="noopener noreferrer">James</a></p>
-  </div>
+  </main>
 
   <div class="install-modal" id="mac-install-modal" role="dialog" aria-modal="true" aria-labelledby="mac-install-title" aria-hidden="true">
     <div class="install-dialog">
@@ -526,7 +711,7 @@ body::before {
       <p>Homebrew is the easiest way to install the signed, notarized app and keep it updated.</p>
       <div class="code-block">
         <pre><code>brew tap burkeholland/resize-me https://github.com/burkeholland/resize-me
-brew trust burkeholland/resize-me 2&gt;/dev/null || true
+brew trust burkeholland/resize-me 2>/dev/null || true
 brew install --cask resizeme</code></pre>
         <button class="copy-btn" type="button" aria-label="Copy install commands">Copy</button>
       </div>
@@ -537,7 +722,7 @@ brew upgrade --cask resizeme</code></pre>
         <button class="copy-btn" type="button" aria-label="Copy upgrade commands">Copy</button>
       </div>
       <div class="install-actions">
-        <a class="manual-link" href="https://github.com/burkeholland/resize-me/releases?q=-mac">Manual ZIP download</a>
+        <a class="manual-link" href="https://github.com/burkeholland/resize-me/releases/latest">Manual download</a>
         <button class="close-modal" id="mac-install-close" type="button">Close</button>
       </div>
     </div>
@@ -558,6 +743,7 @@ brew upgrade --cask resizeme</code></pre>
       const downloadToggle = document.getElementById('download-toggle');
       const macInstallModal = document.getElementById('mac-install-modal');
       const macInstallClose = document.getElementById('mac-install-close');
+      const installDialog = document.querySelector('.install-dialog');
       let modalReturnFocus = downloadToggle;
 
       async function updateWindowsReleaseLink() {
@@ -601,12 +787,14 @@ brew upgrade --cask resizeme</code></pre>
       function closeMacInstallModal() {
         macInstallModal.classList.remove('open');
         macInstallModal.setAttribute('aria-hidden', 'true');
-        modalReturnFocus.focus();
+        if (modalReturnFocus && typeof modalReturnFocus.focus === 'function') {
+          modalReturnFocus.focus();
+        }
       }
 
       if (isMac) {
-        key1.textContent = '⌃';
-        key2.textContent = '⌥';
+        key1.textContent = '^';
+        key2.textContent = 'Option';
         key3.textContent = 'R';
         macLink.style.color = '#ffb08f';
       } else if (isWindows) {
@@ -642,13 +830,20 @@ brew upgrade --cask resizeme</code></pre>
         }
       });
 
-      document.querySelector('.install-dialog').addEventListener('click', function (event) {
-        event.stopPropagation();
-      });
+      if (installDialog) {
+        installDialog.addEventListener('click', function (event) {
+          event.stopPropagation();
+        });
+      }
 
       document.querySelectorAll('.copy-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
-          const code = btn.previousElementSibling.querySelector('code').textContent;
+          const pre = btn.previousElementSibling;
+          if (!pre) return;
+          const codeNode = pre.querySelector('code');
+          if (!codeNode) return;
+
+          const code = codeNode.textContent;
           navigator.clipboard.writeText(code).then(function () {
             btn.textContent = 'Copied!';
             btn.classList.add('copied');
