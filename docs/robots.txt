@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://burkeholland.github.io/resize-me/sitemap.xml
+Sitemap: https://resizeme.dev/sitemap.xml

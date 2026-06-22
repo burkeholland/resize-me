@@ -1,6 +1,6 @@
 # ResizeMe
 
-Website: [burkeholland.github.io/resize-me](https://burkeholland.github.io/resize-me/)
+Website: [resizeme.dev](https://resizeme.dev/)
 
 This repository contains two versions of ResizeMe:
 
