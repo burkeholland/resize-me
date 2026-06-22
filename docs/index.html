@@ -319,13 +319,20 @@ body::before {
   margin-bottom: 18px;
 }
 
+.install-dialog .code-block {
+  position: relative;
+  margin-bottom: 16px;
+}
+
 .install-dialog pre {
   overflow-x: auto;
   padding: 16px;
-  margin-bottom: 16px;
+  padding-right: 52px;
+  margin-bottom: 0;
   border-radius: 14px;
   background: #05080d;
   border: 1px solid rgba(255,255,255,0.08);
+  user-select: text;
 }
 
 .install-dialog code {
@@ -333,6 +340,33 @@ body::before {
   font-size: 12px;
   color: #d9f99d;
   line-height: 1.7;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  color: #94a3b8;
+  font-family: 'Outfit', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1.6;
+}
+
+.copy-btn:hover {
+  background: rgba(255,255,255,0.13);
+  color: #e2e8f0;
+}
+
+.copy-btn.copied {
+  color: #84cc16;
+  border-color: rgba(132,204,22,0.35);
 }
 
 .install-actions {
@@ -436,7 +470,7 @@ body::before {
           <button id="download-toggle" class="dl-btn" type="button" aria-expanded="false" aria-controls="download-list">Download ▾</button>
           <ul id="download-list" class="download-list" role="menu" aria-label="Download options">
             <li role="none"><a role="menuitem" id="mac-link" href="https://github.com/burkeholland/resize-me/releases?q=-mac">macOS</a></li>
-            <li role="none"><a role="menuitem" id="windows-link" href="https://github.com/burkeholland/resize-me/releases/latest">Windows</a></li>
+            <li role="none"><a role="menuitem" id="windows-link" href="https://github.com/burkeholland/resize-me/releases/tag/v0.1.20260618134843">Windows</a></li>
           </ul>
         </div>
       </div>
@@ -461,12 +495,18 @@ body::before {
     <div class="install-dialog">
       <h2 id="mac-install-title">Install ResizeMe for macOS</h2>
       <p>Homebrew is the easiest way to install the signed, notarized app and keep it updated.</p>
-      <pre><code>brew tap burkeholland/resize-me https://github.com/burkeholland/resize-me
+      <div class="code-block">
+        <pre><code>brew tap burkeholland/resize-me https://github.com/burkeholland/resize-me
 brew trust burkeholland/resize-me 2&gt;/dev/null || true
 brew install --cask resizeme</code></pre>
+        <button class="copy-btn" type="button" aria-label="Copy install commands">Copy</button>
+      </div>
       <p>Already installed?</p>
-      <pre><code>brew update
+      <div class="code-block">
+        <pre><code>brew update
 brew upgrade --cask resizeme</code></pre>
+        <button class="copy-btn" type="button" aria-label="Copy upgrade commands">Copy</button>
+      </div>
       <div class="install-actions">
         <a class="manual-link" href="https://github.com/burkeholland/resize-me/releases?q=-mac">Manual ZIP download</a>
         <button class="close-modal" id="mac-install-close" type="button">Close</button>
@@ -537,6 +577,24 @@ brew upgrade --cask resizeme</code></pre>
         if (event.target === macInstallModal) {
           closeMacInstallModal();
         }
+      });
+
+      document.querySelector('.install-dialog').addEventListener('click', function (event) {
+        event.stopPropagation();
+      });
+
+      document.querySelectorAll('.copy-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          const code = btn.previousElementSibling.querySelector('code').textContent;
+          navigator.clipboard.writeText(code).then(function () {
+            btn.textContent = 'Copied!';
+            btn.classList.add('copied');
+            setTimeout(function () {
+              btn.textContent = 'Copy';
+              btn.classList.remove('copied');
+            }, 2000);
+          });
+        });
       });
 
       document.addEventListener('keydown', function (event) {
