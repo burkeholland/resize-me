@@ -8,18 +8,18 @@
 <meta name="keywords" content="ResizeMe, window resizer, window manager, macOS window resize, Windows window resize, hotkey window sizing, productivity app"/>
 <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"/>
 <meta name="author" content="ResizeMe"/>
-<link rel="canonical" href="https://burkeholland.github.io/resize-me/"/>
+<link rel="canonical" href="https://resizeme.dev/"/>
 <meta property="og:type" content="website"/>
-<meta property="og:url" content="https://burkeholland.github.io/resize-me/"/>
+<meta property="og:url" content="https://resizeme.dev/"/>
 <meta property="og:site_name" content="ResizeMe"/>
 <meta property="og:title" content="ResizeMe - Pixel-perfect window sizing with one hotkey"/>
 <meta property="og:description" content="Resize windows instantly on macOS and Windows using presets and one shortcut. Fast, local, and designed for people who ship pixels."/>
-<meta property="og:image" content="https://burkeholland.github.io/resize-me/og-image.svg"/>
+<meta property="og:image" content="https://resizeme.dev/og-image.svg"/>
 <meta property="og:image:alt" content="ResizeMe app promo banner"/>
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:title" content="ResizeMe - Window Resizer App for macOS and Windows"/>
 <meta name="twitter:description" content="Snap windows to exact sizes with one hotkey. Built for developers, designers, and multitaskers."/>
-<meta name="twitter:image" content="https://burkeholland.github.io/resize-me/og-image.svg"/>
+<meta name="twitter:image" content="https://resizeme.dev/og-image.svg"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
@@ -31,7 +31,7 @@
   "applicationCategory": "UtilityApplication",
   "operatingSystem": "macOS, Windows",
   "description": "ResizeMe helps you resize windows to exact dimensions with one shortcut.",
-  "url": "https://burkeholland.github.io/resize-me/",
+  "url": "https://resizeme.dev/",
   "downloadUrl": "https://github.com/burkeholland/resize-me/releases/latest",
   "author": {
     "@type": "Organization",
@@ -111,28 +111,6 @@ body::before {
   max-width: 980px;
 }
 
-.top-banner {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-bottom: 26px;
-}
-
-.top-banner a {
-  color: #e2e8f0;
-  text-decoration: none;
-  padding: 8px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-}
-
-.badge-updated { background: rgba(14,165,233,0.2); border: 1px solid rgba(14,165,233,0.45); }
-.badge-mac { background: rgba(132,204,22,0.2); border: 1px solid rgba(132,204,22,0.42); }
-.badge-win { background: rgba(255,127,80,0.2); border: 1px solid rgba(255,127,80,0.42); }
-
 h1.wordmark {
   font-family: 'JetBrains Mono', monospace;
   font-size: clamp(3.5rem, 12vw, 10rem);
@@ -151,14 +129,6 @@ h1.wordmark {
   margin-bottom: 24px;
   letter-spacing: 0.2px;
   line-height: 1.65;
-}
-
-.seo-intro {
-  max-width: 780px;
-  margin: 0 auto 26px;
-  color: #cbd5e1;
-  line-height: 1.7;
-  font-size: 16px;
 }
 
 .action-stack {
@@ -368,97 +338,38 @@ h1.wordmark {
   box-shadow: 0 8px 20px rgba(14,165,233,0.35);
 }
 
-.github-btn {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.14);
-  box-shadow: none;
-}
-
-.github-btn:hover {
-  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-}
-
-.promo-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  text-align: left;
-  margin: 0 auto 28px;
-}
-
-.promo-card {
-  border-radius: 14px;
-  background: rgba(17,24,32,0.85);
-  border: 1px solid rgba(255,255,255,0.1);
-  padding: 14px;
-}
-
-.promo-card h2 {
-  font-size: 16px;
-  margin-bottom: 8px;
-}
-
-.promo-card p {
-  font-size: 14px;
-  color: #94a3b8;
-  line-height: 1.55;
-}
-
-.feature-list {
-  list-style: none;
-  margin: 0 auto 30px;
-  max-width: 760px;
-  text-align: left;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 16px;
-}
-
-.feature-list li {
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.1);
-  background: rgba(17,24,32,0.6);
-  padding: 10px 12px;
-  color: #cbd5e1;
-  font-size: 14px;
-}
-
-.faq {
-  text-align: left;
-  margin: 0 auto 28px;
-  max-width: 760px;
-}
-
-.faq h2 {
-  font-size: 20px;
-  margin-bottom: 12px;
-}
-
-.faq details {
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 10px;
-  padding: 10px 12px;
-  background: rgba(17,24,32,0.6);
-  margin-bottom: 8px;
-}
-
-.faq summary {
-  cursor: pointer;
-  font-weight: 700;
-}
-
-.faq p {
-  color: #94a3b8;
-  margin-top: 8px;
-  line-height: 1.55;
-}
-
 .meta {
   margin-top: 26px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   color: #475569;
   letter-spacing: 0.5px;
+}
+
+.meta a {
+  color: #94a3b8;
+  text-decoration: none;
+}
+
+.meta a:hover {
+  color: #e2e8f0;
+}
+
+.credits {
+  margin-top: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #475569;
+  letter-spacing: 0.5px;
+}
+
+.credits a {
+  color: #94a3b8;
+  text-decoration: none;
+}
+
+.credits a:hover {
+  color: #e2e8f0;
 }
 
 .install-modal {
@@ -567,35 +478,6 @@ h1.wordmark {
   background: rgba(255,255,255,0.08);
 }
 
-@media (max-width: 900px) {
-  .promo-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 700px) {
-  .feature-list {
-    grid-template-columns: 1fr;
-  }
-}
-
-.credits {
-  margin-top: 10px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: #475569;
-  letter-spacing: 0.5px;
-}
-
-.credits a {
-  color: #94a3b8;
-  text-decoration: none;
-}
-
-.credits a:hover {
-  color: #e2e8f0;
-}
-
 @media (max-width: 600px) {
   .action-stack { gap: 12px; }
   .morph-frame { height: 190px; }
@@ -617,16 +499,9 @@ h1.wordmark {
   <div class="glow-azure"></div>
 
   <main id="main-content" class="content">
-    <nav class="top-banner" aria-label="Promotion and platform links">
-      <a class="badge-updated" href="https://github.com/burkeholland/resize-me/releases/latest">Latest release</a>
-      <a class="badge-mac" href="https://github.com/burkeholland/resize-me/releases/latest">macOS build</a>
-      <a class="badge-win" href="https://github.com/burkeholland/resize-me/releases/latest">Windows build</a>
-    </nav>
-
     <header>
       <h1 class="wordmark">resize<span class="dot">.</span>me</h1>
       <p class="tagline">Pixel-exact window sizing for people who ship pixels.<br/>One shortcut. Perfect size. Every time.</p>
-      <p class="seo-intro">ResizeMe is a free window resizing utility for macOS and Windows that helps developers, designers, and power users snap windows to exact preset dimensions instantly.</p>
     </header>
 
     <section aria-label="Primary call to action">
@@ -643,7 +518,6 @@ h1.wordmark {
             </ul>
           </div>
         </div>
-        <a class="dl-btn github-btn" href="https://github.com/burkeholland/resize-me" target="_blank" rel="noopener noreferrer">GitHub</a>
       </div>
     </section>
 
@@ -659,49 +533,7 @@ h1.wordmark {
       <div class="stat"><div class="val">0</div><div class="label">Telemetry</div></div>
     </section>
 
-    <section class="promo-grid" aria-label="Promotional highlights">
-      <article class="promo-card">
-        <h2>New macOS native app</h2>
-        <p>Install the notarized menu-bar app with Homebrew and keep it updated with a single command.</p>
-      </article>
-      <article class="promo-card">
-        <h2>Fast Windows workflow</h2>
-        <p>Use the same shortcut-driven flow on Windows to keep your app layouts consistent and repeatable.</p>
-      </article>
-      <article class="promo-card">
-        <h2>Built for production focus</h2>
-        <p>ResizeMe stays lightweight, local-first, and distraction-free so you can move windows without friction.</p>
-      </article>
-    </section>
-
-    <section aria-label="Feature list">
-      <ul class="feature-list">
-        <li>One global shortcut to trigger instant resizing</li>
-        <li>Common dimensions for web, desktop, and responsive testing</li>
-        <li>Cross-platform support for macOS and Windows</li>
-        <li>Simple install through Homebrew or GitHub Releases</li>
-        <li>No account setup and no cloud sync required</li>
-        <li>No telemetry collection in the landing experience</li>
-      </ul>
-    </section>
-
-    <section class="faq" aria-label="Frequently asked questions">
-      <h2>Frequently asked questions</h2>
-      <details>
-        <summary>Is ResizeMe free?</summary>
-        <p>Yes. ResizeMe is available as a free download from GitHub Releases.</p>
-      </details>
-      <details>
-        <summary>Does ResizeMe support both macOS and Windows?</summary>
-        <p>Yes. Download links for both operating systems are available in the menu above.</p>
-      </details>
-      <details>
-        <summary>How do I install the macOS version quickly?</summary>
-        <p>Use Homebrew install commands from the macOS install modal for the fastest setup and updates.</p>
-      </details>
-    </section>
-
-    <p class="meta">Window resizing app for macOS and Windows · One hotkey workflow · Download from GitHub</p>
+    <p class="meta">Window resizing app for macOS and Windows · One hotkey workflow · <a href="/faq.html">Features + FAQ</a> · <a href="https://github.com/burkeholland/resize-me" target="_blank" rel="noopener noreferrer">GitHub</a></p>
     <p class="credits">by <a href="https://x.com/burkeholland" target="_blank" rel="noopener noreferrer">Burke</a> &amp; <a href="https://x.com/jamesmontemagno" target="_blank" rel="noopener noreferrer">James</a></p>
   </main>
 
@@ -793,8 +625,8 @@ brew upgrade --cask resizeme</code></pre>
       }
 
       if (isMac) {
-        key1.textContent = '^';
-        key2.textContent = 'Option';
+        key1.textContent = '⌃';
+        key2.textContent = '⌥';
         key3.textContent = 'R';
         macLink.style.color = '#ffb08f';
       } else if (isWindows) {
