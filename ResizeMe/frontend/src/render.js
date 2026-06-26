@@ -1,4 +1,4 @@
-import { state, activePreset } from './state.js';
+import { state, activePreset, isFavoritePreset } from './state.js';
 import { capture } from './hotkey.js';
 
 export function escHtml(v) {
@@ -36,6 +36,12 @@ export function renderApp(app) {
 
   const s = state.settings;
   const preset = activePreset(s);
+  const favoritePresetIds = s.favoritePresetIds ?? [];
+  const favoriteIdSet = new Set(favoritePresetIds);
+  const favoritePresets = favoritePresetIds
+    .map(id => s.presets.find(p => p.id === id))
+    .filter(Boolean);
+  const otherPresets = s.presets.filter(p => !favoriteIdSet.has(p.id));
 
   app.innerHTML = `
     <div class="app-window">
@@ -63,7 +69,12 @@ export function renderApp(app) {
 
         <div class="section-label">Presets</div>
         <div class="card-group">
-          ${s.presets.map(p => renderPresetRow(p, s.activePresetId)).join('')}
+          ${favoritePresets.length > 0 ? `
+            <div class="preset-group-label">Favorites</div>
+            ${favoritePresets.map(p => renderPresetRow(p, s.activePresetId)).join('')}
+            <div class="preset-group-label">All Presets</div>
+          ` : ''}
+          ${otherPresets.map(p => renderPresetRow(p, s.activePresetId)).join('')}
         </div>
 
         <div class="add-preset-row">
@@ -107,11 +118,13 @@ function renderFirstRun() {
 
 function renderPresetRow(p, activeId) {
   const isActive = p.id === activeId;
+  const isFavorite = isFavoritePreset(p.id);
   return `
     <div class="preset-row${isActive ? ' active' : ''}" data-action="select-preset" data-id="${escAttr(p.id)}">
       <div class="radio-btn${isActive ? ' checked' : ''}">
         ${isActive ? '<div class="radio-dot"></div>' : ''}
       </div>
+      <button class="preset-favorite${isFavorite ? ' active' : ''}" data-action="toggle-favorite" data-id="${escAttr(p.id)}" title="${isFavorite ? 'Remove from favorites' : 'Add to favorites'}">${isFavorite ? '&#xE735;' : '&#xE734;'}</button>
       <div class="preset-name">${escHtml(p.name)}</div>
       <div class="preset-dims">${p.width} × ${p.height}</div>
       <button class="preset-edit" data-action="edit-preset" data-id="${escAttr(p.id)}" title="Edit">&#xE70F;</button>

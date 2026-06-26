@@ -57,6 +57,17 @@ func NormalizeConfig(config Config, fallback Config) (Config, error) {
 		}
 	}
 
+	seenFavoriteIDs := map[string]bool{}
+	normalizedFavorites := make([]string, 0, len(next.FavoritePresetIDs))
+	for _, id := range next.FavoritePresetIDs {
+		if !next.HasPreset(id) || seenFavoriteIDs[id] {
+			continue
+		}
+		seenFavoriteIDs[id] = true
+		normalizedFavorites = append(normalizedFavorites, id)
+	}
+	next.FavoritePresetIDs = normalizedFavorites
+
 	return next, nil
 }
 

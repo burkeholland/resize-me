@@ -23,6 +23,7 @@ type Preset struct {
 type Config struct {
 	Presets           []Preset `json:"presets"`
 	ActivePresetID    string   `json:"activePresetId"`
+	FavoritePresetIDs []string `json:"favoritePresetIds"`
 	CenterAfterResize bool     `json:"centerAfterResize"`
 	Hotkey            string   `json:"hotkey"`
 	AutoStart         bool     `json:"autoStart"`
@@ -41,6 +42,7 @@ func NewConfigStore() *ConfigStore {
 func (c Config) Clone() Config {
 	clone := c
 	clone.Presets = append([]Preset(nil), c.Presets...)
+	clone.FavoritePresetIDs = append([]string(nil), c.FavoritePresetIDs...)
 	return clone
 }
 
@@ -129,6 +131,7 @@ func DefaultConfig() Config {
 	return Config{
 		Presets:           presets,
 		ActivePresetID:    "1080p-landscape",
+		FavoritePresetIDs: []string{},
 		CenterAfterResize: true,
 		Hotkey:            defaultHotkey,
 		AutoStart:         false,
@@ -146,4 +149,3 @@ func defaultConfigPath() string {
 	}
 	return filepath.Join(configDir, appDirName, settingsFile)
 }
-

@@ -1,6 +1,7 @@
 import {
   state,
   selectPreset,
+  toggleFavoritePreset,
   deletePreset,
   openAddDialog,
   openEditDialog,
@@ -28,6 +29,7 @@ export function bindEvents(app, renderFn) {
         case 'first-run-yes':       await completeFirstRun(true, renderFn); break;
         case 'first-run-no':        await completeFirstRun(false, renderFn); break;
         case 'select-preset':await selectPreset(el.dataset.id, renderFn); break;
+        case 'toggle-favorite':     await toggleFavoritePreset(el.dataset.id, renderFn); break;
         case 'delete-preset':       await deletePreset(el.dataset.id, renderFn); break;
         case 'edit-preset':         openEditDialog(el.dataset.id, renderFn); break;
         case 'add-preset':          openAddDialog(renderFn); break;
