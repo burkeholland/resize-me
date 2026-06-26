@@ -32,6 +32,11 @@ export function activePreset(settings) {
   return settings.presets.find(p => p.id === settings.activePresetId) ?? settings.presets[0];
 }
 
+export function isFavoritePreset(id) {
+  const favorites = state.settings?.favoritePresetIds ?? [];
+  return favorites.includes(id);
+}
+
 export async function load(renderFn) {
   try {
     const settings = await GetSettings();
@@ -69,8 +74,31 @@ export async function deletePreset(id, renderFn) {
   const activeId = presets.find(p => p.id === state.settings.activePresetId)
     ? state.settings.activePresetId
     : presets[0].id;
-  const updated = { ...clone(state.settings), presets, activePresetId: activeId };
+  const favoritePresetIds = (state.settings.favoritePresetIds ?? []).filter(favoriteId => favoriteId !== id);
+  const updated = { ...clone(state.settings), presets, activePresetId: activeId, favoritePresetIds };
   const seq = nextSeq();
+  try {
+    const saved = await SaveSettings(updated);
+    if (isStale(seq)) return;
+    state.settings = saved;
+    renderFn();
+  } catch (err) {
+    if (!isStale(seq)) setError(err, renderFn);
+  }
+}
+
+export async function toggleFavoritePreset(id, renderFn) {
+  clearError();
+  const seq = nextSeq();
+  const favoritePresetIds = [...(state.settings.favoritePresetIds ?? [])];
+  const existing = favoritePresetIds.indexOf(id);
+  if (existing >= 0) {
+    favoritePresetIds.splice(existing, 1);
+  } else {
+    favoritePresetIds.push(id);
+  }
+
+  const updated = { ...clone(state.settings), favoritePresetIds };
   try {
     const saved = await SaveSettings(updated);
     if (isStale(seq)) return;

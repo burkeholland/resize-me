@@ -166,7 +166,7 @@ h1, h2, h3, p { margin: 0; }
 /* ─── Preset rows ─── */
 .preset-row {
   display: grid;
-  grid-template-columns: 20px 1fr auto 28px 28px;
+  grid-template-columns: 20px 28px 1fr auto 28px 28px;
   align-items: center;
   gap: 10px;
   height: 44px;
@@ -180,9 +180,21 @@ h1, h2, h3, p { margin: 0; }
 }
 
 .preset-row:hover { background: var(--subtle-fill-secondary); }
+.preset-row:hover .preset-favorite,
 .preset-row:hover .preset-delete,
 .preset-row:hover .preset-edit { opacity: 1; }
 .preset-row.active { background: rgba(0, 95, 184, 0.04); }
+
+.preset-group-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 8px 12px 6px;
+  background: var(--subtle-fill-secondary);
+  border-bottom: 1px solid var(--card-stroke);
+}
 
 .preset-name {
   font-size: 14px;
@@ -198,6 +210,32 @@ h1, h2, h3, p { margin: 0; }
   white-space: nowrap;
   user-select: none;
 }
+
+.preset-favorite {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--control-corner-radius);
+  background: transparent;
+  color: var(--text-tertiary);
+  font-family: 'Segoe MDL2 Assets', 'Segoe Fluent Icons', sans-serif;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.1s, background 0.1s, color 0.1s;
+  flex-shrink: 0;
+}
+.preset-favorite:hover {
+  background: var(--subtle-fill-secondary);
+  color: var(--text-primary);
+}
+.preset-favorite.active {
+  color: #d48b00;
+  opacity: 1;
+}
+.preset-favorite:active { background: var(--subtle-fill-tertiary); }
 
 .preset-edit {
   width: 28px;

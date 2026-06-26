@@ -125,6 +125,7 @@ type WindowsAgent struct {
 
 	mu           sync.RWMutex
 	config       Config
+	presetByCmd  map[uint32]string
 	hwnd         windows.Handle
 	hIcon        windows.Handle
 	currentMods  uint32
@@ -199,7 +200,12 @@ func NewPlatformAgent(app *App) PlatformAgent {
 	app.mu.RLock()
 	config := app.config.Clone()
 	app.mu.RUnlock()
-	return &WindowsAgent{app: app, config: config, hotkeyCh: make(chan hotkeyReq, 1)}
+	return &WindowsAgent{
+		app:        app,
+		config:     config,
+		presetByCmd: map[uint32]string{},
+		hotkeyCh:   make(chan hotkeyReq, 1),
+	}
 }
 
 func (w *WindowsAgent) Start() error {
@@ -592,14 +598,59 @@ func (w *WindowsAgent) showMenu() {
 	}
 	defer procDestroyMenu.Call(menu)
 
-	appendMenu(menu, mfString|mfDisabled, 0, "Active preset")
-	for index, preset := range config.Presets {
+	presetByCmd := make(map[uint32]string, len(config.Presets))
+	nextPresetCommand := uint32(cmdPresetBase)
+	appendPreset := func(preset Preset) {
 		flags := uint32(mfString)
 		if preset.ID == config.ActivePresetID {
 			flags |= mfChecked
 		}
-		appendMenu(menu, flags, uint32(cmdPresetBase+index), fmt.Sprintf("%s  %dx%d", preset.Name, preset.Width, preset.Height))
+		command := nextPresetCommand
+		nextPresetCommand++
+		presetByCmd[command] = preset.ID
+		appendMenu(menu, flags, command, fmt.Sprintf("%s  %dx%d", preset.Name, preset.Width, preset.Height))
 	}
+
+	favoriteSet := make(map[string]bool, len(config.FavoritePresetIDs))
+	for _, id := range config.FavoritePresetIDs {
+		favoriteSet[id] = true
+	}
+
+	hasFavorites := false
+	for _, id := range config.FavoritePresetIDs {
+		preset, ok := config.FindPreset(id)
+		if !ok {
+			continue
+		}
+		if !hasFavorites {
+			appendMenu(menu, mfString|mfDisabled, 0, "Favorites")
+			hasFavorites = true
+		}
+		appendPreset(preset)
+	}
+
+	otherPresets := make([]Preset, 0, len(config.Presets))
+	for _, preset := range config.Presets {
+		if favoriteSet[preset.ID] {
+			continue
+		}
+		otherPresets = append(otherPresets, preset)
+	}
+
+	if hasFavorites && len(otherPresets) > 0 {
+		appendMenu(menu, mfSeparator, 0, "")
+		appendMenu(menu, mfString|mfDisabled, 0, "All Presets")
+	} else if !hasFavorites {
+		appendMenu(menu, mfString|mfDisabled, 0, "Presets")
+	}
+	for _, preset := range otherPresets {
+		appendPreset(preset)
+	}
+
+	w.mu.Lock()
+	w.presetByCmd = presetByCmd
+	w.mu.Unlock()
+
 	appendMenu(menu, mfSeparator, 0, "")
 	appendMenu(menu, mfString|mfDisabled, 0, fmt.Sprintf("Hotkey: %s", config.Hotkey))
 	appendMenu(menu, mfSeparator, 0, "")
@@ -634,12 +685,12 @@ func appendMenu(menu uintptr, flags uint32, command uint32, label string) {
 func (w *WindowsAgent) handleCommand(command uint32) {
 	w.mu.RLock()
 	config := w.config.Clone()
+	presetID, isPreset := w.presetByCmd[command]
 	w.mu.RUnlock()
 
 	switch {
-	case command >= cmdPresetBase && command < cmdPresetBase+uint32(len(config.Presets)):
-		preset := config.Presets[command-cmdPresetBase]
-		if _, err := w.app.SetActivePreset(preset.ID); err != nil {
+	case isPreset:
+		if _, err := w.app.SetActivePreset(presetID); err != nil {
 			w.Notify("ResizeMe", err.Error(), true)
 		}
 	case command == cmdCenter:

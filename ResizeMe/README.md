@@ -30,3 +30,4 @@ wails build
 
 - Use this folder for the original Go/Wails implementation and frontend work.
 - If the request is about macOS menu-bar behavior, accessibility permission flow, or native SwiftUI, switch to `ResizeMeMac/` instead.
+- Presets support favorites: starred presets are grouped first in the tray menu and remain editable in the Wails settings UI.

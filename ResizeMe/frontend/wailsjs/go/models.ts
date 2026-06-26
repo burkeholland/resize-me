@@ -21,6 +21,7 @@ export namespace main {
 	export class Config {
 	    presets: Preset[];
 	    activePresetId: string;
+	    favoritePresetIds: string[];
 	    centerAfterResize: boolean;
 	    hotkey: string;
 	    autoStart: boolean;
@@ -35,6 +36,7 @@ export namespace main {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.presets = this.convertValues(source["presets"], Preset);
 	        this.activePresetId = source["activePresetId"];
+	        this.favoritePresetIds = source["favoritePresetIds"];
 	        this.centerAfterResize = source["centerAfterResize"];
 	        this.hotkey = source["hotkey"];
 	        this.autoStart = source["autoStart"];
@@ -62,4 +64,3 @@ export namespace main {
 	}
 
 }
-
