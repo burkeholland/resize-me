@@ -19,6 +19,12 @@ Do not copy the Tiny Clips MSIX path directly. Tiny Clips uses MSIX because it i
 
 If we later want Start menu shortcuts, Add/Remove Programs entries, or a managed uninstall path, switch from direct `.exe` to the Wails NSIS installer and use `InstallerType: nullsoft`. For the requested "ship the exe" path, use `portable`.
 
+## Implemented files
+
+- `.github/workflows/release.yml` — builds x64 and ARM64 Windows `.exe` assets only when a `v*.*.*-windows` tag is pushed, signs them, verifies signatures, generates winget manifests, and creates the GitHub Release.
+- `.github/workflows/winget-submit.yml` — manually submits a published Windows release to `microsoft/winget-pkgs` using `wingetcreate`.
+- `ResizeMe/packaging/winget/` — source winget manifest templates for `BurkeHolland.ResizeMe`.
+
 ## One-time decisions
 
 1. Confirm the winget package identifier. Recommended:
@@ -72,9 +78,32 @@ Recommended signing path:
 
 Alternative: use a traditional code-signing `.pfx` certificate in GitHub Actions secrets and sign with `signtool`. Azure signing is preferable because the private key is not exported into CI.
 
-## Release workflow direction
+## GitHub setup required
 
-Keep the current PR smoke workflows for validation. The Windows release workflow should stay tag-gated, matching macOS: pushing `v*.*.*-windows` is what ships the GitHub Release.
+Create a `windows-release` environment in GitHub if you want an approval gate before a tagged Windows release can sign and publish assets.
+
+Add these repository secrets for `.github/workflows/release.yml`:
+
+```text
+AZURE_CLIENT_ID
+AZURE_TENANT_ID
+AZURE_SUBSCRIPTION_ID
+AZURE_ARTIFACT_SIGNING_ENDPOINT
+AZURE_ARTIFACT_SIGNING_ACCOUNT_NAME
+AZURE_ARTIFACT_SIGNING_CERTIFICATE_PROFILE_NAME
+```
+
+Add this repository secret for `.github/workflows/winget-submit.yml`:
+
+```text
+WINGET_CREATE_GITHUB_TOKEN
+```
+
+`WINGET_CREATE_GITHUB_TOKEN` should be a classic GitHub PAT from the maintainer account with `public_repo` scope. `wingetcreate` uses it to fork `microsoft/winget-pkgs` and open the package PR.
+
+## Release workflow
+
+Keep the current PR smoke workflows for validation. The Windows release workflow is tag-gated, matching macOS: pushing `v*.*.*-windows` is what ships the GitHub Release.
 
 1. Trigger on `v*.*.*-windows` tags.
 2. Parse the tag into a numeric package version.
@@ -108,13 +137,13 @@ Do not create Windows releases from every push to `main`. Winget should use a de
 
 ## Winget manifests
 
-Store source manifests in:
+Source manifests live in:
 
 ```text
 ResizeMe/packaging/winget/
 ```
 
-Use three files, mirroring the Tiny Clips structure.
+The release and winget submission workflows copy the version and locale manifests, stamp `PackageVersion`, and regenerate the installer manifest with the actual release URLs and hashes.
 
 ### `BurkeHolland.ResizeMe.yaml`
 
@@ -179,16 +208,21 @@ ManifestType: installer
 ManifestVersion: 1.12.0
 ```
 
-Validate locally:
+Validate the checked-in templates:
 
 ```pwsh
 winget validate --manifest ResizeMe\packaging\winget
-winget install --manifest ResizeMe\packaging\winget
+```
+
+After a tagged Windows release exists, test install with the generated manifest artifact from the release:
+
+```pwsh
+winget install --manifest <generated-winget-manifest-folder>
 ```
 
 ## Winget submission workflow
 
-Add a manually triggered workflow like Tiny Clips' `.github/workflows/winget-submit.yml`, but update it for portable `.exe` assets:
+`.github/workflows/winget-submit.yml` is manually triggered after the tagged Windows GitHub Release exists:
 
 1. Input: `tag`, for example `v0.0.1-windows`.
 2. Download `ResizeMe-windows-amd64.exe` and `ResizeMe-windows-arm64.exe` from that GitHub Release.
@@ -216,11 +250,8 @@ Use a classic GitHub PAT from the maintainer account with `public_repo` scope. `
 
 - [ ] Confirm `BurkeHolland.ResizeMe` as the winget package identifier.
 - [ ] Use Windows release tags like `v0.0.1-windows`, matching the macOS `v0.0.1-mac` pattern.
-- [ ] Add `ResizeMe/packaging/winget/` source manifests.
-- [ ] Add the signed Windows release workflow for `v*.*.*-windows` tags.
-- [ ] Add Azure signing secrets or PFX signing secrets.
-- [ ] Sign and verify both `.exe` assets before release upload.
-- [ ] Add the manually gated winget submission workflow.
+- [ ] Add Azure signing secrets.
+- [ ] Add the `WINGET_CREATE_GITHUB_TOKEN` secret.
 - [ ] Create one test release, validate `winget install --manifest`, then submit to `microsoft/winget-pkgs`.
 
 ## Reference model

@@ -7,6 +7,11 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+
+env:
+  PACKAGE_IDENTIFIER: BurkeHolland.ResizeMe
+  SIGNTOOL_TIMESTAMP_URL: http://timestamp.acs.microsoft.com
 
 jobs:
   build:
@@ -46,29 +51,232 @@ jobs:
         with:
           name: ${{ matrix.artifact }}
           path: ResizeMe/build/bin/${{ matrix.artifact }}
+          if-no-files-found: error
 
   release:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
+    environment: windows-release
+
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Download all artifacts
+      - name: Resolve release version
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          if ($tag -notmatch '^v(?<version>\d+\.\d+\.\d+)-windows$') {
+            throw "Windows release tags must look like v0.0.1-windows. Got '$tag'."
+          }
+
+          "RELEASE_TAG=$tag" >> $env:GITHUB_ENV
+          "PACKAGE_VERSION=$($Matches.version)" >> $env:GITHUB_ENV
+
+      - name: Download unsigned build artifacts
         uses: actions/download-artifact@v4
         with:
-          path: artifacts
+          path: artifacts/windows
           merge-multiple: true
 
-      - name: Create Release
+      - name: Azure login
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Download Artifact Signing client
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path artifacts/tools | Out-Null
+          $nuget = Join-Path (Resolve-Path artifacts/tools) "nuget.exe"
+          Invoke-WebRequest -Uri https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile $nuget
+          & $nuget install Microsoft.ArtifactSigning.Client -OutputDirectory artifacts/tools -ExcludeVersion -NonInteractive
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to install Microsoft.ArtifactSigning.Client."
+          }
+
+      - name: Sign Windows executables
+        shell: pwsh
+        run: |
+          $signtool = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin" -Recurse -Filter signtool.exe |
+            Where-Object { $_.FullName -match '\\x64\\signtool\.exe$' } |
+            Sort-Object FullName -Descending |
+            Select-Object -First 1 -ExpandProperty FullName
+          if (!$signtool) {
+            throw "SignTool x64 was not found."
+          }
+
+          $dlib = Get-ChildItem artifacts/tools/Microsoft.ArtifactSigning.Client -Recurse -Filter Azure.CodeSigning.Dlib.dll |
+            Where-Object { $_.FullName -match '\\bin\\x64\\' } |
+            Select-Object -First 1 -ExpandProperty FullName
+          if (!$dlib) {
+            throw "Azure.CodeSigning.Dlib.dll x64 was not found."
+          }
+
+          $metadataPath = Join-Path (Resolve-Path artifacts/windows) "artifact-signing-metadata.json"
+          @{
+            Endpoint = "${{ secrets.AZURE_ARTIFACT_SIGNING_ENDPOINT }}"
+            CodeSigningAccountName = "${{ secrets.AZURE_ARTIFACT_SIGNING_ACCOUNT_NAME }}"
+            CertificateProfileName = "${{ secrets.AZURE_ARTIFACT_SIGNING_CERTIFICATE_PROFILE_NAME }}"
+            CorrelationId = "${{ github.repository }}-${{ github.run_id }}"
+            ExcludeCredentials = @(
+              "ManagedIdentityCredential",
+              "WorkloadIdentityCredential",
+              "SharedTokenCacheCredential",
+              "VisualStudioCredential",
+              "VisualStudioCodeCredential",
+              "AzurePowerShellCredential",
+              "AzureDeveloperCliCredential",
+              "InteractiveBrowserCredential"
+            )
+          } | ConvertTo-Json | Set-Content -Path $metadataPath -Encoding UTF8
+
+          foreach ($asset in @("ResizeMe-windows-amd64.exe", "ResizeMe-windows-arm64.exe")) {
+            $path = Join-Path "artifacts/windows" $asset
+            if (!(Test-Path $path)) {
+              throw "Release asset was not found: $path"
+            }
+
+            & $signtool sign /v /fd SHA256 /tr $env:SIGNTOOL_TIMESTAMP_URL /td SHA256 /dlib "$dlib" /dmdf "$metadataPath" $path
+            if ($LASTEXITCODE -ne 0) {
+              throw "SignTool failed for $asset."
+            }
+          }
+
+      - name: Verify signatures
+        shell: pwsh
+        run: |
+          $signtool = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin" -Recurse -Filter signtool.exe |
+            Where-Object { $_.FullName -match '\\x64\\signtool\.exe$' } |
+            Sort-Object FullName -Descending |
+            Select-Object -First 1 -ExpandProperty FullName
+          if (!$signtool) {
+            throw "SignTool x64 was not found."
+          }
+
+          foreach ($asset in @("ResizeMe-windows-amd64.exe", "ResizeMe-windows-arm64.exe")) {
+            & $signtool verify /pa /v (Join-Path "artifacts/windows" $asset)
+            if ($LASTEXITCODE -ne 0) {
+              throw "SignTool verification failed for $asset."
+            }
+          }
+
+      - name: Compute winget hashes
+        shell: pwsh
+        run: |
+          $x64Package = "artifacts/windows/ResizeMe-windows-amd64.exe"
+          $arm64Package = "artifacts/windows/ResizeMe-windows-arm64.exe"
+
+          $x64InstallerHash = (winget hash $x64Package | Select-String 'InstallerSha256:' | Select-Object -Last 1).ToString().Split(':')[1].Trim()
+          $arm64InstallerHash = (winget hash $arm64Package | Select-String 'InstallerSha256:' | Select-Object -Last 1).ToString().Split(':')[1].Trim()
+
+          "X64_INSTALLER_SHA256=$x64InstallerHash" >> $env:GITHUB_ENV
+          "ARM64_INSTALLER_SHA256=$arm64InstallerHash" >> $env:GITHUB_ENV
+
+          @"
+          PackageVersion: $env:PACKAGE_VERSION
+
+          x64 InstallerSha256: $x64InstallerHash
+          arm64 InstallerSha256: $arm64InstallerHash
+          "@ | ForEach-Object { $_ -replace '^          ', '' } |
+            Set-Content -Path artifacts/windows/winget-hashes.txt -Encoding UTF8
+
+      - name: Generate winget manifest artifact
+        shell: pwsh
+        run: |
+          $wingetDir = "artifacts/windows/winget"
+          New-Item -ItemType Directory -Force -Path $wingetDir | Out-Null
+          Copy-Item ResizeMe/packaging/winget/BurkeHolland.ResizeMe.yaml $wingetDir
+          Copy-Item ResizeMe/packaging/winget/BurkeHolland.ResizeMe.locale.en-US.yaml $wingetDir
+
+          foreach ($manifest in Get-ChildItem $wingetDir/*.yaml) {
+            $content = Get-Content $manifest.FullName -Raw
+            $content = $content -replace 'PackageVersion: .*', "PackageVersion: $env:PACKAGE_VERSION"
+            Set-Content -Path $manifest.FullName -Value $content -Encoding UTF8
+          }
+
+          @"
+          # yaml-language-server: `$schema=https://aka.ms/winget-manifest.installer.1.12.0.schema.json
+          PackageIdentifier: $env:PACKAGE_IDENTIFIER
+          PackageVersion: $env:PACKAGE_VERSION
+          MinimumOSVersion: 10.0.19041.0
+          InstallerType: portable
+          Commands:
+            - resizeme
+          Dependencies:
+            PackageDependencies:
+              - PackageIdentifier: Microsoft.EdgeWebView2Runtime
+          Installers:
+            - Architecture: x64
+              InstallerUrl: https://github.com/${{ github.repository }}/releases/download/$env:RELEASE_TAG/ResizeMe-windows-amd64.exe
+              InstallerSha256: $env:X64_INSTALLER_SHA256
+            - Architecture: arm64
+              InstallerUrl: https://github.com/${{ github.repository }}/releases/download/$env:RELEASE_TAG/ResizeMe-windows-arm64.exe
+              InstallerSha256: $env:ARM64_INSTALLER_SHA256
+          ManifestType: installer
+          ManifestVersion: 1.12.0
+          "@ | ForEach-Object { $_ -replace '^          ', '' } |
+            Set-Content -Path (Join-Path $wingetDir "BurkeHolland.ResizeMe.installer.yaml") -Encoding UTF8
+
+          $validateOutput = winget validate --manifest $wingetDir 2>&1 | Out-String
+          Write-Host $validateOutput
+          if ($validateOutput -notmatch 'Manifest validation succeeded') {
+            throw "winget validate failed:`n$validateOutput"
+          }
+          $global:LASTEXITCODE = 0
+
+      - name: Generate release notes
+        shell: pwsh
+        run: |
+          $notes = @(
+            "Windows release from commit ${{ github.sha }}.",
+            "",
+            "## Downloads",
+            "- ``ResizeMe-windows-amd64.exe`` - Windows x64",
+            "- ``ResizeMe-windows-arm64.exe`` - Windows ARM64",
+            "",
+            "## Install with winget",
+            "After the generated manifest is approved in microsoft/winget-pkgs:",
+            "",
+            "``````text",
+            "winget install $env:PACKAGE_IDENTIFIER",
+            "``````",
+            "",
+            "Update later with ``winget upgrade $env:PACKAGE_IDENTIFIER``.",
+            "",
+            "## Release validation",
+            "- Azure Artifact Signing completed for x64 and ARM64 executables.",
+            "- SignTool verification passed for x64 and ARM64 executables.",
+            "- winget manifest validation passed for the generated portable installer manifests.",
+            "",
+            "## winget hashes",
+            "``````text"
+          )
+          $notes += Get-Content artifacts/windows/winget-hashes.txt
+          $notes += "``````"
+          $notes | Set-Content -Path artifacts/windows/release-notes.md -Encoding UTF8
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-release
+          path: |
+            artifacts/windows/*.exe
+            artifacts/windows/*.txt
+            artifacts/windows/winget/*.yaml
+          if-no-files-found: error
+
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: ResizeMe ${{ github.ref_name }}
-          body: |
-            Windows release from commit ${{ github.sha }}.
-
-            **Downloads:**
-            - `ResizeMe-windows-amd64.exe` — Windows x64
-            - `ResizeMe-windows-arm64.exe` — Windows ARM64
-          files: artifacts/*
+          body_path: artifacts/windows/release-notes.md
+          files: |
+            artifacts/windows/*.exe
+            artifacts/windows/winget-hashes.txt
+            artifacts/windows/winget/*.yaml
           generate_release_notes: true

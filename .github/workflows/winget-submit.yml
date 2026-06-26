@@ -1,0 +1,110 @@
+name: WinGet Submission
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Windows release tag to submit (for example, v0.0.1-windows)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  PACKAGE_IDENTIFIER: BurkeHolland.ResizeMe
+
+jobs:
+  submit:
+    name: Submit to winget-pkgs
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Resolve release version
+        shell: pwsh
+        run: |
+          $tag = "${{ inputs.tag }}"
+          if ($tag -notmatch '^v(?<version>\d+\.\d+\.\d+)-windows$') {
+            throw "Windows release tags must look like v0.0.1-windows. Got '$tag'."
+          }
+
+          "RELEASE_TAG=$tag" >> $env:GITHUB_ENV
+          "PACKAGE_VERSION=$($Matches.version)" >> $env:GITHUB_ENV
+
+      - name: Download release executables
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          New-Item -ItemType Directory -Force -Path packages | Out-Null
+          gh release download $env:RELEASE_TAG `
+            --repo ${{ github.repository }} `
+            --pattern "ResizeMe-windows-amd64.exe" `
+            --pattern "ResizeMe-windows-arm64.exe" `
+            --dir packages
+          Get-ChildItem packages | Format-Table Name, Length
+
+      - name: Generate winget manifest
+        shell: pwsh
+        run: |
+          $manifestDir = "manifests"
+          New-Item -ItemType Directory -Force -Path $manifestDir | Out-Null
+          Copy-Item ResizeMe/packaging/winget/BurkeHolland.ResizeMe.yaml $manifestDir
+          Copy-Item ResizeMe/packaging/winget/BurkeHolland.ResizeMe.locale.en-US.yaml $manifestDir
+
+          foreach ($manifest in Get-ChildItem $manifestDir/*.yaml) {
+            $content = Get-Content $manifest.FullName -Raw
+            $content = $content -replace 'PackageVersion: .*', "PackageVersion: $env:PACKAGE_VERSION"
+            Set-Content -Path $manifest.FullName -Value $content -Encoding UTF8
+          }
+
+          $x64Package = "packages/ResizeMe-windows-amd64.exe"
+          $arm64Package = "packages/ResizeMe-windows-arm64.exe"
+
+          $x64InstallerHash = (winget hash $x64Package | Select-String 'InstallerSha256:' | Select-Object -Last 1).ToString().Split(':')[1].Trim()
+          $arm64InstallerHash = (winget hash $arm64Package | Select-String 'InstallerSha256:' | Select-Object -Last 1).ToString().Split(':')[1].Trim()
+
+          @"
+          # yaml-language-server: `$schema=https://aka.ms/winget-manifest.installer.1.12.0.schema.json
+          PackageIdentifier: $env:PACKAGE_IDENTIFIER
+          PackageVersion: $env:PACKAGE_VERSION
+          MinimumOSVersion: 10.0.19041.0
+          InstallerType: portable
+          Commands:
+            - resizeme
+          Dependencies:
+            PackageDependencies:
+              - PackageIdentifier: Microsoft.EdgeWebView2Runtime
+          Installers:
+            - Architecture: x64
+              InstallerUrl: https://github.com/${{ github.repository }}/releases/download/$env:RELEASE_TAG/ResizeMe-windows-amd64.exe
+              InstallerSha256: $x64InstallerHash
+            - Architecture: arm64
+              InstallerUrl: https://github.com/${{ github.repository }}/releases/download/$env:RELEASE_TAG/ResizeMe-windows-arm64.exe
+              InstallerSha256: $arm64InstallerHash
+          ManifestType: installer
+          ManifestVersion: 1.12.0
+          "@ | ForEach-Object { $_ -replace '^          ', '' } |
+            Set-Content -Path (Join-Path $manifestDir "BurkeHolland.ResizeMe.installer.yaml") -Encoding UTF8
+
+          $validateOutput = winget validate --manifest $manifestDir 2>&1 | Out-String
+          Write-Host $validateOutput
+          if ($validateOutput -notmatch 'Manifest validation succeeded') {
+            throw "winget validate failed:`n$validateOutput"
+          }
+          $global:LASTEXITCODE = 0
+
+      - name: Submit to winget-pkgs
+        shell: pwsh
+        env:
+          WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_CREATE_GITHUB_TOKEN }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:WINGET_CREATE_GITHUB_TOKEN)) {
+            throw "The WINGET_CREATE_GITHUB_TOKEN repository secret is not set. Add a classic PAT with public_repo scope that can fork microsoft/winget-pkgs. See https://aka.ms/winget-create-token."
+          }
+
+          curl.exe -JLO https://aka.ms/wingetcreate/latest
+          .\wingetcreate.exe submit --token $env:WINGET_CREATE_GITHUB_TOKEN manifests
