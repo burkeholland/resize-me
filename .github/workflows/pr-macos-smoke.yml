@@ -1,0 +1,41 @@
+name: PR macOS Smoke Build
+
+on:
+  pull_request:
+    paths:
+      - 'ResizeMeMac/**'
+      - '.github/workflows/pr-macos-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-macos-smoke-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-macos-smoke:
+    runs-on: macos-26
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '26.2'
+
+      - name: Build unsigned Release app
+        working-directory: ResizeMeMac
+        run: |
+          rm -rf .derivedData
+          xcodebuild -project ResizeMe.xcodeproj \
+            -scheme ResizeMe \
+            -configuration Release \
+            -derivedDataPath .derivedData \
+            -destination 'platform=macOS' \
+            CODE_SIGN_IDENTITY='-' \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            build
