@@ -511,10 +511,10 @@ h1.wordmark {
         </div>
         <div class="install-pill">
           <div class="download-menu" id="download-menu">
-            <button id="download-toggle" class="dl-btn" type="button" aria-expanded="false" aria-controls="download-list">Download ▾</button>
+            <button id="download-toggle" class="dl-btn" type="button" aria-expanded="false" aria-controls="download-list">Install ▾</button>
             <ul id="download-list" class="download-list" role="menu" aria-label="Download options">
               <li role="none"><a role="menuitem" id="mac-link" href="https://github.com/burkeholland/resize-me/releases/latest">Download for macOS</a></li>
-              <li role="none"><a role="menuitem" id="windows-link" href="https://github.com/burkeholland/resize-me/releases/latest">Download for Windows</a></li>
+              <li role="none"><a role="menuitem" id="windows-link" href="https://github.com/burkeholland/resize-me/releases/latest">Install for Windows with winget</a></li>
             </ul>
           </div>
         </div>
@@ -547,6 +547,7 @@ brew trust burkeholland/resize-me 2>/dev/null || true
 brew install --cask resizeme</code></pre>
         <button class="copy-btn" type="button" aria-label="Copy install commands">Copy</button>
       </div>
+
       <p>Already installed?</p>
       <div class="code-block">
         <pre><code>brew update
@@ -556,6 +557,26 @@ brew upgrade --cask resizeme</code></pre>
       <div class="install-actions">
         <a class="manual-link" href="https://github.com/burkeholland/resize-me/releases/latest">Manual download</a>
         <button class="close-modal" id="mac-install-close" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="install-modal" id="windows-install-modal" role="dialog" aria-modal="true" aria-labelledby="windows-install-title" aria-hidden="true">
+    <div class="install-dialog">
+      <h2 id="windows-install-title">Install ResizeMe for Windows</h2>
+      <p>winget is the easiest way to install the signed Windows app and keep it updated.</p>
+      <div class="code-block">
+        <pre><code>winget install BurkeHolland.ResizeMe</code></pre>
+        <button class="copy-btn" type="button" aria-label="Copy install command">Copy</button>
+      </div>
+      <p>Already installed?</p>
+      <div class="code-block">
+        <pre><code>winget upgrade BurkeHolland.ResizeMe</code></pre>
+        <button class="copy-btn" type="button" aria-label="Copy upgrade command">Copy</button>
+      </div>
+      <div class="install-actions">
+        <a class="manual-link" href="https://github.com/burkeholland/resize-me/releases/latest">Manual download</a>
+        <button class="close-modal" id="windows-install-close" type="button">Close</button>
       </div>
     </div>
   </div>
@@ -575,7 +596,8 @@ brew upgrade --cask resizeme</code></pre>
       const downloadToggle = document.getElementById('download-toggle');
       const macInstallModal = document.getElementById('mac-install-modal');
       const macInstallClose = document.getElementById('mac-install-close');
-      const installDialog = document.querySelector('.install-dialog');
+      const windowsInstallModal = document.getElementById('windows-install-modal');
+      const windowsInstallClose = document.getElementById('windows-install-close');
       let modalReturnFocus = downloadToggle;
 
       async function updateWindowsReleaseLink() {
@@ -624,6 +646,21 @@ brew upgrade --cask resizeme</code></pre>
         }
       }
 
+      function openWindowsInstallModal() {
+        modalReturnFocus = document.activeElement || downloadToggle;
+        windowsInstallModal.classList.add('open');
+        windowsInstallModal.setAttribute('aria-hidden', 'false');
+        windowsInstallClose.focus();
+      }
+
+      function closeWindowsInstallModal() {
+        windowsInstallModal.classList.remove('open');
+        windowsInstallModal.setAttribute('aria-hidden', 'true');
+        if (modalReturnFocus && typeof modalReturnFocus.focus === 'function') {
+          modalReturnFocus.focus();
+        }
+      }
+
       if (isMac) {
         key1.textContent = '⌃';
         key2.textContent = '⌥';
@@ -654,7 +691,15 @@ brew upgrade --cask resizeme</code></pre>
         openMacInstallModal();
       });
 
+      windowsLink.addEventListener('click', function (event) {
+        event.preventDefault();
+        downloadMenu.classList.remove('open');
+        downloadToggle.setAttribute('aria-expanded', 'false');
+        openWindowsInstallModal();
+      });
+
       macInstallClose.addEventListener('click', closeMacInstallModal);
+      windowsInstallClose.addEventListener('click', closeWindowsInstallModal);
 
       macInstallModal.addEventListener('click', function (event) {
         if (event.target === macInstallModal) {
@@ -662,11 +707,17 @@ brew upgrade --cask resizeme</code></pre>
         }
       });
 
-      if (installDialog) {
+      windowsInstallModal.addEventListener('click', function (event) {
+        if (event.target === windowsInstallModal) {
+          closeWindowsInstallModal();
+        }
+      });
+
+      document.querySelectorAll('.install-dialog').forEach(function (installDialog) {
         installDialog.addEventListener('click', function (event) {
           event.stopPropagation();
         });
-      }
+      });
 
       document.querySelectorAll('.copy-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
@@ -690,11 +741,13 @@ brew upgrade --cask resizeme</code></pre>
       document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape' && macInstallModal.classList.contains('open')) {
           closeMacInstallModal();
+        } else if (event.key === 'Escape' && windowsInstallModal.classList.contains('open')) {
+          closeWindowsInstallModal();
         }
       });
 
       document.addEventListener('click', function (event) {
-        if (!downloadMenu.contains(event.target) && event.target !== macInstallModal) {
+        if (!downloadMenu.contains(event.target) && event.target !== macInstallModal && event.target !== windowsInstallModal) {
           downloadMenu.classList.remove('open');
           downloadToggle.setAttribute('aria-expanded', 'false');
         }

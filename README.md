@@ -16,10 +16,17 @@ If a request does not clearly say which app is meant, ask for clarification befo
 
 ## Download
 
-Choose the build for your platform:
+Install the Windows app with winget:
 
-- [Download for macOS](https://github.com/burkeholland/resize-me/releases/latest)
-- [Download for Windows](https://github.com/burkeholland/resize-me/releases/latest)
+```powershell
+winget install BurkeHolland.ResizeMe
+```
+
+Update it later with:
+
+```powershell
+winget upgrade BurkeHolland.ResizeMe
+```
 
 Install the macOS app with Homebrew:
 

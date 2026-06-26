@@ -28,7 +28,7 @@
       "name": "Is ResizeMe free?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. ResizeMe is available as a free download from GitHub Releases."
+        "text": "Yes. ResizeMe is available as a free install through winget on Windows, Homebrew on macOS, and GitHub Releases for manual downloads."
       }
     },
     {
@@ -44,7 +44,15 @@
       "name": "How do I install ResizeMe on macOS?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Use Homebrew commands shown on the homepage download flow, or install from GitHub Releases."
+        "text": "Use Homebrew commands shown on the homepage download flow, or install manually from GitHub Releases."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I install ResizeMe on Windows?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Use winget install BurkeHolland.ResizeMe. Update later with winget upgrade BurkeHolland.ResizeMe."
       }
     }
   ]
@@ -124,18 +132,22 @@ a {
       <li>One global hotkey to resize active windows quickly.</li>
       <li>Preset window dimensions for common workflows and screen sizes.</li>
       <li>Support for both macOS and Windows.</li>
-      <li>Fast download and setup from GitHub Releases.</li>
-      <li>Homebrew install path for the macOS app.</li>
+      <li>Fast Windows install and upgrades through winget.</li>
+      <li>Homebrew install and upgrade path for the macOS app.</li>
     </ul>
 
     <h2>Frequently asked questions</h2>
     <details>
       <summary>Is ResizeMe free?</summary>
-      <p>Yes. ResizeMe is available as a free download from GitHub Releases.</p>
+      <p>Yes. ResizeMe is available as a free install through winget on Windows, Homebrew on macOS, and GitHub Releases for manual downloads.</p>
     </details>
     <details>
       <summary>Does ResizeMe work on macOS and Windows?</summary>
       <p>Yes. The project ships builds for both platforms.</p>
+    </details>
+    <details>
+      <summary>How do I install on Windows?</summary>
+      <p>Use <code>winget install BurkeHolland.ResizeMe</code>. Update later with <code>winget upgrade BurkeHolland.ResizeMe</code>.</p>
     </details>
     <details>
       <summary>How do I install on macOS?</summary>
