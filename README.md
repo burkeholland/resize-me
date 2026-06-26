@@ -44,6 +44,8 @@ The website landing page in [docs/index.html](docs/index.html) also detects your
 - `ResizeMeMac/` — native SwiftUI menu-bar app for macOS
 - `docs/` — release, signing, and distribution notes
 
+Windows winget setup notes are in [docs/windows-winget-setup.md](docs/windows-winget-setup.md).
+
 ## Notes
 
 - The native macOS app is the default target for menu-bar and macOS-specific work.

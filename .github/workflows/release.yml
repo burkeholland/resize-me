@@ -1,12 +1,9 @@
-name: Build and Release
+name: Windows Release
 
 on:
   push:
-    branches: [main]
-    paths:
-      - 'ResizeMe/**'
-      - '!ResizeMe/frontend/node_modules/**'
-      - '.github/workflows/release.yml'
+    tags:
+      - 'v*.*.*-windows'
 
 permissions:
   contents: write
@@ -30,7 +27,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version: '1.23'
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -62,17 +59,13 @@ jobs:
           path: artifacts
           merge-multiple: true
 
-      - name: Generate version tag
-        id: version
-        run: echo "tag=v0.1.$(date +%Y%m%d%H%M%S)" >> "$GITHUB_OUTPUT"
-
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.version.outputs.tag }}
-          name: ResizeMe ${{ steps.version.outputs.tag }}
+          tag_name: ${{ github.ref_name }}
+          name: ResizeMe ${{ github.ref_name }}
           body: |
-            Automated build from commit ${{ github.sha }}.
+            Windows release from commit ${{ github.sha }}.
 
             **Downloads:**
             - `ResizeMe-windows-amd64.exe` — Windows x64
