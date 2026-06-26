@@ -91,6 +91,14 @@ AZURE_ARTIFACT_SIGNING_ACCOUNT_NAME
 AZURE_ARTIFACT_SIGNING_CERTIFICATE_PROFILE_NAME
 ```
 
+Because the release workflow runs from tags and does not use a GitHub environment, the Entra app registration needs a federated credential whose subject matches the release tag ref. For the current release:
+
+```text
+repo:burkeholland/resize-me:ref:refs/tags/v0.2.0-windows
+```
+
+If you keep OIDC authentication, add the matching federated credential when cutting each new Windows release tag, or configure a broader tag-matching federated credential if your tenant supports flexible federated identity credentials.
+
 Add this repository secret for `.github/workflows/winget-submit.yml`:
 
 ```text
