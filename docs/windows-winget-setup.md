@@ -80,8 +80,6 @@ Alternative: use a traditional code-signing `.pfx` certificate in GitHub Actions
 
 ## GitHub setup required
 
-Create a `windows-release` environment in GitHub if you want an approval gate before a tagged Windows release can sign and publish assets.
-
 Add these repository secrets for `.github/workflows/release.yml`:
 
 ```text

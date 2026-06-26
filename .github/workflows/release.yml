@@ -56,7 +56,6 @@ jobs:
   release:
     needs: build
     runs-on: windows-latest
-    environment: windows-release
 
     steps:
       - uses: actions/checkout@v4
