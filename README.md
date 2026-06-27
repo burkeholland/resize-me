@@ -2,6 +2,8 @@
 
 Website: [resizeme.dev](https://resizeme.dev/)
 
+<img width="640" height="311" alt="TinyClips 2026-06-26 at 20 46 31" src="https://github.com/user-attachments/assets/6157c5f3-60c1-4569-99eb-521068ce73f3" />
+
 This repository contains two versions of ResizeMe:
 
 - `ResizeMe/` — the original Go + Wails app
