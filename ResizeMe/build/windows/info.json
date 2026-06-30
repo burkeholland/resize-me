@@ -6,10 +6,10 @@
 		"0000": {
 			"ProductVersion": "{{.Info.ProductVersion}}",
 			"CompanyName": "{{.Info.CompanyName}}",
-			"FileDescription": "ResizeMe window resizing utility",
+			"FileDescription": "ResizeMe desktop layout utility",
 			"LegalCopyright": "{{.Info.Copyright}}",
 			"ProductName": "ResizeMe",
-			"Comments": "Resize focused windows to selected presets with a global hotkey."
+			"Comments": "Apply custom size presets with a configurable global hotkey."
 		}
 	}
 }

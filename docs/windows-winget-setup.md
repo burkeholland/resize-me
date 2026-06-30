@@ -174,21 +174,23 @@ PublisherUrl: https://github.com/burkeholland
 PublisherSupportUrl: https://github.com/burkeholland/resize-me/issues
 PackageName: ResizeMe
 PackageUrl: https://github.com/burkeholland/resize-me
-License: Proprietary
-ShortDescription: Resize focused windows to selected presets with a global hotkey.
+License: MIT
+LicenseUrl: https://github.com/burkeholland/resize-me/blob/main/LICENSE
+ShortDescription: Desktop layout utility with custom size presets.
 Description: |-
-  ResizeMe is a lightweight window resizing utility for quickly snapping focused
-  windows to saved sizes and positions with a global hotkey.
+  ResizeMe applies saved sizes to the foreground program using a configurable
+  global hotkey. It can optionally center the program, run from the system tray,
+  and launch when the user signs in.
 Tags:
   - window-resizer
   - window-manager
   - productivity
-  - wails
+  - hotkey
 ManifestType: defaultLocale
 ManifestVersion: 1.12.0
 ```
 
-Add `PrivacyUrl` once the site has a stable privacy page. If ResizeMe gets a committed open-source license file later, update `License` and add `LicenseUrl`.
+The package does not collect or transmit personal information, telemetry, or analytics, so a `PrivacyUrl` is not required by the current winget policy. Add one if that behavior changes.
 
 ### `BurkeHolland.ResizeMe.installer.yaml`
 

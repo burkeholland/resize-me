@@ -26,6 +26,15 @@ To build a production package:
 wails build
 ```
 
+## Windows behavior and requirements
+
+- Requires Windows 10 version 2004 (build 19041) or later and the Microsoft Edge WebView2 Runtime.
+- Resizes only the foreground program using a user-configurable global hotkey.
+- Stores presets and settings locally in `%APPDATA%\ResizeMe\settings.json`.
+- Does not send settings, foreground-window metadata, telemetry, or analytics over the network.
+- Runs in the system tray after setup. Launch at sign-in is optional and writes a `ResizeMe` value under the current user's `Run` registry key.
+- Before uninstalling, turn off **Launch at startup** to remove that registry value.
+
 ## Notes
 
 - Use this folder for the original Go/Wails implementation and frontend work.
