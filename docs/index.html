@@ -511,10 +511,10 @@ h1.wordmark {
         </div>
         <div class="install-pill">
           <div class="download-menu" id="download-menu">
-            <button id="download-toggle" class="dl-btn" type="button" aria-expanded="false" aria-controls="download-list">Install ▾</button>
+            <button id="download-toggle" class="dl-btn" type="button" aria-expanded="false" aria-controls="download-list">Download ▾</button>
             <ul id="download-list" class="download-list" role="menu" aria-label="Download options">
-              <li role="none"><a role="menuitem" id="mac-link" href="https://github.com/burkeholland/resize-me/releases/latest">Download for macOS</a></li>
-              <li role="none"><a role="menuitem" id="windows-link" href="https://github.com/burkeholland/resize-me/releases/latest">Install for Windows with winget</a></li>
+              <li role="none"><a role="menuitem" id="mac-link" href="https://github.com/burkeholland/resize-me/releases/latest">macOS</a></li>
+              <li role="none"><a role="menuitem" id="windows-link" href="https://github.com/burkeholland/resize-me/releases/latest">Windows</a></li>
             </ul>
           </div>
         </div>
@@ -564,19 +564,10 @@ brew upgrade --cask resizeme</code></pre>
 
   <div class="install-modal" id="windows-install-modal" role="dialog" aria-modal="true" aria-labelledby="windows-install-title" aria-hidden="true">
     <div class="install-dialog">
-      <h2 id="windows-install-title">Install ResizeMe for Windows</h2>
-      <p>winget is the easiest way to install the signed Windows app and keep it updated.</p>
-      <div class="code-block">
-        <pre><code>winget install BurkeHolland.ResizeMe</code></pre>
-        <button class="copy-btn" type="button" aria-label="Copy install command">Copy</button>
-      </div>
-      <p>Already installed?</p>
-      <div class="code-block">
-        <pre><code>winget upgrade BurkeHolland.ResizeMe</code></pre>
-        <button class="copy-btn" type="button" aria-label="Copy upgrade command">Copy</button>
-      </div>
+      <h2 id="windows-install-title">Download ResizeMe for Windows</h2>
+      <p>WinGet support is coming soon. For now, download the Windows app manually from GitHub Releases.</p>
       <div class="install-actions">
-        <a class="manual-link" href="https://github.com/burkeholland/resize-me/releases/latest">Manual download</a>
+        <a class="manual-link" id="windows-manual-link" href="https://github.com/burkeholland/resize-me/releases/latest">Manual download</a>
         <button class="close-modal" id="windows-install-close" type="button">Close</button>
       </div>
     </div>
@@ -592,6 +583,7 @@ brew upgrade --cask resizeme</code></pre>
       const key3 = document.getElementById('key-3');
       const macLink = document.getElementById('mac-link');
       const windowsLink = document.getElementById('windows-link');
+      const windowsManualLink = document.getElementById('windows-manual-link');
       const windowsReleaseApi = 'https://api.github.com/repos/burkeholland/resize-me/releases?per_page=20';
       const downloadMenu = document.getElementById('download-menu');
       const downloadToggle = document.getElementById('download-toggle');
@@ -626,6 +618,7 @@ brew upgrade --cask resizeme</code></pre>
 
           if (latestWindowsRelease && typeof latestWindowsRelease.html_url === 'string') {
             windowsLink.href = latestWindowsRelease.html_url;
+            windowsManualLink.href = latestWindowsRelease.html_url;
           }
         } catch (error) {
           console.warn('Could not load latest Windows release link:', error);
