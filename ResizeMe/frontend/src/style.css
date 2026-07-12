@@ -55,6 +55,7 @@ h1, h2, h3, p { margin: 0; }
   align-items: center;
   gap: 8px;
   padding: 0 0 0 12px;
+  --wails-draggable: drag;
   -webkit-app-region: drag;
   user-select: none;
   background: var(--solid-background-base);
@@ -63,6 +64,7 @@ h1, h2, h3, p { margin: 0; }
 .titlebar-controls {
   margin-left: auto;
   display: flex;
+  --wails-draggable: no-drag;
   -webkit-app-region: no-drag;
 }
 
