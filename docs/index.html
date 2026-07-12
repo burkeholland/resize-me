@@ -564,8 +564,17 @@ brew upgrade --cask resizeme</code></pre>
 
   <div class="install-modal" id="windows-install-modal" role="dialog" aria-modal="true" aria-labelledby="windows-install-title" aria-hidden="true">
     <div class="install-dialog">
-      <h2 id="windows-install-title">Download ResizeMe for Windows</h2>
-      <p>WinGet support is coming soon. For now, download the Windows app manually from GitHub Releases.</p>
+      <h2 id="windows-install-title">Install ResizeMe for Windows</h2>
+      <p>winget is the easiest way to install the Windows app and keep it updated.</p>
+      <div class="code-block">
+        <pre><code>winget install BurkeHolland.ResizeMe</code></pre>
+        <button class="copy-btn" type="button" aria-label="Copy install command">Copy</button>
+      </div>
+      <p>Already installed?</p>
+      <div class="code-block">
+        <pre><code>winget upgrade BurkeHolland.ResizeMe</code></pre>
+        <button class="copy-btn" type="button" aria-label="Copy upgrade command">Copy</button>
+      </div>
       <div class="install-actions">
         <a class="manual-link" id="windows-manual-link" href="https://github.com/burkeholland/resize-me/releases/latest">Manual download</a>
         <button class="close-modal" id="windows-install-close" type="button">Close</button>
