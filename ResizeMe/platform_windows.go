@@ -824,7 +824,9 @@ func setAutoStart(enabled bool) error {
 	if err != nil {
 		return fmt.Errorf("read executable path: %w", err)
 	}
-	if err := key.SetStringValue("ResizeMe", fmt.Sprintf("%q", exePath)); err != nil {
+	// Wrap the path in literal double quotes (not fmt %q, which escapes
+	// backslashes and produces an invalid Windows path that will not launch).
+	if err := key.SetStringValue("ResizeMe", fmt.Sprintf(`"%s"`, exePath)); err != nil {
 		return fmt.Errorf("write startup registration: %w", err)
 	}
 	return nil
