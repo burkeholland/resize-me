@@ -824,10 +824,14 @@ func setAutoStart(enabled bool) error {
 	if err != nil {
 		return fmt.Errorf("read executable path: %w", err)
 	}
-	if err := key.SetStringValue("ResizeMe", fmt.Sprintf("%q", exePath)); err != nil {
+	if err := key.SetStringValue("ResizeMe", quoteExecutablePath(exePath)); err != nil {
 		return fmt.Errorf("write startup registration: %w", err)
 	}
 	return nil
+}
+
+func quoteExecutablePath(exePath string) string {
+	return `"` + strings.Trim(exePath, `"`) + `"`
 }
 
 func copyUTF16(target []uint16, value string) {
