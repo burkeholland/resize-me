@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-27T19:14:55.995Z",
+  "title": "Design System: ResizeMe",
+  "extensions": {
+    "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "Windows Action Blue",
+        "canonical": "#005FB8",
+        "tonalRamp": ["#00182F", "#002B53", "#003E78", "#00529E", "#1670C9", "#5796D5", "#9BC3E8", "#E5F2FC"]
+      },
+      "app-background": {
+        "role": "neutral",
+        "displayName": "Windows Canvas",
+        "canonical": "#F3F3F3",
+        "tonalRamp": ["#242424", "#3E3E3E", "#5A5A5A", "#777777", "#969696", "#B7B7B7", "#D8D8D8", "#F3F3F3"]
+      },
+      "danger": {
+        "role": "danger",
+        "displayName": "System Danger",
+        "canonical": "#C42B1C",
+        "tonalRamp": ["#320A06", "#59110B", "#80190F", "#A62116", "#C42B1C", "#DB675C", "#EEA49D", "#FCE8E6"]
+      },
+      "mac-icon-blue": {
+        "role": "primary",
+        "displayName": "macOS Icon Blue",
+        "canonical": "#3B6EEB",
+        "tonalRamp": ["#0B1635", "#14275C", "#1D3985", "#284CAC", "#3B6EEB", "#7196F2", "#ADC2F8", "#E8EFFE"]
+      }
+    },
+    "typographyMeta": {
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Screen titles and current preset emphasis."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Settings labels, actions, and task-oriented copy."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Helper text, metadata, and compact hints."
+      },
+      "mac-hero": {
+        "displayName": "macOS Welcome",
+        "purpose": "Rounded display title used only in onboarding."
+      },
+      "mac-body": {
+        "displayName": "macOS Body",
+        "purpose": "SF Pro Text through SwiftUI semantic text styles."
+      }
+    },
+    "shadows": [
+      {
+        "name": "flyout",
+        "value": "0 8px 16px rgba(0, 0, 0, 0.14)",
+        "purpose": "Dialogs and transient overlays only."
+      }
+    ],
+    "motion": [
+      {
+        "name": "control-state",
+        "value": "83ms linear",
+        "purpose": "Immediate hover and active feedback on Windows-style controls."
+      },
+      {
+        "name": "toggle-state",
+        "value": "167ms cubic-bezier(0.1, 0.9, 0.2, 1)",
+        "purpose": "Toggle thumb movement that communicates state."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact-window",
+        "value": "440px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single primary action within a task region.",
+      "html": "<button class=\"ds-button-primary\">Resize now</button>",
+      "css": ".ds-button-primary { height: 32px; padding: 4px 12px 6px; border: 1px solid transparent; border-bottom-color: rgba(0,0,0,.18); border-radius: 4px; color: #fff; background: #005fb8; font: 14px/20px \"Segoe UI Variable Text\", \"Segoe UI\", sans-serif; } .ds-button-primary:hover { background: rgba(0,95,184,.9); } .ds-button-primary:active { background: rgba(0,95,184,.8); border-bottom-color: transparent; } .ds-button-primary:focus-visible { outline: 2px solid #005fb8; outline-offset: 2px; }"
+    },
+    {
+      "name": "Standard Button",
+      "kind": "button",
+      "description": "A familiar neutral action for secondary choices.",
+      "html": "<button class=\"ds-button-standard\">Cancel</button>",
+      "css": ".ds-button-standard { height: 32px; padding: 4px 12px 6px; border: 1px solid rgba(0,0,0,.0578); border-bottom-color: rgba(0,0,0,.1622); border-radius: 4px; color: rgba(0,0,0,.8956); background: rgba(255,255,255,.7); font: 14px/20px \"Segoe UI Variable Text\", \"Segoe UI\", sans-serif; } .ds-button-standard:hover { background: rgba(249,249,249,.5); } .ds-button-standard:active { background: rgba(249,249,249,.3); } .ds-button-standard:focus-visible { outline: 2px solid #005fb8; outline-offset: 2px; }"
+    },
+    {
+      "name": "Settings Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "A grouped settings surface with compact aligned rows.",
+      "html": "<div class=\"ds-settings-card\"><span>Center after resize</span><span class=\"ds-toggle\" aria-hidden=\"true\"></span></div>",
+      "css": ".ds-settings-card { min-height: 52px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 16px; border: 1px solid rgba(0,0,0,.0578); border-bottom-color: rgba(0,0,0,.1622); border-radius: 8px; color: rgba(0,0,0,.8956); background: rgba(255,255,255,.7); font: 14px/20px \"Segoe UI Variable Text\", \"Segoe UI\", sans-serif; } .ds-toggle { width: 40px; height: 20px; border-radius: 10px; background: #005fb8; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "description": "The native-style field used to edit preset values.",
+      "html": "<label class=\"ds-field\">Name<input value=\"Custom\" /></label>",
+      "css": ".ds-field { display: grid; gap: 4px; color: rgba(0,0,0,.6063); font: 12px/16px \"Segoe UI Variable Text\", \"Segoe UI\", sans-serif; } .ds-field input { height: 32px; padding: 5px 10px 6px; border: 1px solid rgba(0,0,0,.0578); border-bottom-color: rgba(0,0,0,.4458); border-radius: 4px; color: rgba(0,0,0,.8956); background: rgba(255,255,255,.7); font: 14px/20px \"Segoe UI Variable Text\", \"Segoe UI\", sans-serif; outline: none; } .ds-field input:hover { background: rgba(249,249,249,.5); } .ds-field input:focus { border-bottom: 2px solid #005fb8; background: #fff; }"
+    },
+    {
+      "name": "Hotkey Display",
+      "kind": "custom",
+      "description": "A readable keyboard shortcut using native keycap styling.",
+      "html": "<div class=\"ds-hotkey\"><kbd>Ctrl</kbd><span>+</span><kbd>Alt</kbd><span>+</span><kbd>R</kbd></div>",
+      "css": ".ds-hotkey { display: flex; align-items: center; gap: 4px; color: rgba(0,0,0,.4458); font: 12px/16px \"Segoe UI Variable Text\", \"Segoe UI\", sans-serif; } .ds-hotkey kbd { min-height: 28px; padding: 0 10px; display: inline-flex; align-items: center; border: 1px solid rgba(0,0,0,.0578); border-bottom-color: rgba(0,0,0,.1622); border-radius: 4px; color: rgba(0,0,0,.8956); background: rgba(255,255,255,.7); font: 13px \"Segoe UI Variable Text\", \"Segoe UI\", sans-serif; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Native Utility Drawer",
+    "overview": "ResizeMe is one focused utility expressed through two native platform vocabularies. The Windows app follows WinUI-inspired density, controls, and tonal layering. The macOS app uses SwiftUI and AppKit conventions: semantic system colors, SF typography and symbols, standard menu-bar hierarchy, grouped forms, sidebar navigation, and platform materials. Cross-platform consistency comes from task order, language, and behavior, not identical pixels.",
+    "keyCharacteristics": [
+      "Platform-native controls and interaction states",
+      "WinUI-inspired settings on Windows; SwiftUI and AppKit conventions on macOS",
+      "Restrained accent use reserved for actions, selection, focus, and status",
+      "Compact but deliberate spacing that separates tasks without wasting room",
+      "Structural layering through surfaces and strokes rather than heavy shadows"
+    ],
+    "rules": [
+      {
+        "name": "The One Accent Rule",
+        "body": "Use accent color only for primary actions, current selection, active toggles, focus, and meaningful status. Inactive content stays neutral.",
+        "section": "colors"
+      },
+      {
+        "name": "The Adaptive macOS Rule",
+        "body": "Never replace SwiftUI semantic colors with fixed light-mode values. macOS surfaces must adapt to appearance, increased contrast, and the user's accent choice.",
+        "section": "colors"
+      },
+      {
+        "name": "The Sentence Case Rule",
+        "body": "Use natural sentence case for section names, labels, and actions. Avoid repeated uppercase tracked labels.",
+        "section": "typography"
+      },
+      {
+        "name": "The Structural Elevation Rule",
+        "body": "Resting settings surfaces use borders and tonal layers; only overlays receive a shadow.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do group controls by the task users are trying to complete and give every section concise helper text.",
+      "Do reserve #005FB8 for Windows primary actions, selection, toggles, and focus.",
+      "Do use Color.accentColor and adaptive semantic styles in the native macOS app.",
+      "Do preserve a logical top-to-bottom keyboard order and visible :focus-visible treatment.",
+      "Do preserve standard macOS Settings, Quit, default-action, menu, and Accessibility permission conventions.",
+      "Do use 4px control corners, 8px surface corners, and the existing 4/8/12/16/24px spacing vocabulary."
+    ],
+    "donts": [
+      "Don't create a dense control wall with weak hierarchy or make every option compete equally for attention.",
+      "Don't bury frequent tasks among unrelated controls.",
+      "Don't import Windows controls, dimensions, Segoe typography, or WinUI card styling into the native SwiftUI app.",
+      "Don't import macOS sidebar, menu, or SF Symbol conventions into the Windows Wails app.",
+      "Don't introduce decorative patterns that feel foreign to either platform, including glassmorphism, gradient text, or oversized marketing typography.",
+      "Don't hide required actions behind hover-only affordances.",
+      "Don't add colored side-stripe borders to cards, alerts, or list items."
+    ]
+  }
+}
