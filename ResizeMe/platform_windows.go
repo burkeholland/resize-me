@@ -73,6 +73,8 @@ const (
 	cmdSettings   = 2002
 	cmdQuit       = 2003
 	cmdAbout      = 2004
+
+	resizeTolerance = 1
 )
 
 var (
@@ -153,6 +155,32 @@ type rect struct {
 	Top    int32
 	Right  int32
 	Bottom int32
+}
+
+type resizeOutcome struct {
+	requestedWidth  int32
+	requestedHeight int32
+	achievedWidth   int32
+	achievedHeight  int32
+}
+
+func classifyResizeOutcome(preset Preset, achieved rect) resizeOutcome {
+	return resizeOutcome{
+		requestedWidth:  int32(preset.Width),
+		requestedHeight: int32(preset.Height),
+		achievedWidth:   achieved.Right - achieved.Left,
+		achievedHeight:  achieved.Bottom - achieved.Top,
+	}
+}
+
+func (o resizeOutcome) isExact() bool {
+	return absInt32(o.requestedWidth-o.achievedWidth) <= resizeTolerance &&
+		absInt32(o.requestedHeight-o.achievedHeight) <= resizeTolerance
+}
+
+func (o resizeOutcome) constrainedError(title string) error {
+	return fmt.Errorf("%s constrained resize: requested %dx%d, achieved %dx%d",
+		title, o.requestedWidth, o.requestedHeight, o.achievedWidth, o.achievedHeight)
 }
 
 type message struct {
@@ -789,6 +817,19 @@ func (w *WindowsAgent) ResizeActiveWindow(preset Preset, center bool) error {
 		}
 		return fmt.Errorf("could not resize %s: %w", title, err)
 	}
+
+	var achieved rect
+	if ret, _, err := procGetWindowRect.Call(hwnd, uintptr(unsafe.Pointer(&achieved))); ret == 0 {
+		return fmt.Errorf("read resized window bounds: %w", err)
+	}
+	outcome := classifyResizeOutcome(preset, achieved)
+	if !outcome.isExact() {
+		title := getWindowTitle(windows.Handle(hwnd))
+		if title == "" {
+			title = "the active window"
+		}
+		return outcome.constrainedError(title)
+	}
 	return nil
 }
 
@@ -904,4 +945,11 @@ func copyUTF16(target []uint16, value string) {
 
 func int32ToUintptr(value int32) uintptr {
 	return uintptr(uint32(value))
+}
+
+func absInt32(value int32) int32 {
+	if value < 0 {
+		return -value
+	}
+	return value
 }
