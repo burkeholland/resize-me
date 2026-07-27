@@ -1,0 +1,6 @@
+{
+  "files": ["ResizeMe/frontend/index.html"],
+  "insertBefore": "</body>",
+  "commentSyntax": "html",
+  "cspChecked": true
+}
