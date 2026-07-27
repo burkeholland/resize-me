@@ -10,6 +10,7 @@ import {
   toggleCenter,
   toggleAutoStart,
   completeFirstRun,
+  resizeNow,
 } from './state.js';
 import { startCapture, stopCapture } from './hotkey.js';
 
@@ -33,6 +34,7 @@ export function bindEvents(app, renderFn) {
         case 'delete-preset':       await deletePreset(el.dataset.id, renderFn); break;
         case 'edit-preset':         openEditDialog(el.dataset.id, renderFn); break;
         case 'add-preset':          openAddDialog(renderFn); break;
+        case 'resize-now':          await resizeNow(renderFn); break;
         case 'start-capture':       startCapture(renderFn); break;
         case 'cancel-capture':      stopCapture(renderFn); break;
         case 'close-dialog-overlay': closeDialog(renderFn); break;

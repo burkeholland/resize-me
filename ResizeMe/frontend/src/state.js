@@ -164,6 +164,7 @@ export async function resizeNow(renderFn) {
   clearError();
   try {
     await ResizeNow();
+    renderFn();
   } catch (err) {
     setError(err, renderFn);
   }

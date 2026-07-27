@@ -64,7 +64,7 @@ export function renderApp(app) {
           <div class="hero-meta">
             <span class="dims-badge">${preset?.width ?? 0} × ${preset?.height ?? 0}</span>
           </div>
-
+          <button class="accent-btn" data-action="resize-now">Resize Now (${escHtml(s.hotkey)})</button>
         </div>
 
         <div class="section-label">Presets</div>
