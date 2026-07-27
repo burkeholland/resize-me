@@ -61,7 +61,7 @@ export function renderApp(app) {
         </header>
 
         ${state.error ? `<div class="error-banner" role="alert">${escHtml(state.error)}</div>` : ''}
-        ${s.firstRun ? renderFirstRun() : ''}
+        ${s.firstRun ? renderFirstRun(s, preset) : ''}
 
         <section class="current-resize" aria-labelledby="current-resize-title">
           <div>
@@ -145,14 +145,41 @@ export function renderApp(app) {
   }
 }
 
-function renderFirstRun() {
+function renderFirstRun(s, preset) {
+  const hotkeyKeys = renderHotkeyKeys(s.hotkey);
+  const presetDescription = preset
+    ? `${escHtml(preset.name)} (${preset.width} × ${preset.height})`
+    : 'your active preset';
+
   return `
     <aside class="first-run-card" aria-labelledby="first-run-title">
-      <div class="first-run-title" id="first-run-title">Start ResizeMe with Windows?</div>
-      <div class="first-run-desc">Keep ResizeMe ready in the system tray after you sign in.</div>
+      <div class="first-run-title" id="first-run-title">Welcome to ResizeMe</div>
+      <div class="first-run-desc">Resize the active window to exact dimensions with a keyboard shortcut.</div>
+      <div class="first-run-steps">
+        <div class="first-run-step">
+          <span class="first-run-step-number" aria-hidden="true">1</span>
+          <div>
+            <div class="first-run-step-title">Use your global hotkey</div>
+            <div class="first-run-step-desc">Press ${hotkeyKeys} to resize the active window to ${presetDescription}.</div>
+          </div>
+        </div>
+        <div class="first-run-step">
+          <span class="first-run-step-number" aria-hidden="true">2</span>
+          <div>
+            <div class="first-run-step-title">Find ResizeMe in the system tray</div>
+            <div class="first-run-step-desc">Closing Settings keeps ResizeMe ready in the background. Use the tray icon to open Settings or quit.</div>
+          </div>
+        </div>
+      </div>
+      <div class="first-run-startup">
+        <div>
+          <div class="first-run-step-title">Launch at startup <span class="first-run-optional">Optional</span></div>
+          <div class="first-run-step-desc">Start ResizeMe in the system tray when you sign in to Windows.</div>
+        </div>
+      </div>
       <div class="first-run-actions">
         <button type="button" class="accent-btn" data-action="first-run-yes">Launch at startup</button>
-        <button type="button" class="standard-btn" data-action="first-run-no">Not now</button>
+        <button type="button" class="standard-btn" data-action="first-run-no">Get started</button>
       </div>
     </aside>`;
 }
@@ -200,9 +227,7 @@ function renderHotkeyCard(s) {
       </div>`;
   }
 
-  const keysHtml = (s.hotkey || 'Ctrl+Alt+R').split('+')
-    .map(p => `<kbd>${escHtml(p)}</kbd>`)
-    .join('<span class="key-sep">+</span>');
+  const keysHtml = renderHotkeyKeys(s.hotkey);
 
   return `
     <div class="card-group">
@@ -218,6 +243,12 @@ function renderHotkeyCard(s) {
         ${state.hotkeyError ? `<div class="hotkey-error" role="alert">${escHtml(state.hotkeyError)}</div>` : ''}
       </button>
     </div>`;
+}
+
+function renderHotkeyKeys(hotkey) {
+  return (hotkey || 'Ctrl+Alt+R').split('+')
+    .map(part => `<kbd>${escHtml(part)}</kbd>`)
+    .join('<span class="key-sep">+</span>');
 }
 
 function renderDialog() {
