@@ -30,6 +30,7 @@ const (
 	wmLButtonUp      = 0x0202
 	wmRButtonUp      = 0x0205
 	wmContextMenu    = 0x007B
+	gwHwndNext       = 2
 
 	modAlt      = 0x0001
 	modControl  = 0x0002
@@ -64,9 +65,11 @@ const (
 	swRestore = 9
 
 	monitorDefaultToNearest = 0x00000002
+	dwmwaCloaked            = 14
 
 	cmdPresetBase = 1000
 	cmdCenter     = 2000
+	cmdResize     = 2001
 	cmdSettings   = 2002
 	cmdQuit       = 2003
 )
@@ -75,6 +78,7 @@ var (
 	user32  = windows.NewLazySystemDLL("user32.dll")
 	shell32 = windows.NewLazySystemDLL("shell32.dll")
 	kernel  = windows.NewLazySystemDLL("kernel32.dll")
+	dwmapi  = windows.NewLazySystemDLL("dwmapi.dll")
 
 	procRegisterClassEx       = user32.NewProc("RegisterClassExW")
 	procCreateWindowEx        = user32.NewProc("CreateWindowExW")
@@ -91,6 +95,7 @@ var (
 	procExtractIconEx         = shell32.NewProc("ExtractIconExW")
 	procShellNotifyIcon       = shell32.NewProc("Shell_NotifyIconW")
 	procGetModuleHandle       = kernel.NewProc("GetModuleHandleW")
+	procDwmGetWindowAttribute = dwmapi.NewProc("DwmGetWindowAttribute")
 	procGetCursorPos          = user32.NewProc("GetCursorPos")
 	procSetForegroundWindow   = user32.NewProc("SetForegroundWindow")
 	procCreatePopupMenu       = user32.NewProc("CreatePopupMenu")
@@ -98,6 +103,8 @@ var (
 	procTrackPopupMenu        = user32.NewProc("TrackPopupMenu")
 	procDestroyMenu           = user32.NewProc("DestroyMenu")
 	procGetForegroundWindow   = user32.NewProc("GetForegroundWindow")
+	procGetTopWindow          = user32.NewProc("GetTopWindow")
+	procGetWindow             = user32.NewProc("GetWindow")
 	procGetWindowThreadProcID = user32.NewProc("GetWindowThreadProcessId")
 	procIsWindowVisible       = user32.NewProc("IsWindowVisible")
 	procGetWindowText         = user32.NewProc("GetWindowTextW")
@@ -652,6 +659,7 @@ func (w *WindowsAgent) showMenu() {
 	w.mu.Unlock()
 
 	appendMenu(menu, mfSeparator, 0, "")
+	appendMenu(menu, mfString, cmdResize, fmt.Sprintf("Resize Now\t%s", config.Hotkey))
 	appendMenu(menu, mfString|mfDisabled, 0, fmt.Sprintf("Hotkey: %s", config.Hotkey))
 	appendMenu(menu, mfSeparator, 0, "")
 
@@ -697,6 +705,10 @@ func (w *WindowsAgent) handleCommand(command uint32) {
 		if _, err := w.app.SetCenterAfterResize(!config.CenterAfterResize); err != nil {
 			w.Notify("ResizeMe", err.Error(), true)
 		}
+	case command == cmdResize:
+		if err := w.app.ResizeNow(); err != nil {
+			w.Notify("ResizeMe", err.Error(), true)
+		}
 	case command == cmdSettings:
 		w.app.ShowSettings()
 	case command == cmdQuit:
@@ -705,7 +717,7 @@ func (w *WindowsAgent) handleCommand(command uint32) {
 }
 
 func (w *WindowsAgent) ResizeActiveWindow(preset Preset, center bool) error {
-	hwnd, _, _ := procGetForegroundWindow.Call()
+	hwnd := w.resizeTarget()
 	if hwnd == 0 {
 		return fmt.Errorf("no active window to resize")
 	}
@@ -730,7 +742,7 @@ func (w *WindowsAgent) ResizeActiveWindow(preset Preset, center bool) error {
 
 	className := getWindowClass(windows.Handle(hwnd))
 	switch className {
-	case "Progman", "WorkerW", "Shell_TrayWnd":
+	case "Progman", "WorkerW", "Shell_TrayWnd", "Shell_SecondaryTrayWnd":
 		return fmt.Errorf("the Windows desktop or taskbar cannot be resized")
 	}
 
@@ -774,6 +786,49 @@ func (w *WindowsAgent) ResizeActiveWindow(preset Preset, center bool) error {
 		return fmt.Errorf("could not resize %s: %w", title, err)
 	}
 	return nil
+}
+
+func (w *WindowsAgent) resizeTarget() uintptr {
+	hwnd, _, _ := procGetForegroundWindow.Call()
+	if hwnd == 0 {
+		return 0
+	}
+
+	w.mu.RLock()
+	agentHwnd := w.hwnd
+	w.mu.RUnlock()
+
+	var foregroundPID uint32
+	_, _, _ = procGetWindowThreadProcID.Call(hwnd, uintptr(unsafe.Pointer(&foregroundPID)))
+	if windows.Handle(hwnd) != agentHwnd && foregroundPID != uint32(os.Getpid()) {
+		return hwnd
+	}
+
+	hwnd, _, _ = procGetTopWindow.Call(0)
+	for hwnd != 0 {
+		var candidatePID uint32
+		_, _, _ = procGetWindowThreadProcID.Call(hwnd, uintptr(unsafe.Pointer(&candidatePID)))
+		visible, _, _ := procIsWindowVisible.Call(hwnd)
+		minimized, _, _ := procIsIconic.Call(hwnd)
+		className := getWindowClass(windows.Handle(hwnd))
+		isSystemWindow := className == "Progman" || className == "WorkerW" || className == "Shell_TrayWnd" || className == "Shell_SecondaryTrayWnd"
+		if windows.Handle(hwnd) != agentHwnd && candidatePID != uint32(os.Getpid()) && visible != 0 && minimized == 0 && !isSystemWindow && !isWindowCloaked(windows.Handle(hwnd)) {
+			return hwnd
+		}
+		hwnd, _, _ = procGetWindow.Call(hwnd, gwHwndNext)
+	}
+	return 0
+}
+
+func isWindowCloaked(hwnd windows.Handle) bool {
+	var cloaked uint32
+	result, _, _ := procDwmGetWindowAttribute.Call(
+		uintptr(hwnd),
+		dwmwaCloaked,
+		uintptr(unsafe.Pointer(&cloaked)),
+		unsafe.Sizeof(cloaked),
+	)
+	return result == 0 && cloaked != 0
 }
 
 func monitorWorkArea(hwnd windows.Handle) (rect, error) {
