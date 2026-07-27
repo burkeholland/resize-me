@@ -168,6 +168,17 @@ func (a *App) ShowSettings() {
 	wailsruntime.WindowSetAlwaysOnTop(a.ctx, false)
 }
 
+func (a *App) ShowAbout() {
+	a.ShowSettings()
+	if a.ctx != nil {
+		wailsruntime.EventsEmit(a.ctx, "show-about")
+	}
+}
+
+func (a *App) GetVersion() string {
+	return applicationVersion()
+}
+
 func (a *App) Quit() {
 	if a.agent != nil {
 		a.agent.Stop()

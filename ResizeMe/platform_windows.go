@@ -72,6 +72,7 @@ const (
 	cmdResize     = 2001
 	cmdSettings   = 2002
 	cmdQuit       = 2003
+	cmdAbout      = 2004
 )
 
 var (
@@ -670,6 +671,7 @@ func (w *WindowsAgent) showMenu() {
 	appendMenu(menu, centerFlags, cmdCenter, "Center after resize")
 	appendMenu(menu, mfSeparator, 0, "")
 	appendMenu(menu, mfString, cmdSettings, "Settings...")
+	appendMenu(menu, mfString, cmdAbout, "About ResizeMe")
 	appendMenu(menu, mfString, cmdQuit, "Quit ResizeMe")
 
 	var pt point
@@ -711,6 +713,8 @@ func (w *WindowsAgent) handleCommand(command uint32) {
 		}
 	case command == cmdSettings:
 		w.app.ShowSettings()
+	case command == cmdAbout:
+		w.app.ShowAbout()
 	case command == cmdQuit:
 		w.app.Quit()
 	}

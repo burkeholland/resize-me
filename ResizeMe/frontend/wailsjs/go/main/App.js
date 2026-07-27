@@ -10,6 +10,10 @@ export function GetSettings() {
   return window['go']['main']['App']['GetSettings']();
 }
 
+export function GetVersion() {
+  return window['go']['main']['App']['GetVersion']();
+}
+
 export function Quit() {
   return window['go']['main']['App']['Quit']();
 }
@@ -32,6 +36,10 @@ export function SetAutoStart(arg1) {
 
 export function SetCenterAfterResize(arg1) {
   return window['go']['main']['App']['SetCenterAfterResize'](arg1);
+}
+
+export function ShowAbout() {
+  return window['go']['main']['App']['ShowAbout']();
 }
 
 export function ShowSettings() {

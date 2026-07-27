@@ -6,10 +6,12 @@ import {
   SetCenterAfterResize,
   CompleteFirstRun,
   ResizeNow,
+  GetVersion,
 } from '../wailsjs/go/main/App';
 
 export const state = {
   settings: null,
+  version: '',
   dialog: null,
   error: '',
   hotkeyError: '',
@@ -39,8 +41,9 @@ export function isFavoritePreset(id) {
 
 export async function load(renderFn) {
   try {
-    const settings = await GetSettings();
+    const [settings, version] = await Promise.all([GetSettings(), GetVersion()]);
     state.settings = settings;
+    state.version = version;
     if (settings.loadError) {
       state.error = settings.loadError;
     }
@@ -228,6 +231,12 @@ export function openEditDialog(id, renderFn) {
     const input = document.querySelector('[data-dialog-field="name"]');
     if (input) { input.focus(); input.select(); }
   }, 0);
+}
+
+export function openAboutDialog(renderFn) {
+  state.dialog = { mode: 'about' };
+  renderFn();
+  setTimeout(() => document.querySelector('[data-action="close-about"]')?.focus(), 0);
 }
 
 export function closeDialog(renderFn) {

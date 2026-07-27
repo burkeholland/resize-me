@@ -6,6 +6,8 @@ export function CompleteFirstRun(arg1:boolean):Promise<main.Config>;
 
 export function GetSettings():Promise<main.Config>;
 
+export function GetVersion():Promise<string>;
+
 export function Quit():Promise<void>;
 
 export function ResizeNow():Promise<void>;
@@ -17,5 +19,7 @@ export function SetActivePreset(arg1:string):Promise<main.Config>;
 export function SetAutoStart(arg1:boolean):Promise<main.Config>;
 
 export function SetCenterAfterResize(arg1:boolean):Promise<main.Config>;
+
+export function ShowAbout():Promise<void>;
 
 export function ShowSettings():Promise<void>;

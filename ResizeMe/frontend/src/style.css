@@ -399,6 +399,23 @@ h1, h2, h3, p { margin: 0; }
   cursor: pointer;
 }
 
+.about-row {
+  width: 100%;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.about-row:hover {
+  background: var(--subtle-fill-secondary);
+}
+
+.row-chevron {
+  color: var(--text-tertiary);
+  font-family: "Segoe Fluent Icons", "Segoe MDL2 Assets", sans-serif;
+  font-size: 12px;
+}
+
 .settings-card:not(:last-child) {
   border-bottom: 1px solid var(--card-stroke);
 }
@@ -583,6 +600,54 @@ input:not([type="checkbox"]):focus {
   justify-content: flex-end;
   gap: 8px;
   padding: 16px 20px 20px;
+}
+
+.about-dialog {
+  text-align: center;
+}
+
+.about-icon {
+  width: 48px;
+  height: 48px;
+  margin: 20px auto 0;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  color: white;
+  background: var(--accent-default);
+  font-family: "Segoe Fluent Icons", "Segoe MDL2 Assets", sans-serif;
+  font-size: 28px;
+}
+
+.about-dialog .dialog-title {
+  padding: 12px 20px 0;
+}
+
+.about-version {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.about-body {
+  gap: 10px;
+  padding-top: 16px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.about-body code {
+  color: var(--text-primary);
+  font-size: 11px;
+}
+
+.about-link {
+  justify-self: center;
+}
+
+.about-dialog .dialog-actions {
+  justify-content: center;
 }
 
 /* ─── First run card ─── */

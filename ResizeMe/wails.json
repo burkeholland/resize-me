@@ -9,5 +9,12 @@
   "author": {
     "name": "Burke Holland",
     "email": ""
+  },
+  "info": {
+    "companyName": "ResizeMe contributors",
+    "productName": "ResizeMe",
+    "productVersion": "0.0.0",
+    "copyright": "Copyright 2026 ResizeMe contributors",
+    "comments": "Apply custom size presets with a configurable global hotkey."
   }
 }
