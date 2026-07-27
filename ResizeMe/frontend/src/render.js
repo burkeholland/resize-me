@@ -124,6 +124,13 @@ export function renderApp(app) {
               </span>
               <input type="checkbox" class="toggle-switch" data-field="autoStart" ${s.autoStart ? 'checked' : ''} />
             </label>
+            <button type="button" class="settings-card about-row" data-action="open-about">
+              <span class="setting-copy">
+                <span class="setting-label">About ResizeMe</span>
+                <span class="setting-description">Version information, project details, and updates.</span>
+              </span>
+              <span class="row-chevron" aria-hidden="true">&#xE76C;</span>
+            </button>
           </div>
         </section>
       </main>
@@ -215,6 +222,9 @@ function renderHotkeyCard(s) {
 
 function renderDialog() {
   const d = state.dialog;
+  if (d.mode === 'about') {
+    return renderAboutDialog();
+  }
   const isEdit = d.mode === 'edit';
   const title = isEdit ? 'Edit preset' : 'Add preset';
   const confirmLabel = isEdit ? 'Save' : 'Add';
@@ -241,6 +251,25 @@ function renderDialog() {
         <div class="dialog-actions">
           <button type="button" class="standard-btn" data-action="cancel-dialog">Cancel</button>
           <button type="button" class="accent-btn" data-action="confirm-dialog">${confirmLabel}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderAboutDialog() {
+  return `
+    <div class="dialog-overlay">
+      <div class="dialog about-dialog" role="dialog" aria-modal="true" aria-labelledby="about-title" data-stop-propagation>
+        <div class="about-icon" aria-hidden="true">&#xE740;</div>
+        <div class="dialog-title" id="about-title">ResizeMe</div>
+        <div class="about-version">Version ${escHtml(state.version)}</div>
+        <div class="dialog-body about-body">
+          <p>Quickly resize the active window with custom presets and a global hotkey.</p>
+          <p>Updates are available through GitHub Releases or <code>winget upgrade BurkeHolland.ResizeMe</code>.</p>
+          <button type="button" class="hyperlink-btn about-link" data-action="open-project">View project on GitHub</button>
+        </div>
+        <div class="dialog-actions">
+          <button type="button" class="accent-btn" data-action="close-about">Close</button>
         </div>
       </div>
     </div>`;

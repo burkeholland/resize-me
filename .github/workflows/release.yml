@@ -42,6 +42,19 @@ jobs:
       - name: Install Wails CLI
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
+      - name: Stamp release version
+        working-directory: ResizeMe
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          if ($tag -notmatch '^v(?<version>\d+\.\d+\.\d+)-windows$') {
+            throw "Windows release tags must look like v0.0.1-windows. Got '$tag'."
+          }
+
+          $config = Get-Content wails.json -Raw | ConvertFrom-Json
+          $config.info.productVersion = $Matches.version
+          $config | ConvertTo-Json -Depth 10 | Set-Content wails.json -Encoding UTF8
+
       - name: Build
         working-directory: ResizeMe
         run: wails build -platform ${{ matrix.platform }} -o ${{ matrix.artifact }}

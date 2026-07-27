@@ -1,5 +1,5 @@
 import './style.css';
-import { state, load } from './state.js';
+import { state, load, openAboutDialog } from './state.js';
 import { renderApp } from './render.js';
 import { bindEvents } from './events.js';
 import { EventsOn, WindowHide, WindowMinimise } from '../wailsjs/runtime/runtime';
@@ -16,6 +16,8 @@ EventsOn('settings-updated', settings => {
   render();
 });
 
+EventsOn('show-about', () => openAboutDialog(render));
+
 document.addEventListener('click', e => {
   const action = e.target.closest('[data-waction]')?.dataset.waction;
   if (action === 'hide') WindowHide();
@@ -23,4 +25,3 @@ document.addEventListener('click', e => {
 });
 
 load(render);
-

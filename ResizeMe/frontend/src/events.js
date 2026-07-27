@@ -5,6 +5,7 @@ import {
   deletePreset,
   openAddDialog,
   openEditDialog,
+  openAboutDialog,
   closeDialog,
   confirmDialog,
   toggleCenter,
@@ -13,6 +14,9 @@ import {
   resizeNow,
 } from './state.js';
 import { startCapture, stopCapture } from './hotkey.js';
+import { BrowserOpenURL } from '../wailsjs/runtime/runtime';
+
+const projectUrl = 'https://github.com/burkeholland/resize-me';
 
 let dialogKeyHandler = null;
 
@@ -34,6 +38,9 @@ export function bindEvents(app, renderFn) {
         case 'delete-preset':       await deletePreset(el.dataset.id, renderFn); break;
         case 'edit-preset':         openEditDialog(el.dataset.id, renderFn); break;
         case 'add-preset':          openAddDialog(renderFn); break;
+        case 'open-about':          openAboutDialog(renderFn); break;
+        case 'open-project':        BrowserOpenURL(projectUrl); break;
+        case 'close-about':         closeDialog(renderFn); break;
         case 'resize-now':          await resizeNow(renderFn); break;
         case 'start-capture':       startCapture(renderFn); break;
         case 'cancel-capture':      stopCapture(renderFn); break;
@@ -62,7 +69,10 @@ export function bindEvents(app, renderFn) {
   if (state.dialog !== null) {
     dialogKeyHandler = async e => {
       if (e.key === 'Escape') { closeDialog(renderFn); }
-      else if (e.key === 'Enter') { await confirmDialog(renderFn); }
+      else if (e.key === 'Enter') {
+        if (state.dialog.mode === 'about') closeDialog(renderFn);
+        else await confirmDialog(renderFn);
+      }
       else if (e.key === 'Tab') {
         const focusable = [...app.querySelectorAll('.dialog input, .dialog button:not(:disabled)')];
         if (focusable.length === 0) return;
