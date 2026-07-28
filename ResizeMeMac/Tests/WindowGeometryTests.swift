@@ -78,4 +78,11 @@ final class WindowGeometryTests: XCTestCase {
         XCTAssertEqual(target.origin, current.origin)
         XCTAssertEqual(target.size, CGSize(width: 640, height: 360))
     }
+
+    func testWindowPreparationRestoresSupportedStates() {
+        XCTAssertEqual(WindowPreparation.required(minimized: false, fullscreen: false), .none)
+        XCTAssertEqual(WindowPreparation.required(minimized: true, fullscreen: false), .restoreMinimized)
+        XCTAssertEqual(WindowPreparation.required(minimized: false, fullscreen: true), .exitFullscreen)
+        XCTAssertEqual(WindowPreparation.required(minimized: true, fullscreen: true), .exitFullscreen)
+    }
 }

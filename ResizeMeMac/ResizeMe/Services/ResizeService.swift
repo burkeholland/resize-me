@@ -12,6 +12,19 @@ enum ResizeError: Error, Equatable {
     case resizeRejected
 }
 
+enum WindowPreparation: Equatable {
+    case none
+    case restoreMinimized
+    case exitFullscreen
+
+    static func required(minimized: Bool, fullscreen: Bool) -> WindowPreparation {
+        if fullscreen {
+            return .exitFullscreen
+        }
+        return minimized ? .restoreMinimized : .none
+    }
+}
+
 struct ResizeOutcome: Equatable {
     let requested: CGSize
     let achieved: CGSize
@@ -51,6 +64,11 @@ final class ResizeService {
 
     private func write(_ element: AXUIElement, attribute: String, value: AXValue) -> AXError {
         AXUIElementSetAttributeValue(element, attribute as CFString, value)
+    }
+
+    private func write(_ element: AXUIElement, attribute: String, value: Bool) -> AXError {
+        let booleanValue: CFBoolean = value ? kCFBooleanTrue : kCFBooleanFalse
+        return AXUIElementSetAttributeValue(element, attribute as CFString, booleanValue)
     }
 
     private func apply(position: CGPoint, size: CGSize, to element: AXUIElement, positionFirst: Bool) -> AXError {
@@ -101,12 +119,19 @@ final class ResizeService {
             throw ResizeError.noResizableWindow
         }
 
-        if let minimized = copyAttribute(windowElement, kAXMinimizedAttribute as String) as? Bool, minimized {
-            throw ResizeError.windowMinimized
-        }
-
-        if let fullscreen = (copyAttribute(windowElement, "AXFullScreen") as? Bool) {
-            if fullscreen { throw ResizeError.windowFullscreen }
+        let minimized = copyAttribute(windowElement, kAXMinimizedAttribute as String) as? Bool ?? false
+        let fullscreen = copyAttribute(windowElement, "AXFullScreen") as? Bool ?? false
+        switch WindowPreparation.required(minimized: minimized, fullscreen: fullscreen) {
+        case .none:
+            break
+        case .restoreMinimized:
+            guard write(windowElement, attribute: kAXMinimizedAttribute as String, value: false) == .success else {
+                throw ResizeError.windowMinimized
+            }
+        case .exitFullscreen:
+            guard write(windowElement, attribute: "AXFullScreen", value: false) == .success else {
+                throw ResizeError.windowFullscreen
+            }
         }
 
         guard let currentPosValue = copyAttribute(windowElement, kAXPositionAttribute as String), CFGetTypeID(currentPosValue as CFTypeRef) == AXValueGetTypeID(),
