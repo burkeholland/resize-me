@@ -27,6 +27,12 @@ If a request does not clearly say whether you mean this native macOS app or the 
 - Xcode 15 or later
 - Accessibility permission granted to ResizeMe
 
+## Sizing units
+
+ResizeMe applies preset width and height values as logical points, not physical pixels. For example, a `1280 × 720` preset is 1280 by 720 points; on a 2x Retina display it can occupy 2560 by 1440 physical pixels. The shared `settings.json` fields remain compatible with Windows, where the same numbers mean physical pixels, so shared presets do not guarantee the same physical size.
+
+Pixel-aware macOS sizing is not currently planned. macOS Accessibility APIs size windows in points, and a physical-pixel mode would need an explicit, display-aware design without changing the compatible preset fields.
+
 ## Install
 
 Install the signed, notarized macOS release with Homebrew:

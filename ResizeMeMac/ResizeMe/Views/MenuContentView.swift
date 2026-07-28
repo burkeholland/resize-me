@@ -53,7 +53,7 @@ struct MenuContentView: View {
                 if !favoritePresets.isEmpty {
                     Section("Favorites") {
                         ForEach(favoritePresets) { preset in
-                            Text("\(preset.name) (\(preset.width)×\(preset.height))")
+                            Text("\(preset.name) (\(preset.width)×\(preset.height) pt)")
                                 .tag(preset.id)
                         }
                     }
@@ -61,7 +61,7 @@ struct MenuContentView: View {
 
                 Section("All Presets") {
                     ForEach(otherPresets) { preset in
-                        Text("\(preset.name) (\(preset.width)×\(preset.height))")
+                        Text("\(preset.name) (\(preset.width)×\(preset.height) pt)")
                             .tag(preset.id)
                     }
                 }
