@@ -141,6 +141,21 @@ Keep the current PR smoke workflows for validation. The Windows release workflow
 
 Do not create Windows releases from every push to `main`. Winget should use a deliberate semantic Windows release tag so the package version, release notes, and manifest PR are easy to review.
 
+### In-app update checks and release ownership
+
+The Windows app checks the repository's GitHub Releases API only when a user selects **Check for updates** in **About ResizeMe**. It accepts the highest semantic `vX.Y.Z-windows` release that is neither a draft nor a prerelease and that includes the asset matching the running binary:
+
+- x64 binaries require `ResizeMe-windows-amd64.exe`.
+- ARM64 binaries require `ResizeMe-windows-arm64.exe`.
+
+The app compares that release version with its executable version and shows errors for network failures, invalid version metadata, unsupported architectures, or releases without a compatible asset. It does not download an asset or replace its own executable. When a newer release is found, it directs the user to the supported command:
+
+```text
+winget upgrade --id BurkeHolland.ResizeMe --exact
+```
+
+The Windows release maintainer owns both halves of a release: publish the signed GitHub Release from the Windows tag, then run the separate winget submission workflow and monitor the `microsoft/winget-pkgs` package PR. GitHub release publication can occur before winget indexes the manifest, so the app describes the release as published rather than claiming that winget has already made the update available.
+
 ## Winget manifests
 
 Source manifests live in:

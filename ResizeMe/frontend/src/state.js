@@ -4,7 +4,9 @@ import {
   CompleteFirstRun,
   ResizeNow,
   GetVersion,
+  CheckForUpdates,
 } from '../wailsjs/go/main/App';
+import { ClipboardSetText } from '../wailsjs/runtime/runtime';
 
 export const state = {
   settings: null,
@@ -15,6 +17,11 @@ export const state = {
   error: '',
   hotkeyError: '',
   saving: false,
+  update: null,
+  updateError: '',
+  updateActionError: '',
+  updateNotice: '',
+  checkingForUpdates: false,
 };
 
 export function clearError() { state.error = ''; }
@@ -253,9 +260,49 @@ export function openEditDialog(id, renderFn) {
 }
 
 export function openAboutDialog(renderFn) {
+  state.updateError = '';
+  state.updateActionError = '';
+  state.updateNotice = '';
   state.dialog = { mode: 'about' };
   renderFn();
   setTimeout(() => document.querySelector('[data-action="close-about"]')?.focus(), 0);
+}
+
+export async function checkForUpdates(renderFn) {
+  if (state.checkingForUpdates) return;
+  state.update = null;
+  state.updateError = '';
+  state.updateActionError = '';
+  state.updateNotice = '';
+  state.checkingForUpdates = true;
+  renderFn();
+
+  try {
+    state.update = await CheckForUpdates();
+  } catch (err) {
+    state.updateError = `Unable to check for updates: ${err?.message ?? String(err)}`;
+  } finally {
+    state.checkingForUpdates = false;
+    renderFn();
+  }
+}
+
+export async function copyUpdateCommand(renderFn) {
+  const command = state.update?.updateCommand;
+  if (!command) return;
+  state.updateActionError = '';
+  state.updateNotice = '';
+
+  try {
+    const copied = await ClipboardSetText(command);
+    if (!copied) {
+      throw new Error('Windows did not confirm that the command was copied.');
+    }
+    state.updateNotice = 'Update command copied to the clipboard.';
+  } catch (err) {
+    state.updateActionError = `Unable to copy the update command: ${err?.message ?? String(err)}`;
+  }
+  renderFn();
 }
 
 export function closeDialog(renderFn) {

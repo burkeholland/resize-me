@@ -62,5 +62,27 @@ export namespace main {
 		    return a;
 		}
 	}
+	export class UpdateInfo {
+	    currentVersion: string;
+	    latestVersion: string;
+	    available: boolean;
+	    releaseURL: string;
+	    assetName: string;
+	    updateCommand: string;
+
+	    static createFrom(source: any = {}) {
+	        return new UpdateInfo(source);
+	    }
+
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.currentVersion = source["currentVersion"];
+	        this.latestVersion = source["latestVersion"];
+	        this.available = source["available"];
+	        this.releaseURL = source["releaseURL"];
+	        this.assetName = source["assetName"];
+	        this.updateCommand = source["updateCommand"];
+	    }
+	}
 
 }

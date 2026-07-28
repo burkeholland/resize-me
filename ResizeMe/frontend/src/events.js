@@ -7,6 +7,8 @@ import {
   openEditDialog,
   openAboutDialog,
   closeDialog,
+  checkForUpdates,
+  copyUpdateCommand,
   confirmDialog,
   toggleCenter,
   toggleAutoStart,
@@ -42,6 +44,9 @@ export function bindEvents(app, renderFn) {
         case 'add-preset':          openAddDialog(renderFn); break;
         case 'open-about':          openAboutDialog(renderFn); break;
         case 'open-project':        BrowserOpenURL(projectUrl); break;
+        case 'open-release':        BrowserOpenURL(state.update?.releaseURL ?? `${projectUrl}/releases`); break;
+        case 'check-for-updates':   await checkForUpdates(renderFn); break;
+        case 'copy-update-command': await copyUpdateCommand(renderFn); break;
         case 'close-about':         closeDialog(renderFn); break;
         case 'resize-now':          await resizeNow(renderFn); break;
         case 'start-capture':       startCapture(renderFn); break;
@@ -74,8 +79,13 @@ export function bindEvents(app, renderFn) {
     dialogKeyHandler = async e => {
       if (e.key === 'Escape') { closeDialog(renderFn); }
       else if (e.key === 'Enter') {
-        if (state.dialog.mode === 'about') closeDialog(renderFn);
-        else await confirmDialog(renderFn);
+        if (state.dialog.mode === 'about') {
+          if (document.activeElement?.dataset.action === 'close-about') {
+            closeDialog(renderFn);
+          }
+          return;
+        }
+        await confirmDialog(renderFn);
       }
       else if (e.key === 'Tab') {
         const focusable = [...app.querySelectorAll('.dialog input, .dialog button:not(:disabled)')];
