@@ -27,6 +27,8 @@ func NewApp() *App {
 	if err != nil {
 		config = DefaultConfig()
 		loadError = err.Error()
+	} else if config.LoadError != "" {
+		loadError = config.LoadError
 	}
 
 	return &App{
@@ -75,6 +77,10 @@ func (a *App) SaveSettings(next Config) (Config, error) {
 	a.mu.RLock()
 	current := a.config.Clone()
 	a.mu.RUnlock()
+
+	if message := hotkeyValidationMessage(next.Hotkey); message != "" {
+		return current, fmt.Errorf("%s", message)
+	}
 
 	normalized, err := NormalizeConfig(next, current)
 	if err != nil {

@@ -130,6 +130,11 @@ final class AppState: ObservableObject {
     func saveConfig(_ next: AppConfig) -> Bool {
         let current = config
 
+        if let message = ConfigNormalizer.hotkeyValidationMessage(next.hotkey) {
+            lastStatusMessage = message
+            return false
+        }
+
         do {
             let normalized = try ConfigNormalizer.normalize(next, fallback: current)
             let previousHotkey = current.hotkey

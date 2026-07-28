@@ -9,6 +9,7 @@ If a request does not clearly say whether you mean this native macOS app or the 
 - Resizes any app window to a chosen preset dimension
 - Runs from the menu bar for quick access
 - Uses a global shortcut for fast window resizing
+- Global shortcuts use one or more modifiers plus A-Z, 0-9, or F1-F20 so shared settings work on Windows and macOS.
 - Supports optional launch-at-login behavior
 - Uses macOS Accessibility permissions to move and resize other windows safely
 - Before resizing, ResizeMe restores minimized windows and exits fullscreen. Resizing a maximized window restores it implicitly by applying the preset frame. If an app does not permit a state change, ResizeMe shows a specific status message.

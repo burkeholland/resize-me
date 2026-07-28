@@ -8,6 +8,8 @@ import (
 
 var nonAlphanumericRe = regexp.MustCompile(`[^a-z0-9]+`)
 
+const portableHotkeyHelp = "F21-F24 are not supported on macOS. Choose F1-F20, A-Z, or 0-9 with a modifier."
+
 // NormalizeConfig validates and normalizes a config, falling back to defaults
 // from the provided fallback config where needed.
 func NormalizeConfig(config Config, fallback Config) (Config, error) {
@@ -118,7 +120,7 @@ func normalizeHotkeyText(value string) string {
 }
 
 // isValidHotkeyText checks that a normalized hotkey string has at least one
-// modifier and one valid key (A–Z, 0–9, or F1–F24).
+// modifier and one portable key (A-Z, 0-9, or F1-F20).
 func isValidHotkeyText(value string) bool {
 	parts := strings.Split(value, "+")
 	hasModifier := false
@@ -128,26 +130,49 @@ func isValidHotkeyText(value string) bool {
 		case "Ctrl", "Alt", "Shift", "Win":
 			hasModifier = true
 		default:
-			if len(part) == 1 {
-				ch := part[0]
-				if (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') {
-					hasKey = true
-				}
-			} else if strings.HasPrefix(part, "F") {
-				rest := strings.TrimPrefix(part, "F")
-				n := 0
-				for _, c := range rest {
-					if c < '0' || c > '9' {
-						n = -1
-						break
-					}
-					n = n*10 + int(c-'0')
-				}
-				if n >= 1 && n <= 24 {
-					hasKey = true
-				}
+			if isPortableHotkeyKey(part) {
+				hasKey = true
 			}
 		}
 	}
 	return hasModifier && hasKey
+}
+
+func isPortableHotkeyKey(value string) bool {
+	if len(value) == 1 {
+		ch := value[0]
+		return (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9')
+	}
+
+	if !strings.HasPrefix(value, "F") {
+		return false
+	}
+	n := 0
+	for _, c := range strings.TrimPrefix(value, "F") {
+		if c < '0' || c > '9' {
+			return false
+		}
+		n = n*10 + int(c-'0')
+	}
+	return n >= 1 && n <= 20
+}
+
+func hotkeyValidationMessage(value string) string {
+	for _, part := range strings.Split(normalizeHotkeyText(value), "+") {
+		if !strings.HasPrefix(part, "F") {
+			continue
+		}
+		n := 0
+		for _, c := range strings.TrimPrefix(part, "F") {
+			if c < '0' || c > '9' {
+				n = -1
+				break
+			}
+			n = n*10 + int(c-'0')
+		}
+		if n >= 21 && n <= 24 {
+			return portableHotkeyHelp
+		}
+	}
+	return ""
 }
