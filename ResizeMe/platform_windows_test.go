@@ -188,3 +188,73 @@ func TestQuoteExecutablePathAvoidsDoubleQuotes(t *testing.T) {
 		t.Fatalf("quoteExecutablePath(%q) = %q, want %q", exePath, got, want)
 	}
 }
+
+func TestTargetMenuLabel(t *testing.T) {
+	tests := []struct {
+		name        string
+		className   string
+		processName string
+		isResizeMe  bool
+		want        string
+	}{
+		{
+			name:       "ResizeMe",
+			isResizeMe: true,
+			want:       "Target: ResizeMe (not resizable)",
+		},
+		{
+			name:      "desktop",
+			className: "Progman",
+			want:      "Target: Windows desktop (not resizable)",
+		},
+		{
+			name:      "desktop worker window",
+			className: "WorkerW",
+			want:      "Target: Windows desktop (not resizable)",
+		},
+		{
+			name:      "taskbar",
+			className: "Shell_TrayWnd",
+			want:      "Target: Windows taskbar (not resizable)",
+		},
+		{
+			name:      "secondary taskbar",
+			className: "Shell_SecondaryTrayWnd",
+			want:      "Target: Windows taskbar (not resizable)",
+		},
+		{
+			name:        "application",
+			processName: "Code",
+			want:        "Target: Code",
+		},
+		{
+			name: "unresolved application",
+			want: "Target: Active window",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := targetMenuLabel(test.className, test.processName, test.isResizeMe)
+			if got != test.want {
+				t.Fatalf("targetMenuLabel(%q, %q, %t) = %q, want %q", test.className, test.processName, test.isResizeMe, got, test.want)
+			}
+		})
+	}
+}
+
+func TestProcessNameFromPath(t *testing.T) {
+	tests := []struct {
+		path string
+		want string
+	}{
+		{path: `C:\Program Files\Microsoft VS Code\Code.exe`, want: "Code"},
+		{path: `C:\Tools\ResizeMe`, want: "ResizeMe"},
+	}
+
+	for _, test := range tests {
+		if got := processNameFromPath(test.path); got != test.want {
+			t.Fatalf("processNameFromPath(%q) = %q, want %q", test.path, got, test.want)
+		}
+	}
+}

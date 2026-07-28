@@ -33,6 +33,7 @@ wails build
 - Stores presets and settings locally in `%APPDATA%\ResizeMe\settings.json`.
 - Does not send settings, foreground-window metadata, telemetry, or analytics over the network.
 - Runs in the system tray after setup. Launch at sign-in is optional and writes a `ResizeMe` value under the current user's `Run` registry key.
+- The tray menu shows a best-effort target application name from its executable. It does not show window titles, so document and page titles are not exposed in the menu; target lookup failures do not affect resizing.
 - Before uninstalling, turn off **Launch at startup** to remove that registry value.
 - Before resizing, ResizeMe restores minimized or maximized windows. Windows does not expose a universal fullscreen state, so fullscreen apps are resized when their window API permits it; otherwise the app reports the resize failure.
 - ResizeMe keeps the title bar reachable on the target monitor when a preset is larger than its work area.
