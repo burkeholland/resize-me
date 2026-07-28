@@ -5,4 +5,8 @@ struct Preset: Codable, Equatable, Identifiable, Sendable {
     var name: String
     var width: Int
     var height: Int
+
+    static func newDraft() -> Preset {
+        Preset(id: "preset-\(UUID().uuidString.lowercased())", name: "New Preset", width: 1280, height: 720)
+    }
 }

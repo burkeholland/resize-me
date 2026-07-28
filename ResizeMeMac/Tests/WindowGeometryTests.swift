@@ -85,4 +85,20 @@ final class WindowGeometryTests: XCTestCase {
         XCTAssertEqual(WindowPreparation.required(minimized: false, fullscreen: true), .exitFullscreen)
         XCTAssertEqual(WindowPreparation.required(minimized: true, fullscreen: true), .exitFullscreen)
     }
+
+    func testWindowReadinessRequiresSettledStateAndUsableFrame() {
+        let position = CGPoint(x: 100, y: 200)
+        let size = CGSize(width: 800, height: 600)
+
+        XCTAssertFalse(WindowReadiness.isReady(minimized: true, fullscreen: false, position: position, size: size))
+        XCTAssertFalse(WindowReadiness.isReady(minimized: false, fullscreen: true, position: position, size: size))
+        XCTAssertFalse(WindowReadiness.isReady(minimized: false, fullscreen: false, position: nil, size: size))
+        XCTAssertFalse(WindowReadiness.isReady(minimized: false, fullscreen: false, position: position, size: .zero))
+        XCTAssertTrue(WindowReadiness.isReady(minimized: false, fullscreen: false, position: position, size: size))
+    }
+
+    func testWindowReadinessStopsAfterBoundedChecks() {
+        XCTAssertTrue(WindowReadiness.shouldRetry(after: WindowReadiness.maximumChecks - 1))
+        XCTAssertFalse(WindowReadiness.shouldRetry(after: WindowReadiness.maximumChecks))
+    }
 }

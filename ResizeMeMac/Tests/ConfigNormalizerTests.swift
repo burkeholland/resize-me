@@ -105,6 +105,26 @@ final class ConfigNormalizerTests: XCTestCase {
         XCTAssertEqual(normalized?.presets.first?.id, "preset-1")
     }
 
+    func testDraftPresetIDsKeepHideAndDeleteOperationsIndependent() {
+        let firstDraft = Preset.newDraft()
+        let secondDraft = Preset.newDraft()
+        let remainingPreset = Preset(id: "remaining", name: "Remaining", width: 1440, height: 900)
+        XCTAssertNotEqual(firstDraft.id, secondDraft.id)
+
+        var config = AppConfig(
+            presets: [firstDraft, secondDraft, remainingPreset],
+            activePresetId: firstDraft.id,
+            hiddenPresetIds: [firstDraft.id]
+        )
+        config.presets.removeAll { $0.id == secondDraft.id }
+
+        let normalized = try? ConfigNormalizer.normalize(config, fallback: .default)
+
+        XCTAssertEqual(normalized?.hiddenPresetIds, [firstDraft.id])
+        XCTAssertEqual(normalized?.visiblePresets.map(\.id), [remainingPreset.id])
+        XCTAssertEqual(normalized?.presets.map(\.id), [firstDraft.id, remainingPreset.id])
+    }
+
     func testDuplicateIDsSuffixed() {
         let normalized = try? ConfigNormalizer.normalize(AppConfig(presets: [
             Preset(id: "dup", name: "One", width: 800, height: 600),

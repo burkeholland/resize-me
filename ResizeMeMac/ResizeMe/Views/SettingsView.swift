@@ -292,8 +292,7 @@ private struct PresetsTab: View {
 
             HStack(spacing: 8) {
                 Button {
-                    let preset = Preset(id: "", name: "New Preset", width: 1280, height: 720)
-                    draft.presets.append(preset)
+                    draft.presets.append(.newDraft())
                 } label: {
                     Image(systemName: "plus")
                 }

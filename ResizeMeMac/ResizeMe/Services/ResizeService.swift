@@ -25,6 +25,19 @@ enum WindowPreparation: Equatable {
     }
 }
 
+enum WindowReadiness {
+    static let maximumChecks = 10
+    static let retryInterval: TimeInterval = 0.05
+
+    static func isReady(minimized: Bool, fullscreen: Bool, position: CGPoint?, size: CGSize?) -> Bool {
+        !minimized && !fullscreen && position != nil && (size?.width ?? 0) > 0 && (size?.height ?? 0) > 0
+    }
+
+    static func shouldRetry(after checks: Int) -> Bool {
+        checks < maximumChecks
+    }
+}
+
 struct ResizeOutcome: Equatable {
     let requested: CGSize
     let achieved: CGSize
@@ -87,6 +100,37 @@ final class ResizeService {
         return write(element, attribute: kAXPositionAttribute as String, value: positionValue)
     }
 
+    private func readyFrame(for element: AXUIElement) -> (position: CGPoint, size: CGSize)? {
+        var checks = 0
+        repeat {
+            checks += 1
+            let minimized = copyAttribute(element, kAXMinimizedAttribute as String) as? Bool ?? false
+            let fullscreen = copyAttribute(element, "AXFullScreen") as? Bool ?? false
+            let positionValue = copyAttribute(element, kAXPositionAttribute as String)
+            let sizeValue = copyAttribute(element, kAXSizeAttribute as String)
+            let position = positionValue.flatMap { value -> CGPoint? in
+                guard CFGetTypeID(value as CFTypeRef) == AXValueGetTypeID() else { return nil }
+                return point(from: value as! AXValue)
+            }
+            let size = sizeValue.flatMap { value -> CGSize? in
+                guard CFGetTypeID(value as CFTypeRef) == AXValueGetTypeID() else { return nil }
+                return size(from: value as! AXValue)
+            }
+
+            if WindowReadiness.isReady(minimized: minimized, fullscreen: fullscreen, position: position, size: size),
+               let position,
+               let size {
+                return (position, size)
+            }
+
+            if WindowReadiness.shouldRetry(after: checks) {
+                RunLoop.main.run(until: Date().addingTimeInterval(WindowReadiness.retryInterval))
+            }
+        } while WindowReadiness.shouldRetry(after: checks)
+
+        return nil
+    }
+
     func resizeFrontmostWindow(to preset: Preset, center: Bool) throws -> ResizeOutcome {
         guard AXIsProcessTrusted() else {
             throw ResizeError.permissionMissing
@@ -134,12 +178,11 @@ final class ResizeService {
             }
         }
 
-        guard let currentPosValue = copyAttribute(windowElement, kAXPositionAttribute as String), CFGetTypeID(currentPosValue as CFTypeRef) == AXValueGetTypeID(),
-              let currentSizeValue = copyAttribute(windowElement, kAXSizeAttribute as String), CFGetTypeID(currentSizeValue as CFTypeRef) == AXValueGetTypeID(),
-              let currentPos = point(from: currentPosValue as! AXValue),
-              let currentSize = size(from: currentSizeValue as! AXValue) else {
+        guard let currentFrame = readyFrame(for: windowElement) else {
             throw ResizeError.noResizableWindow
         }
+        let currentPos = currentFrame.position
+        let currentSize = currentFrame.size
 
         let screens = WindowGeometryService.currentScreens()
         let primaryMaxY = WindowGeometryService.primaryReferenceMaxY(screens: screens)
