@@ -1,4 +1,4 @@
-import { state, activePreset, hasDraftChanges, isFavoritePreset } from './state.js';
+import { state, activePreset, hasDraftChanges, isFavoritePreset, isHiddenPreset, visiblePresets } from './state.js';
 import { capture } from './hotkey.js';
 
 export function escHtml(v) {
@@ -38,10 +38,14 @@ export function renderApp(app) {
   const preset = activePreset(state.settings);
   const favoritePresetIds = s.favoritePresetIds ?? [];
   const favoriteIdSet = new Set(favoritePresetIds);
+  const visiblePresetList = visiblePresets(s);
+  const visiblePresetById = new Map(visiblePresetList.map(p => [p.id, p]));
   const favoritePresets = favoritePresetIds
-    .map(id => s.presets.find(p => p.id === id))
+    .map(id => visiblePresetById.get(id))
     .filter(Boolean);
-  const otherPresets = s.presets.filter(p => !favoriteIdSet.has(p.id));
+  const otherPresets = visiblePresetList.filter(p => !favoriteIdSet.has(p.id));
+  const hiddenPresets = s.presets.filter(p => isHiddenPreset(p.id, s));
+  const canHideVisiblePreset = visiblePresetList.length > 1;
 
   app.innerHTML = `
     <div class="app-window">
@@ -92,15 +96,28 @@ export function renderApp(app) {
           <div class="card-group preset-list">
             ${favoritePresets.length > 0 ? `
               <div class="preset-group-label">Favorites</div>
-              ${favoritePresets.map(p => renderPresetRow(p, s.activePresetId)).join('')}
+              ${favoritePresets.map(p => renderPresetRow(p, s.activePresetId, canHideVisiblePreset)).join('')}
               <div class="preset-group-label">All presets</div>
             ` : ''}
-            ${otherPresets.map(p => renderPresetRow(p, s.activePresetId)).join('')}
+            ${otherPresets.map(p => renderPresetRow(p, s.activePresetId, canHideVisiblePreset)).join('')}
           </div>
+          ${state.presetNotice ? `<p class="preset-notice" role="status">${escHtml(state.presetNotice)}</p>` : ''}
 
           <div class="section-action">
             <button type="button" class="hyperlink-btn" data-action="add-preset">+ Add preset</button>
           </div>
+
+          <section class="hidden-presets" aria-labelledby="hidden-presets-title">
+            <div class="section-heading">
+              <h3 id="hidden-presets-title">Hidden presets (${hiddenPresets.length})</h3>
+              <p>Hidden presets stay saved but do not appear in resize selectors or quick menus.</p>
+            </div>
+            <div class="card-group preset-list">
+              ${hiddenPresets.length > 0
+                ? hiddenPresets.map(renderHiddenPresetRow).join('')
+                : '<p class="empty-presets">No presets are hidden.</p>'}
+            </div>
+          </section>
         </section>
 
         <section class="settings-section" aria-labelledby="hotkey-title">
@@ -198,12 +215,12 @@ function renderFirstRun(s, preset) {
     </aside>`;
 }
 
-function renderPresetRow(p, activeId) {
+function renderPresetRow(p, activeId, canHide) {
   const isActive = p.id === activeId;
   const isFavorite = isFavoritePreset(p.id);
   return `
     <div class="preset-row${isActive ? ' active' : ''}">
-      <button type="button" class="preset-select" data-action="select-preset" data-id="${escAttr(p.id)}" aria-pressed="${isActive}">
+      <button type="button" class="preset-select" data-action="select-preset" data-id="${escAttr(p.id)}" data-focus-id="select-${escAttr(p.id)}" aria-pressed="${isActive}">
         <span class="radio-btn${isActive ? ' checked' : ''}" aria-hidden="true">
           ${isActive ? '<span class="radio-dot"></span>' : ''}
         </span>
@@ -211,8 +228,25 @@ function renderPresetRow(p, activeId) {
         <span class="preset-dims">${p.width} × ${p.height} px</span>
       </button>
       <button type="button" class="preset-favorite${isFavorite ? ' active' : ''}" data-action="toggle-favorite" data-id="${escAttr(p.id)}" aria-label="${isFavorite ? 'Remove ' + escAttr(p.name) + ' from favorites' : 'Add ' + escAttr(p.name) + ' to favorites'}">${isFavorite ? '&#xE735;' : '&#xE734;'}</button>
+      <button type="button" class="preset-hide" data-action="hide-preset" data-id="${escAttr(p.id)}" data-focus-id="hide-${escAttr(p.id)}" aria-label="Hide ${escAttr(p.name)}" ${canHide ? '' : 'disabled'}>Hide</button>
       <button type="button" class="preset-edit" data-action="edit-preset" data-id="${escAttr(p.id)}" aria-label="Edit ${escAttr(p.name)}">&#xE70F;</button>
-      <button type="button" class="preset-delete" data-action="delete-preset" data-id="${escAttr(p.id)}" aria-label="Remove ${escAttr(p.name)}">&times;</button>
+      <button type="button" class="preset-delete" data-action="delete-preset" data-id="${escAttr(p.id)}" aria-label="Delete ${escAttr(p.name)} permanently">&times;</button>
+    </div>`;
+}
+
+function renderHiddenPresetRow(p) {
+  const isFavorite = isFavoritePreset(p.id);
+  return `
+    <div class="preset-row preset-row-hidden">
+      <div class="preset-hidden-copy">
+        <span class="preset-name">${escHtml(p.name)}</span>
+        <span class="preset-dims">${p.width} × ${p.height} px</span>
+        <span class="preset-hidden-state">Hidden${isFavorite ? ' · Favorite' : ''}</span>
+      </div>
+      <button type="button" class="preset-favorite${isFavorite ? ' active' : ''}" data-action="toggle-favorite" data-id="${escAttr(p.id)}" aria-label="${isFavorite ? 'Remove ' + escAttr(p.name) + ' from favorites' : 'Add ' + escAttr(p.name) + ' to favorites'}">${isFavorite ? '&#xE735;' : '&#xE734;'}</button>
+      <button type="button" class="preset-show" data-action="restore-preset" data-id="${escAttr(p.id)}" data-focus-id="restore-${escAttr(p.id)}" aria-label="Restore ${escAttr(p.name)}">Show</button>
+      <button type="button" class="preset-edit" data-action="edit-preset" data-id="${escAttr(p.id)}" aria-label="Edit ${escAttr(p.name)}">&#xE70F;</button>
+      <button type="button" class="preset-delete" data-action="delete-preset" data-id="${escAttr(p.id)}" aria-label="Delete ${escAttr(p.name)} permanently">&times;</button>
     </div>`;
 }
 

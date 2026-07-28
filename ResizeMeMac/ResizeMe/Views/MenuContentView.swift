@@ -6,15 +6,20 @@ struct MenuContentView: View {
     @Environment(\.openWindow) private var openWindow
 
     private var favoritePresetIDs: Set<String> {
-        Set(appState.config.favoritePresetIds)
+        Set(appState.config.favoritePresetIds.filter { !appState.config.isPresetHidden(id: $0) })
     }
 
     private var favoritePresets: [Preset] {
-        appState.config.favoritePresetIds.compactMap { appState.config.findPreset(id: $0) }
+        appState.config.favoritePresetIds.compactMap { id in
+            guard !appState.config.isPresetHidden(id: id) else {
+                return nil
+            }
+            return appState.config.findPreset(id: id)
+        }
     }
 
     private var otherPresets: [Preset] {
-        appState.config.presets.filter { !favoritePresetIDs.contains($0.id) }
+        appState.config.visiblePresets.filter { !favoritePresetIDs.contains($0.id) }
     }
 
     var body: some View {

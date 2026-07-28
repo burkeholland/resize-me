@@ -7,6 +7,7 @@ struct AppConfig: Codable, Equatable, Sendable {
     var presets: [Preset]
     var activePresetId: String
     var favoritePresetIds: [String]
+    var hiddenPresetIds: [String]
     var centerAfterResize: Bool
     var hotkey: String
     var autoStart: Bool
@@ -16,6 +17,7 @@ struct AppConfig: Codable, Equatable, Sendable {
          presets: [Preset] = [],
          activePresetId: String = "",
          favoritePresetIds: [String] = [],
+         hiddenPresetIds: [String] = [],
          centerAfterResize: Bool = true,
          hotkey: String = "",
          autoStart: Bool = false,
@@ -24,6 +26,7 @@ struct AppConfig: Codable, Equatable, Sendable {
         self.presets = presets
         self.activePresetId = activePresetId
         self.favoritePresetIds = favoritePresetIds
+        self.hiddenPresetIds = hiddenPresetIds
         self.centerAfterResize = centerAfterResize
         self.hotkey = hotkey
         self.autoStart = autoStart
@@ -36,6 +39,7 @@ struct AppConfig: Codable, Equatable, Sendable {
         presets = try container.decodeIfPresent([Preset].self, forKey: .presets) ?? []
         activePresetId = try container.decodeIfPresent(String.self, forKey: .activePresetId) ?? ""
         favoritePresetIds = try container.decodeIfPresent([String].self, forKey: .favoritePresetIds) ?? []
+        hiddenPresetIds = try container.decodeIfPresent([String].self, forKey: .hiddenPresetIds) ?? []
         centerAfterResize = try container.decodeIfPresent(Bool.self, forKey: .centerAfterResize) ?? true
         hotkey = try container.decodeIfPresent(String.self, forKey: .hotkey) ?? ""
         autoStart = try container.decodeIfPresent(Bool.self, forKey: .autoStart) ?? false
@@ -47,6 +51,7 @@ struct AppConfig: Codable, Equatable, Sendable {
         case presets
         case activePresetId
         case favoritePresetIds
+        case hiddenPresetIds
         case centerAfterResize
         case hotkey
         case autoStart
@@ -78,6 +83,7 @@ struct AppConfig: Codable, Equatable, Sendable {
             ],
             activePresetId: "1080p-landscape",
             favoritePresetIds: [],
+            hiddenPresetIds: [],
             centerAfterResize: true,
             hotkey: AppConfig.defaultHotkey,
             autoStart: false,
@@ -93,7 +99,15 @@ struct AppConfig: Codable, Equatable, Sendable {
         findPreset(id: id) != nil
     }
 
+    func isPresetHidden(id: String) -> Bool {
+        hiddenPresetIds.contains(id)
+    }
+
+    var visiblePresets: [Preset] {
+        presets.filter { !isPresetHidden(id: $0.id) }
+    }
+
     var activePreset: Preset? {
-        findPreset(id: activePresetId)
+        visiblePresets.first(where: { $0.id == activePresetId })
     }
 }

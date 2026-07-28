@@ -24,6 +24,7 @@ type Config struct {
 	Presets           []Preset `json:"presets"`
 	ActivePresetID    string   `json:"activePresetId"`
 	FavoritePresetIDs []string `json:"favoritePresetIds"`
+	HiddenPresetIDs   []string `json:"hiddenPresetIds"`
 	CenterAfterResize bool     `json:"centerAfterResize"`
 	Hotkey            string   `json:"hotkey"`
 	AutoStart         bool     `json:"autoStart"`
@@ -43,6 +44,7 @@ func (c Config) Clone() Config {
 	clone := c
 	clone.Presets = append([]Preset(nil), c.Presets...)
 	clone.FavoritePresetIDs = append([]string(nil), c.FavoritePresetIDs...)
+	clone.HiddenPresetIDs = append([]string(nil), c.HiddenPresetIDs...)
 	return clone
 }
 
@@ -61,7 +63,27 @@ func (c Config) FindPreset(id string) (Preset, bool) {
 }
 
 func (c Config) ActivePreset() (Preset, bool) {
-	return c.FindPreset(c.ActivePresetID)
+	preset, ok := c.FindPreset(c.ActivePresetID)
+	return preset, ok && !c.IsPresetHidden(preset.ID)
+}
+
+func (c Config) IsPresetHidden(id string) bool {
+	for _, hiddenID := range c.HiddenPresetIDs {
+		if hiddenID == id {
+			return true
+		}
+	}
+	return false
+}
+
+func (c Config) VisiblePresets() []Preset {
+	visible := make([]Preset, 0, len(c.Presets))
+	for _, preset := range c.Presets {
+		if !c.IsPresetHidden(preset.ID) {
+			visible = append(visible, preset)
+		}
+	}
+	return visible
 }
 
 func (s *ConfigStore) Load() (Config, error) {
@@ -135,6 +157,7 @@ func DefaultConfig() Config {
 		Presets:           presets,
 		ActivePresetID:    "1080p-landscape",
 		FavoritePresetIDs: []string{},
+		HiddenPresetIDs:   []string{},
 		CenterAfterResize: true,
 		Hotkey:            defaultHotkey,
 		AutoStart:         false,

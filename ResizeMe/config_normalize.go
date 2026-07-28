@@ -70,6 +70,31 @@ func NormalizeConfig(config Config, fallback Config) (Config, error) {
 	}
 	next.FavoritePresetIDs = normalizedFavorites
 
+	seenHiddenIDs := map[string]bool{}
+	normalizedHidden := make([]string, 0, len(next.HiddenPresetIDs))
+	for _, id := range next.HiddenPresetIDs {
+		if !next.HasPreset(id) || seenHiddenIDs[id] {
+			continue
+		}
+		seenHiddenIDs[id] = true
+		normalizedHidden = append(normalizedHidden, id)
+	}
+	next.HiddenPresetIDs = normalizedHidden
+
+	if len(next.VisiblePresets()) == 0 {
+		for i, id := range next.HiddenPresetIDs {
+			if id == next.ActivePresetID {
+				next.HiddenPresetIDs = append(next.HiddenPresetIDs[:i], next.HiddenPresetIDs[i+1:]...)
+				break
+			}
+		}
+	}
+
+	visiblePresets := next.VisiblePresets()
+	if next.IsPresetHidden(next.ActivePresetID) {
+		next.ActivePresetID = visiblePresets[0].ID
+	}
+
 	return next, nil
 }
 

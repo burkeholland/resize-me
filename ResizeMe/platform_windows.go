@@ -686,7 +686,8 @@ func (w *WindowsAgent) showMenu() {
 	}
 	defer procDestroyMenu.Call(menu)
 
-	presetByCmd := make(map[uint32]string, len(config.Presets))
+	visiblePresets := config.VisiblePresets()
+	presetByCmd := make(map[uint32]string, len(visiblePresets))
 	nextPresetCommand := uint32(cmdPresetBase)
 	appendPreset := func(preset Preset) {
 		flags := uint32(mfString)
@@ -710,7 +711,7 @@ func (w *WindowsAgent) showMenu() {
 	hasFavorites := false
 	for _, id := range config.FavoritePresetIDs {
 		preset, ok := config.FindPreset(id)
-		if !ok {
+		if !ok || config.IsPresetHidden(id) {
 			continue
 		}
 		if !hasFavorites {
@@ -720,8 +721,8 @@ func (w *WindowsAgent) showMenu() {
 		appendPreset(preset)
 	}
 
-	otherPresets := make([]Preset, 0, len(config.Presets))
-	for _, preset := range config.Presets {
+	otherPresets := make([]Preset, 0, len(visiblePresets))
+	for _, preset := range visiblePresets {
 		if favoriteSet[preset.ID] {
 			continue
 		}

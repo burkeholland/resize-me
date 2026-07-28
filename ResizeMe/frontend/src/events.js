@@ -3,6 +3,8 @@ import {
   selectPreset,
   toggleFavoritePreset,
   deletePreset,
+  hidePreset,
+  restorePreset,
   openAddDialog,
   openEditDialog,
   openAboutDialog,
@@ -40,6 +42,8 @@ export function bindEvents(app, renderFn) {
         case 'select-preset':await selectPreset(el.dataset.id, renderFn); break;
         case 'toggle-favorite':     await toggleFavoritePreset(el.dataset.id, renderFn); break;
         case 'delete-preset':       await deletePreset(el.dataset.id, renderFn); break;
+        case 'hide-preset':         await hidePreset(el.dataset.id, renderFn); break;
+        case 'restore-preset':      await restorePreset(el.dataset.id, renderFn); break;
         case 'edit-preset':         openEditDialog(el.dataset.id, renderFn); break;
         case 'add-preset':          openAddDialog(renderFn); break;
         case 'open-about':          openAboutDialog(renderFn); break;

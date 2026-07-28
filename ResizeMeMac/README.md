@@ -19,6 +19,7 @@ If a request does not clearly say whether you mean this native macOS app or the 
 
 - Simple, lightweight menu-bar experience
 - Preset-based resizing with center-after-resize support
+- Temporarily hide presets from selectors while keeping them available to restore in Settings
 - Built-in onboarding and Settings flow
 - Sparkle-based update support for release builds
 

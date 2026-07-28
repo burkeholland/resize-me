@@ -16,6 +16,7 @@ final class ConfigNormalizerTests: XCTestCase {
         XCTAssertEqual(config.presets.first(where: { $0.id == "4k-portrait" })?.height, 3840)
         XCTAssertEqual(config.hotkey, "Ctrl+Alt+R")
         XCTAssertTrue(config.favoritePresetIds.isEmpty)
+        XCTAssertTrue(config.hiddenPresetIds.isEmpty)
         XCTAssertTrue(config.centerAfterResize)
         XCTAssertTrue(config.firstRun)
         XCTAssertFalse(config.autoStart)
@@ -138,14 +139,50 @@ final class ConfigNormalizerTests: XCTestCase {
         XCTAssertEqual(normalized?.favoritePresetIds, ["b", "a"])
     }
 
+    func testHiddenPresetIDsAreNormalizedAndKeepAnActiveVisiblePreset() {
+        let config = AppConfig(
+            presets: [
+                Preset(id: "a", name: "A", width: 800, height: 600),
+                Preset(id: "b", name: "B", width: 900, height: 700)
+            ],
+            activePresetId: "a",
+            favoritePresetIds: ["a"],
+            hiddenPresetIds: ["a", "missing", "a"]
+        )
+
+        let normalized = try? ConfigNormalizer.normalize(config, fallback: .default)
+
+        XCTAssertEqual(normalized?.hiddenPresetIds, ["a"])
+        XCTAssertEqual(normalized?.activePresetId, "b")
+        XCTAssertEqual(normalized?.favoritePresetIds, ["a"])
+        XCTAssertEqual(normalized?.visiblePresets.map(\.id), ["b"])
+    }
+
+    func testNormalizationDoesNotAllowAllPresetsToBeHidden() {
+        let config = AppConfig(
+            presets: [
+                Preset(id: "a", name: "A", width: 800, height: 600),
+                Preset(id: "b", name: "B", width: 900, height: 700)
+            ],
+            activePresetId: "b",
+            hiddenPresetIds: ["a", "b"]
+        )
+
+        let normalized = try? ConfigNormalizer.normalize(config, fallback: .default)
+
+        XCTAssertEqual(normalized?.hiddenPresetIds, ["a"])
+        XCTAssertEqual(normalized?.activePresetId, "b")
+    }
+
     func testValidConfigPassesThroughUnchanged() {
-        let config = AppConfig(schemaVersion: 7, presets: [Preset(id: "x", name: "X", width: 800, height: 600)], activePresetId: "x", favoritePresetIds: ["x"], centerAfterResize: false, hotkey: "Ctrl+Shift+X", autoStart: true, firstRun: false)
+        let config = AppConfig(schemaVersion: 7, presets: [Preset(id: "x", name: "X", width: 800, height: 600)], activePresetId: "x", favoritePresetIds: ["x"], hiddenPresetIds: [], centerAfterResize: false, hotkey: "Ctrl+Shift+X", autoStart: true, firstRun: false)
         let normalized = try? ConfigNormalizer.normalize(config, fallback: .default)
 
         XCTAssertEqual(normalized?.schemaVersion, 1)
         XCTAssertEqual(normalized?.presets, config.presets)
         XCTAssertEqual(normalized?.activePresetId, "x")
         XCTAssertEqual(normalized?.favoritePresetIds, ["x"])
+        XCTAssertEqual(normalized?.hiddenPresetIds, [])
         XCTAssertEqual(normalized?.hotkey, "Ctrl+Shift+X")
         XCTAssertFalse(normalized?.centerAfterResize ?? true)
     }
