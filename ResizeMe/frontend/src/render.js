@@ -1,4 +1,4 @@
-import { state, activePreset, isFavoritePreset } from './state.js';
+import { state, activePreset, hasDraftChanges, isFavoritePreset } from './state.js';
 import { capture } from './hotkey.js';
 
 export function escHtml(v) {
@@ -34,8 +34,8 @@ export function renderApp(app) {
     return;
   }
 
-  const s = state.settings;
-  const preset = activePreset(s);
+  const s = state.draft ?? state.settings;
+  const preset = activePreset(state.settings);
   const favoritePresetIds = s.favoritePresetIds ?? [];
   const favoriteIdSet = new Set(favoritePresetIds);
   const favoritePresets = favoritePresetIds
@@ -54,14 +54,14 @@ export function renderApp(app) {
         </div>
       </div>
 
-      <main class="shell" ${state.dialog !== null ? 'inert' : ''}>
+      <main class="shell" ${state.dialog !== null || state.saving ? 'inert' : ''} aria-busy="${state.saving}">
         <header class="page-header">
           <h1>Settings</h1>
-          <p>Choose how ResizeMe sizes windows and works in the background.</p>
+          <p>Changes stay in this window until you save them.</p>
         </header>
 
         ${state.error ? `<div class="error-banner" role="alert">${escHtml(state.error)}</div>` : ''}
-        ${s.firstRun ? renderFirstRun(s, preset) : ''}
+        ${s.firstRun ? renderFirstRun(state.settings, preset) : ''}
 
         <section class="current-resize" aria-labelledby="current-resize-title">
           <div>
@@ -133,6 +133,8 @@ export function renderApp(app) {
             </button>
           </div>
         </section>
+
+        ${renderSettingsActions()}
       </main>
 
       ${state.dialog !== null ? renderDialog() : ''}
@@ -143,6 +145,18 @@ export function renderApp(app) {
     const newShell = app.querySelector('.shell');
     if (newShell) newShell.scrollTop = scrollTop;
   }
+}
+
+function renderSettingsActions() {
+  const hasChanges = hasDraftChanges();
+  return `
+    <section class="settings-actions" aria-label="Save settings">
+      <span class="settings-actions-copy">Changes apply when you save.</span>
+      <div class="settings-actions-buttons">
+        <button type="button" class="standard-btn" data-action="revert-settings" ${hasChanges && !state.saving ? '' : 'disabled'}>Revert</button>
+        <button type="button" class="accent-btn" data-action="save-settings" ${hasChanges && !state.saving ? '' : 'disabled'}>${state.saving ? 'Saving…' : 'Save'}</button>
+      </div>
+    </section>`;
 }
 
 function renderFirstRun(s, preset) {

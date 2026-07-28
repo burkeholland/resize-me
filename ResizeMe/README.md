@@ -33,6 +33,7 @@ wails build
 - Applies preset width and height values as physical pixels.
 - Global hotkeys use one or more modifiers plus A-Z, 0-9, or F1-F20 so shared settings work on both Windows and macOS.
 - Stores presets and settings locally in `%APPDATA%\ResizeMe\settings.json`.
+- Settings edits remain in the Settings window until you select **Save**. **Revert** discards the draft; if another ResizeMe action changes settings while a draft is open, saving the stale draft is rejected and the latest values are loaded.
 - Does not send settings, foreground-window metadata, telemetry, or analytics over the network.
 - Runs in the system tray after setup. Launch at sign-in is optional and writes a `ResizeMe` value under the current user's `Run` registry key.
 - The tray menu shows a best-effort target application name from its executable. It does not show window titles, so document and page titles are not exposed in the menu; target lookup failures do not affect resizing.

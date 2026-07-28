@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
+	"reflect"
 	"sync"
 
 	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
@@ -19,6 +21,8 @@ type App struct {
 	saveMu sync.Mutex // serialises the full save transaction
 	config Config
 }
+
+var errSettingsChanged = errors.New("Settings changed elsewhere. Review the latest values before saving.")
 
 func NewApp() *App {
 	store := NewConfigStore()
@@ -71,12 +75,26 @@ func (a *App) GetSettings() Config {
 }
 
 func (a *App) SaveSettings(next Config) (Config, error) {
+	return a.saveSettings(next, nil)
+}
+
+// SaveSettingsIfUnchanged applies a settings draft only when it is based on
+// the current persisted configuration.
+func (a *App) SaveSettingsIfUnchanged(next Config, expected Config) (Config, error) {
+	return a.saveSettings(next, &expected)
+}
+
+func (a *App) saveSettings(next Config, expected *Config) (Config, error) {
 	a.saveMu.Lock()
 	defer a.saveMu.Unlock()
 
 	a.mu.RLock()
 	current := a.config.Clone()
 	a.mu.RUnlock()
+
+	if expected != nil && !samePersistedConfig(current, *expected) {
+		return current, errSettingsChanged
+	}
 
 	if message := hotkeyValidationMessage(next.Hotkey); message != "" {
 		return current, fmt.Errorf("%s", message)
@@ -89,15 +107,12 @@ func (a *App) SaveSettings(next Config) (Config, error) {
 
 	if a.agent != nil {
 		if err := a.agent.ApplySettings(normalized); err != nil {
-			return current, err
+			return a.restoreRuntimeSettings(current, err)
 		}
 	}
 
 	if err := a.store.Save(normalized); err != nil {
-		if a.agent != nil {
-			_ = a.agent.ApplySettings(current)
-		}
-		return current, err
+		return a.restoreRuntimeSettings(current, err)
 	}
 
 	a.mu.Lock()
@@ -106,6 +121,22 @@ func (a *App) SaveSettings(next Config) (Config, error) {
 	a.mu.Unlock()
 	a.emitSettingsUpdated()
 	return normalized, nil
+}
+
+func (a *App) restoreRuntimeSettings(current Config, cause error) (Config, error) {
+	if a.agent == nil {
+		return current, cause
+	}
+	if err := a.agent.ApplySettings(current); err != nil {
+		return current, fmt.Errorf("%v; failed to restore previous runtime settings: %w", cause, err)
+	}
+	return current, cause
+}
+
+func samePersistedConfig(left Config, right Config) bool {
+	left.LoadError = ""
+	right.LoadError = ""
+	return reflect.DeepEqual(left, right)
 }
 
 func (a *App) SetActivePreset(id string) (Config, error) {
