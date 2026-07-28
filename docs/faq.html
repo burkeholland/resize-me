@@ -41,6 +41,14 @@
     },
     {
       "@type": "Question",
+      "name": "Are preset sizes pixels or points?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Windows applies preset values as physical pixels, while macOS applies them as logical points. For example, 1280 by 720 on a 2x Retina display can occupy 2560 by 1440 physical pixels. Shared settings.json presets stay compatible, but the same numbers do not guarantee the same physical size."
+      }
+    },
+    {
+      "@type": "Question",
       "name": "How do I install ResizeMe on macOS?",
       "acceptedAnswer": {
         "@type": "Answer",
@@ -144,6 +152,11 @@ a {
     <details>
       <summary>Does ResizeMe work on macOS and Windows?</summary>
       <p>Yes. The project ships builds for both platforms.</p>
+    </details>
+    <details>
+      <summary>Are preset sizes pixels or points?</summary>
+      <p>Windows applies preset dimensions as physical pixels, while macOS applies them as logical points. For example, a <code>1280 × 720</code> preset on a 2x Retina display can occupy <code>2560 × 1440</code> physical pixels.</p>
+      <p>Shared <code>settings.json</code> presets keep the same numeric width and height fields, so they remain compatible but do not guarantee the same physical size across platforms. A pixel-aware macOS mode is not currently planned because Accessibility sizing is point-based and a physical-pixel conversion would need an explicit, display-aware design.</p>
     </details>
     <details>
       <summary>How do I install on Windows?</summary>

@@ -55,6 +55,13 @@ The website landing page in [docs/index.html](docs/index.html) also detects your
 
 Windows winget setup notes are in [docs/windows-winget-setup.md](docs/windows-winget-setup.md).
 
+## Sizing semantics
+
+- Windows applies preset `width` and `height` values as physical pixels. The native macOS app applies the same values as logical points.
+- For example, a `1280 × 720` preset requests 1280 by 720 pixels on Windows, but 1280 by 720 points on macOS. On a 2x Retina display, that macOS window can occupy 2560 by 1440 physical pixels.
+- The shared `settings.json` schema intentionally stores only numeric width and height values, so presets remain compatible but do not preserve a common physical-size meaning across platforms.
+- A pixel-aware macOS mode is not currently warranted: Accessibility window sizing is point-based and physical-pixel conversion varies by display. It would require an explicit, display-aware opt-in while retaining the current compatible behavior.
+
 ## Notes
 
 - The native macOS app is the default target for menu-bar and macOS-specific work.

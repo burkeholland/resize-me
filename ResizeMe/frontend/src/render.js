@@ -88,7 +88,7 @@ export function renderApp(app) {
             </label>
           </div>
 
-          <h3 class="subsection-title">Presets</h3>
+          <h3 class="subsection-title">Presets (pixels)</h3>
           <div class="card-group preset-list">
             ${favoritePresets.length > 0 ? `
               <div class="preset-group-label">Favorites</div>
@@ -148,7 +148,7 @@ export function renderApp(app) {
 function renderFirstRun(s, preset) {
   const hotkeyKeys = renderHotkeyKeys(s.hotkey);
   const presetDescription = preset
-    ? `${escHtml(preset.name)} (${preset.width} × ${preset.height})`
+    ? `${escHtml(preset.name)} (${preset.width} × ${preset.height} px)`
     : 'your active preset';
 
   return `
@@ -194,7 +194,7 @@ function renderPresetRow(p, activeId) {
           ${isActive ? '<span class="radio-dot"></span>' : ''}
         </span>
         <span class="preset-name">${escHtml(p.name)}</span>
-        <span class="preset-dims">${p.width} × ${p.height}</span>
+        <span class="preset-dims">${p.width} × ${p.height} px</span>
       </button>
       <button type="button" class="preset-favorite${isFavorite ? ' active' : ''}" data-action="toggle-favorite" data-id="${escAttr(p.id)}" aria-label="${isFavorite ? 'Remove ' + escAttr(p.name) + ' from favorites' : 'Add ' + escAttr(p.name) + ' to favorites'}">${isFavorite ? '&#xE735;' : '&#xE734;'}</button>
       <button type="button" class="preset-edit" data-action="edit-preset" data-id="${escAttr(p.id)}" aria-label="Edit ${escAttr(p.name)}">&#xE70F;</button>
@@ -270,11 +270,11 @@ function renderDialog() {
           </label>
           <div class="dialog-row">
             <label class="field-label">
-              Width
+              Width (px)
               <input type="number" data-dialog-field="width" value="${d.width}" min="100" max="10000" />
             </label>
             <label class="field-label">
-              Height
+              Height (px)
               <input type="number" data-dialog-field="height" value="${d.height}" min="100" max="10000" />
             </label>
           </div>

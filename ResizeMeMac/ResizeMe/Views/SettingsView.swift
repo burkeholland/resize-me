@@ -250,7 +250,7 @@ private struct PresetsTab: View {
 
                 Spacer()
 
-                Text("Sizes are in points (logical units), not physical pixels.")
+                Text("Preset dimensions are in logical points (pt), not physical pixels.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -308,7 +308,7 @@ private struct PresetRow: View {
             TextField("Name", text: $preset.name)
                 .textFieldStyle(.roundedBorder)
 
-            TextField("Width", value: $preset.width, format: .number.grouping(.never))
+            TextField("Width (pt)", value: $preset.width, format: .number.grouping(.never))
                 .textFieldStyle(.roundedBorder)
                 .frame(width: 64)
                 .multilineTextAlignment(.trailing)
@@ -316,7 +316,7 @@ private struct PresetRow: View {
             Text("×")
                 .foregroundStyle(.secondary)
 
-            TextField("Height", value: $preset.height, format: .number.grouping(.never))
+            TextField("Height (pt)", value: $preset.height, format: .number.grouping(.never))
                 .textFieldStyle(.roundedBorder)
                 .frame(width: 64)
                 .multilineTextAlignment(.trailing)

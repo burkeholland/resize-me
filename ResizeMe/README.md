@@ -30,6 +30,7 @@ wails build
 
 - Requires Windows 10 version 2004 (build 19041) or later and the Microsoft Edge WebView2 Runtime.
 - Resizes only the foreground program using a user-configurable global hotkey.
+- Applies preset width and height values as physical pixels.
 - Global hotkeys use one or more modifiers plus A-Z, 0-9, or F1-F20 so shared settings work on both Windows and macOS.
 - Stores presets and settings locally in `%APPDATA%\ResizeMe\settings.json`.
 - Does not send settings, foreground-window metadata, telemetry, or analytics over the network.
