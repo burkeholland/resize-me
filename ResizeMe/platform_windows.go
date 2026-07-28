@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -76,6 +77,7 @@ const (
 
 	resizeTolerance = 1
 	titleBarReachableHeight = 40
+	processQueryLimitedInformation = 0x1000
 )
 
 var (
@@ -99,6 +101,9 @@ var (
 	procExtractIconEx         = shell32.NewProc("ExtractIconExW")
 	procShellNotifyIcon       = shell32.NewProc("Shell_NotifyIconW")
 	procGetModuleHandle       = kernel.NewProc("GetModuleHandleW")
+	procOpenProcess           = kernel.NewProc("OpenProcess")
+	procCloseHandle           = kernel.NewProc("CloseHandle")
+	procQueryFullProcessImage = kernel.NewProc("QueryFullProcessImageNameW")
 	procDwmGetWindowAttribute = dwmapi.NewProc("DwmGetWindowAttribute")
 	procGetCursorPos          = user32.NewProc("GetCursorPos")
 	procSetForegroundWindow   = user32.NewProc("SetForegroundWindow")
@@ -694,6 +699,9 @@ func (w *WindowsAgent) showMenu() {
 		appendMenu(menu, flags, command, fmt.Sprintf("%s  %dx%d", preset.Name, preset.Width, preset.Height))
 	}
 
+	appendMenu(menu, mfString|mfDisabled, 0, w.resizeTargetMenuLabel())
+	appendMenu(menu, mfSeparator, 0, "")
+
 	favoriteSet := make(map[string]bool, len(config.FavoritePresetIDs))
 	for _, id := range config.FavoritePresetIDs {
 		favoriteSet[id] = true
@@ -889,6 +897,40 @@ func (w *WindowsAgent) ResizeActiveWindow(preset Preset, center bool) error {
 	return nil
 }
 
+func (w *WindowsAgent) resizeTargetMenuLabel() string {
+	hwnd := w.resizeTarget()
+	if hwnd == 0 {
+		return "Target: No active window"
+	}
+
+	w.mu.RLock()
+	agentHwnd := w.hwnd
+	w.mu.RUnlock()
+
+	var pid uint32
+	_, _, _ = procGetWindowThreadProcID.Call(hwnd, uintptr(unsafe.Pointer(&pid)))
+	return targetMenuLabel(
+		getWindowClass(windows.Handle(hwnd)),
+		processNameForPID(pid),
+		windows.Handle(hwnd) == agentHwnd || pid == uint32(os.Getpid()),
+	)
+}
+
+func targetMenuLabel(className, processName string, isResizeMe bool) string {
+	switch {
+	case isResizeMe || className == "ResizeMeTrayWindow":
+		return "Target: ResizeMe (not resizable)"
+	case className == "Progman" || className == "WorkerW":
+		return "Target: Windows desktop (not resizable)"
+	case className == "Shell_TrayWnd" || className == "Shell_SecondaryTrayWnd":
+		return "Target: Windows taskbar (not resizable)"
+	case processName != "":
+		return fmt.Sprintf("Target: %s", processName)
+	default:
+		return "Target: Active window"
+	}
+}
+
 func (w *WindowsAgent) resizeTarget() uintptr {
 	hwnd, _, _ := procGetForegroundWindow.Call()
 	if hwnd == 0 {
@@ -960,6 +1002,36 @@ func getWindowClass(hwnd windows.Handle) string {
 		return ""
 	}
 	return windows.UTF16ToString(buffer[:ret])
+}
+
+func processNameForPID(pid uint32) string {
+	if pid == 0 {
+		return ""
+	}
+
+	handle, _, _ := procOpenProcess.Call(processQueryLimitedInformation, 0, uintptr(pid))
+	if handle == 0 {
+		return ""
+	}
+	defer procCloseHandle.Call(handle)
+
+	buffer := make([]uint16, 32768)
+	length := uint32(len(buffer))
+	ret, _, _ := procQueryFullProcessImage.Call(
+		handle,
+		0,
+		uintptr(unsafe.Pointer(&buffer[0])),
+		uintptr(unsafe.Pointer(&length)),
+	)
+	if ret == 0 {
+		return ""
+	}
+	return processNameFromPath(windows.UTF16ToString(buffer[:length]))
+}
+
+func processNameFromPath(path string) string {
+	base := filepath.Base(path)
+	return strings.TrimSuffix(base, filepath.Ext(base))
 }
 
 func setAutoStart(enabled bool) error {
