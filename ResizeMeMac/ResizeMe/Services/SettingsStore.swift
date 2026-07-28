@@ -33,7 +33,10 @@ final class SettingsStore {
             let decoded = try decoder.decode(AppConfig.self, from: data)
             do {
                 let normalized = try ConfigNormalizer.normalize(decoded, fallback: .default)
-                return LoadResult(config: normalized, loadError: nil)
+                return LoadResult(
+                    config: normalized,
+                    loadError: ConfigNormalizer.hotkeyValidationMessage(decoded.hotkey)
+                )
             } catch {
                 logger.error("settings normalization failed: \(error.localizedDescription, privacy: .public)")
                 return LoadResult(config: .default, loadError: error.localizedDescription)

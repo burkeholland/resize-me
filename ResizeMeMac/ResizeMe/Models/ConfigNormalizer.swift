@@ -12,6 +12,8 @@ enum ConfigNormalizerError: LocalizedError, Equatable {
 }
 
 enum ConfigNormalizer {
+    static let portableHotkeyHelp = "F21-F24 are not supported on macOS. Choose F1-F20, A-Z, or 0-9 with a modifier."
+
     static func normalize(_ config: AppConfig, fallback: AppConfig) throws -> AppConfig {
         var next = config
         next.schemaVersion = 1
@@ -120,20 +122,37 @@ enum ConfigNormalizer {
             case "Ctrl", "Alt", "Shift", "Win":
                 hasModifier = true
             default:
-                if partString.count == 1,
-                   let ch = partString.unicodeScalars.first,
-                   (ch >= "A" && ch <= "Z") || (ch >= "0" && ch <= "9") {
-                    hasKey = true
-                } else if partString.hasPrefix("F") {
-                    let rest = String(partString.dropFirst())
-                    if let n = Int(rest), n >= 1 && n <= 24 {
-                        hasKey = true
-                    }
-                }
+                hasKey = hasKey || isPortableHotkeyKey(partString)
             }
         }
 
         return hasModifier && hasKey
+    }
+
+    static func hotkeyValidationMessage(_ value: String) -> String? {
+        for part in normalizeHotkeyText(value).split(separator: "+") {
+            let token = String(part)
+            guard token.hasPrefix("F"),
+                  let number = Int(token.dropFirst()),
+                  (21...24).contains(number) else {
+                continue
+            }
+            return portableHotkeyHelp
+        }
+        return nil
+    }
+
+    private static func isPortableHotkeyKey(_ value: String) -> Bool {
+        if value.count == 1,
+           let ch = value.unicodeScalars.first,
+           (ch >= "A" && ch <= "Z") || (ch >= "0" && ch <= "9") {
+            return true
+        }
+
+        guard value.hasPrefix("F"), let number = Int(value.dropFirst()) else {
+            return false
+        }
+        return (1...20).contains(number)
     }
 
     private static func presetID(_ preset: Preset, index: Int) -> String {

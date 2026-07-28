@@ -39,6 +39,21 @@ final class ConfigNormalizerTests: XCTestCase {
         XCTAssertEqual((try? ConfigNormalizer.normalize(AppConfig(hotkey: "Ctrl+Alt+F25"), fallback: .default))?.hotkey, AppConfig.defaultHotkey)
     }
 
+    func testPortableFunctionKeyLimitMatchesHotkeyMapper() {
+        XCTAssertTrue(ConfigNormalizer.isValidHotkeyText("Ctrl+Alt+F20"))
+        XCTAssertFalse(ConfigNormalizer.isValidHotkeyText("Ctrl+Alt+F21"))
+        XCTAssertEqual(
+            (try? ConfigNormalizer.normalize(AppConfig(hotkey: "Ctrl+Alt+F21"), fallback: .default))?.hotkey,
+            AppConfig.defaultHotkey
+        )
+        XCTAssertEqual(
+            ConfigNormalizer.hotkeyValidationMessage("Ctrl+Alt+F21"),
+            ConfigNormalizer.portableHotkeyHelp
+        )
+        XCTAssertNotNil(HotkeyMapper.shortcut(fromConfigString: "Ctrl+Alt+F20"))
+        XCTAssertNil(HotkeyMapper.shortcut(fromConfigString: "Ctrl+Alt+F21"))
+    }
+
     func testEmptyPresetsUsesFallback() {
         let normalized = try? ConfigNormalizer.normalize(AppConfig(presets: []), fallback: .default)
         XCTAssertEqual(normalized?.presets, AppConfig.default.presets)

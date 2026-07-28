@@ -48,6 +48,21 @@ final class SettingsStoreTests: XCTestCase {
         XCTAssertEqual(result.config.schemaVersion, 1)
     }
 
+    func testLegacyFunctionKeyLoadsWithPortableDefaultAndNotice() {
+        let store = makeStore()
+        let payload = """
+        {"presets":[{"id":"a","name":"A","width":800,"height":600}],"activePresetId":"a","centerAfterResize":false,"hotkey":"Ctrl+Alt+F24","autoStart":false,"firstRun":false}
+        """.data(using: .utf8)!
+        try? payload.write(to: store.fileURL, options: .atomic)
+
+        let result = store.load()
+
+        XCTAssertEqual(result.config.presets, [Preset(id: "a", name: "A", width: 800, height: 600)])
+        XCTAssertEqual(result.config.activePresetId, "a")
+        XCTAssertEqual(result.config.hotkey, AppConfig.defaultHotkey)
+        XCTAssertEqual(result.loadError, ConfigNormalizer.portableHotkeyHelp)
+    }
+
     func testSaveIsAtomicNoTempLeftBehind() {
         let store = makeStore()
         try? store.save(AppConfig.default)

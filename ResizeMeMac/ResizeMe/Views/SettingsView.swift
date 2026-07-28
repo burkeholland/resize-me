@@ -31,6 +31,7 @@ struct SettingsView: View {
     @State private var draft: AppConfig = .default
     @State private var draftBase: AppConfig = .default
     @State private var draftShortcut: KeyboardShortcuts.Shortcut?
+    @State private var shortcutValidationMessage: String?
     @State private var selectedTab: SettingsTab? = .general
     @State private var splitVisibility: NavigationSplitViewVisibility = .all
 
@@ -63,7 +64,10 @@ struct SettingsView: View {
                     case .presets:
                         PresetsTab(draft: $draft)
                     case .shortcuts:
-                        ShortcutsTab(draftShortcut: $draftShortcut)
+                        ShortcutsTab(
+                            draftShortcut: shortcutBinding,
+                            validationMessage: shortcutValidationMessage
+                        )
                     case .updates:
                         UpdatesTab(appState: appState)
                     case .about:
@@ -103,7 +107,7 @@ struct SettingsView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .keyboardShortcut(.defaultAction)
-                    .disabled(!hasChanges)
+                    .disabled(!hasChanges || shortcutValidationMessage != nil)
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
@@ -124,6 +128,30 @@ struct SettingsView: View {
         draft = appState.config
         draftBase = appState.config
         draftShortcut = HotkeyMapper.shortcut(fromConfigString: appState.config.hotkey)
+        shortcutValidationMessage = nil
+    }
+
+    private var shortcutBinding: Binding<KeyboardShortcuts.Shortcut?> {
+        Binding(
+            get: { draftShortcut },
+            set: { shortcut in
+                guard let shortcut else {
+                    draftShortcut = nil
+                    shortcutValidationMessage = nil
+                    return
+                }
+
+                let configString = HotkeyMapper.configString(from: shortcut)
+                guard ConfigNormalizer.isValidHotkeyText(configString) else {
+                    shortcutValidationMessage = ConfigNormalizer.hotkeyValidationMessage(configString)
+                        ?? "Choose A-Z, 0-9, or F1-F20 with at least one modifier."
+                    return
+                }
+
+                draftShortcut = shortcut
+                shortcutValidationMessage = nil
+            }
+        )
     }
 }
 
@@ -301,11 +329,18 @@ private struct PresetRow: View {
 
 private struct ShortcutsTab: View {
     @Binding var draftShortcut: KeyboardShortcuts.Shortcut?
+    let validationMessage: String?
 
     var body: some View {
         Form {
             Section("Global Shortcut") {
                 KeyboardShortcuts.Recorder("Resize frontmost window:", shortcut: $draftShortcut)
+
+                if let validationMessage {
+                    Label(validationMessage, systemImage: "exclamationmark.triangle.fill")
+                        .font(.footnote)
+                        .foregroundStyle(.red)
+                }
 
                 HStack {
                     Spacer()
