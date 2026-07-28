@@ -1,3 +1,4 @@
+import Foundation
 import XCTest
 @testable import ResizeMe
 
@@ -114,6 +115,31 @@ final class ConfigNormalizerTests: XCTestCase {
 
         XCTAssertEqual(normalized?.presets[1].id, "dup-2")
         XCTAssertEqual(normalized?.presets[2].id, "dup-3")
+    }
+
+    func testNewDraftPresetsKeepHideAndDeleteOperationsIsolated() {
+        let firstDraft = Preset.newDraft()
+        let secondDraft = Preset.newDraft()
+        XCTAssertNotEqual(firstDraft.id, secondDraft.id)
+
+        var draft = AppConfig(
+            presets: [
+                Preset(id: "saved", name: "Saved", width: 800, height: 600),
+                firstDraft,
+                secondDraft
+            ],
+            activePresetId: "saved"
+        )
+
+        draft.hiddenPresetIds.append(firstDraft.id)
+        XCTAssertEqual(draft.visiblePresets.map(\.id), ["saved", secondDraft.id])
+
+        let removedIDs = Set([secondDraft.id])
+        draft.presets.removeAll(where: { removedIDs.contains($0.id) })
+        draft.hiddenPresetIds.removeAll(where: { removedIDs.contains($0) })
+
+        XCTAssertEqual(draft.presets.map(\.id), ["saved", firstDraft.id])
+        XCTAssertEqual(draft.hiddenPresetIds, [firstDraft.id])
     }
 
     func testUnknownActivePresetFallsBack() {

@@ -65,6 +65,19 @@ func TestWindowStateRequiresRestore(t *testing.T) {
 	}
 }
 
+func TestParseHotkeySupportsF24(t *testing.T) {
+	mods, key, err := parseHotkey("Ctrl+Alt+F24")
+	if err != nil {
+		t.Fatalf("parseHotkey returned error: %v", err)
+	}
+	if mods != modControl|modAlt {
+		t.Fatalf("mods = %#x, want %#x", mods, modControl|modAlt)
+	}
+	if key != 0x87 {
+		t.Fatalf("key = %#x, want %#x", key, uint32(0x87))
+	}
+}
+
 func TestResizeOutcomeConstrainedError(t *testing.T) {
 	outcome := resizeOutcome{
 		requestedWidth:  1280,

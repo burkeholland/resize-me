@@ -269,7 +269,7 @@ function renderHotkeyCard(s) {
             <div class="recording-indicator"><span class="recording-dot"></span> Recording</div>
           </div>
           <div class="capture-preview" id="capture-preview">${previewHtml}</div>
-          <div class="capture-hint">Hold Ctrl, Alt, Shift, or Win — then press A-Z, 0-9, or F1-F20</div>
+          <div class="capture-hint">Hold Ctrl, Alt, Shift, or Win — then press A-Z, 0-9, or F1-F24</div>
           <button type="button" class="standard-btn cancel-capture-btn" data-action="cancel-capture">Cancel</button>
         </div>
       </div>`;

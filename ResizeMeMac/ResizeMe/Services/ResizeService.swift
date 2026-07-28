@@ -25,6 +25,31 @@ enum WindowPreparation: Equatable {
     }
 }
 
+struct WindowState: Equatable {
+    let minimized: Bool
+    let fullscreen: Bool
+    let position: CGPoint?
+    let size: CGSize?
+}
+
+enum WindowReadiness {
+    static let maximumObservationCount = 10
+    static let observationInterval: TimeInterval = 0.05
+
+    static func isUsable(_ state: WindowState) -> Bool {
+        guard !state.minimized,
+              !state.fullscreen,
+              let size = state.size else {
+            return false
+        }
+        return state.position != nil && size.width > 0 && size.height > 0
+    }
+
+    static func shouldObserveAgain(afterAttempt attempt: Int) -> Bool {
+        attempt + 1 < maximumObservationCount
+    }
+}
+
 struct ResizeOutcome: Equatable {
     let requested: CGSize
     let achieved: CGSize
@@ -87,6 +112,32 @@ final class ResizeService {
         return write(element, attribute: kAXPositionAttribute as String, value: positionValue)
     }
 
+    private func readWindowState(_ element: AXUIElement) -> WindowState {
+        let minimized = copyAttribute(element, kAXMinimizedAttribute as String) as? Bool ?? false
+        let fullscreen = copyAttribute(element, "AXFullScreen") as? Bool ?? false
+        let position = copyAttribute(element, kAXPositionAttribute as String).flatMap { value -> CGPoint? in
+            guard CFGetTypeID(value as CFTypeRef) == AXValueGetTypeID() else { return nil }
+            return point(from: value as! AXValue)
+        }
+        let windowSize = copyAttribute(element, kAXSizeAttribute as String).flatMap { value -> CGSize? in
+            guard CFGetTypeID(value as CFTypeRef) == AXValueGetTypeID() else { return nil }
+            return size(from: value as! AXValue)
+        }
+        return WindowState(minimized: minimized, fullscreen: fullscreen, position: position, size: windowSize)
+    }
+
+    private func waitForUsableWindow(_ element: AXUIElement) -> WindowState {
+        var state = readWindowState(element)
+        for attempt in 0..<WindowReadiness.maximumObservationCount {
+            if WindowReadiness.isUsable(state) || !WindowReadiness.shouldObserveAgain(afterAttempt: attempt) {
+                return state
+            }
+            RunLoop.current.run(until: Date().addingTimeInterval(WindowReadiness.observationInterval))
+            state = readWindowState(element)
+        }
+        return state
+    }
+
     func resizeFrontmostWindow(to preset: Preset, center: Bool) throws -> ResizeOutcome {
         guard AXIsProcessTrusted() else {
             throw ResizeError.permissionMissing
@@ -119,9 +170,8 @@ final class ResizeService {
             throw ResizeError.noResizableWindow
         }
 
-        let minimized = copyAttribute(windowElement, kAXMinimizedAttribute as String) as? Bool ?? false
-        let fullscreen = copyAttribute(windowElement, "AXFullScreen") as? Bool ?? false
-        switch WindowPreparation.required(minimized: minimized, fullscreen: fullscreen) {
+        let initialState = readWindowState(windowElement)
+        switch WindowPreparation.required(minimized: initialState.minimized, fullscreen: initialState.fullscreen) {
         case .none:
             break
         case .restoreMinimized:
@@ -134,10 +184,16 @@ final class ResizeService {
             }
         }
 
-        guard let currentPosValue = copyAttribute(windowElement, kAXPositionAttribute as String), CFGetTypeID(currentPosValue as CFTypeRef) == AXValueGetTypeID(),
-              let currentSizeValue = copyAttribute(windowElement, kAXSizeAttribute as String), CFGetTypeID(currentSizeValue as CFTypeRef) == AXValueGetTypeID(),
-              let currentPos = point(from: currentPosValue as! AXValue),
-              let currentSize = size(from: currentSizeValue as! AXValue) else {
+        let readyState = waitForUsableWindow(windowElement)
+        if readyState.minimized {
+            throw ResizeError.windowMinimized
+        }
+        if readyState.fullscreen {
+            throw ResizeError.windowFullscreen
+        }
+        guard WindowReadiness.isUsable(readyState),
+              let currentPos = readyState.position,
+              let currentSize = readyState.size else {
             throw ResizeError.noResizableWindow
         }
 

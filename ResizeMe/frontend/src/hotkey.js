@@ -18,16 +18,13 @@ function mapKey(key) {
   const fMatch = key.match(/^F(\d+)$/);
   if (fMatch) {
     const n = parseInt(fMatch[1]);
-    if (n >= 1 && n <= 20) return key;
+    if (n >= 1 && n <= 24) return key;
   }
   return null;
 }
 
 function unsupportedKeyHint(key) {
-  if (/^F(?:2[1-4])$/.test(key)) {
-    return 'F21-F24 are not supported on macOS — use F1-F20, A-Z, or 0-9';
-  }
-  return 'Unsupported key — use A-Z, 0-9, or F1-F20';
+  return 'Unsupported key — use A-Z, 0-9, or F1-F24';
 }
 
 export function buildCombo() {
@@ -53,7 +50,7 @@ function updateCaptureUI() {
     ? parts.map(p => `<kbd>${p}</kbd>`).join('<span class="key-sep">+</span>')
     : '<span class="capture-placeholder">Press a key combination…</span>';
   const hintEl = document.querySelector('.capture-hint');
-  if (hintEl) hintEl.textContent = capture.hint || 'Hold Ctrl, Alt, Shift, or Win — then press A-Z, 0-9, or F1-F20';
+  if (hintEl) hintEl.textContent = capture.hint || 'Hold Ctrl, Alt, Shift, or Win — then press A-Z, 0-9, or F1-F24';
 }
 
 let renderFnRef = null;

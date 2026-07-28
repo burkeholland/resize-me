@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"regexp"
+	"runtime"
 	"strings"
 )
 
@@ -145,7 +146,7 @@ func normalizeHotkeyText(value string) string {
 }
 
 // isValidHotkeyText checks that a normalized hotkey string has at least one
-// modifier and one portable key (A-Z, 0-9, or F1-F20).
+// modifier and one key supported by the current platform.
 func isValidHotkeyText(value string) bool {
 	parts := strings.Split(value, "+")
 	hasModifier := false
@@ -155,7 +156,7 @@ func isValidHotkeyText(value string) bool {
 		case "Ctrl", "Alt", "Shift", "Win":
 			hasModifier = true
 		default:
-			if isPortableHotkeyKey(part) {
+			if isSupportedHotkeyKey(part) {
 				hasKey = true
 			}
 		}
@@ -163,7 +164,7 @@ func isValidHotkeyText(value string) bool {
 	return hasModifier && hasKey
 }
 
-func isPortableHotkeyKey(value string) bool {
+func isSupportedHotkeyKey(value string) bool {
 	if len(value) == 1 {
 		ch := value[0]
 		return (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9')
@@ -179,10 +180,20 @@ func isPortableHotkeyKey(value string) bool {
 		}
 		n = n*10 + int(c-'0')
 	}
-	return n >= 1 && n <= 20
+	return n >= 1 && n <= maximumSupportedFunctionKey()
+}
+
+func maximumSupportedFunctionKey() int {
+	if runtime.GOOS == "windows" {
+		return 24
+	}
+	return 20
 }
 
 func hotkeyValidationMessage(value string) string {
+	if maximumSupportedFunctionKey() >= 24 {
+		return ""
+	}
 	for _, part := range strings.Split(normalizeHotkeyText(value), "+") {
 		if !strings.HasPrefix(part, "F") {
 			continue
