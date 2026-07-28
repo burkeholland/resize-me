@@ -1,9 +1,6 @@
 import {
   GetSettings,
-  SaveSettings,
-  SetActivePreset,
-  SetAutoStart,
-  SetCenterAfterResize,
+  SaveSettingsIfUnchanged,
   CompleteFirstRun,
   ResizeNow,
   GetVersion,
@@ -11,15 +8,14 @@ import {
 
 export const state = {
   settings: null,
+  draft: null,
+  draftBase: null,
   version: '',
   dialog: null,
   error: '',
   hotkeyError: '',
+  saving: false,
 };
-
-let _requestSeq = 0;
-function nextSeq() { return ++_requestSeq; }
-function isStale(seq) { return seq !== _requestSeq; }
 
 export function clearError() { state.error = ''; }
 
@@ -30,13 +26,42 @@ function setError(err, renderFn) {
 
 export function clone(v) { return JSON.parse(JSON.stringify(v)); }
 
+function persistedSettings(settings) {
+  if (!settings) return null;
+  const { loadError, ...persisted } = settings;
+  return persisted;
+}
+
+function sameSettings(left, right) {
+  return JSON.stringify(persistedSettings(left)) === JSON.stringify(persistedSettings(right));
+}
+
 export function activePreset(settings) {
   return settings.presets.find(p => p.id === settings.activePresetId) ?? settings.presets[0];
 }
 
 export function isFavoritePreset(id) {
-  const favorites = state.settings?.favoritePresetIds ?? [];
+  const favorites = state.draft?.favoritePresetIds ?? [];
   return favorites.includes(id);
+}
+
+export function hasDraftChanges() {
+  return state.draft !== null && !sameSettings(state.draft, state.settings);
+}
+
+function resetDraft() {
+  state.draft = clone(state.settings);
+  state.draftBase = clone(state.settings);
+  state.hotkeyError = '';
+}
+
+export function receiveSettingsUpdate(settings, renderFn) {
+  const hadChanges = hasDraftChanges();
+  state.settings = settings;
+  if (!hadChanges) {
+    resetDraft();
+  }
+  renderFn();
 }
 
 export async function load(renderFn) {
@@ -44,6 +69,7 @@ export async function load(renderFn) {
     const [settings, version] = await Promise.all([GetSettings(), GetVersion()]);
     state.settings = settings;
     state.version = version;
+    resetDraft();
     if (settings.loadError) {
       state.error = settings.loadError;
     }
@@ -53,47 +79,34 @@ export async function load(renderFn) {
   }
 }
 
-export async function selectPreset(id, renderFn) {
+export function selectPreset(id, renderFn) {
+  if (state.saving) return;
   clearError();
-  const seq = nextSeq();
-  try {
-    const updated = await SetActivePreset(id);
-    if (isStale(seq)) return;
-    state.settings = updated;
-    renderFn();
-  } catch (err) {
-    if (!isStale(seq)) setError(err, renderFn);
-  }
+  state.draft.activePresetId = id;
+  renderFn();
 }
 
-export async function deletePreset(id, renderFn) {
-  if (state.settings.presets.length <= 1) {
+export function deletePreset(id, renderFn) {
+  if (state.saving) return;
+  if (state.draft.presets.length <= 1) {
     state.error = 'At least one preset is required.';
     renderFn();
     return;
   }
   clearError();
-  const presets = state.settings.presets.filter(p => p.id !== id);
-  const activeId = presets.find(p => p.id === state.settings.activePresetId)
-    ? state.settings.activePresetId
+  const presets = state.draft.presets.filter(p => p.id !== id);
+  const activeId = presets.find(p => p.id === state.draft.activePresetId)
+    ? state.draft.activePresetId
     : presets[0].id;
-  const favoritePresetIds = (state.settings.favoritePresetIds ?? []).filter(favoriteId => favoriteId !== id);
-  const updated = { ...clone(state.settings), presets, activePresetId: activeId, favoritePresetIds };
-  const seq = nextSeq();
-  try {
-    const saved = await SaveSettings(updated);
-    if (isStale(seq)) return;
-    state.settings = saved;
-    renderFn();
-  } catch (err) {
-    if (!isStale(seq)) setError(err, renderFn);
-  }
+  const favoritePresetIds = (state.draft.favoritePresetIds ?? []).filter(favoriteId => favoriteId !== id);
+  state.draft = { ...clone(state.draft), presets, activePresetId: activeId, favoritePresetIds };
+  renderFn();
 }
 
-export async function toggleFavoritePreset(id, renderFn) {
+export function toggleFavoritePreset(id, renderFn) {
+  if (state.saving) return;
   clearError();
-  const seq = nextSeq();
-  const favoritePresetIds = [...(state.settings.favoritePresetIds ?? [])];
+  const favoritePresetIds = [...(state.draft.favoritePresetIds ?? [])];
   const existing = favoritePresetIds.indexOf(id);
   if (existing >= 0) {
     favoritePresetIds.splice(existing, 1);
@@ -101,33 +114,15 @@ export async function toggleFavoritePreset(id, renderFn) {
     favoritePresetIds.push(id);
   }
 
-  const updated = { ...clone(state.settings), favoritePresetIds };
-  try {
-    const saved = await SaveSettings(updated);
-    if (isStale(seq)) return;
-    state.settings = saved;
-    renderFn();
-  } catch (err) {
-    if (!isStale(seq)) setError(err, renderFn);
-  }
+  state.draft = { ...clone(state.draft), favoritePresetIds };
+  renderFn();
 }
 
-export async function saveHotkey(hotkey, renderFn) {
-  if (!hotkey || hotkey === state.settings.hotkey) return;
+export function saveHotkey(hotkey, renderFn) {
+  if (!hotkey || hotkey === state.draft.hotkey || state.saving) return;
   state.hotkeyError = '';
-  const updated = { ...clone(state.settings), hotkey };
-  const seq = nextSeq();
-  try {
-    const saved = await SaveSettings(updated);
-    if (isStale(seq)) return;
-    state.settings = saved;
-    renderFn();
-  } catch (err) {
-    if (!isStale(seq)) {
-      state.hotkeyError = friendlyHotkeyError(err?.message ?? String(err));
-      renderFn();
-    }
-  }
+  state.draft = { ...clone(state.draft), hotkey };
+  renderFn();
 }
 
 function friendlyHotkeyError(msg) {
@@ -137,29 +132,57 @@ function friendlyHotkeyError(msg) {
   return msg;
 }
 
-export async function toggleCenter(checked, renderFn) {
+export function toggleCenter(checked, renderFn) {
+  if (state.saving) return;
   clearError();
-  const seq = nextSeq();
-  try {
-    const updated = await SetCenterAfterResize(checked);
-    if (isStale(seq)) return;
-    state.settings = updated;
-    renderFn();
-  } catch (err) {
-    if (!isStale(seq)) setError(err, renderFn);
-  }
+  state.draft.centerAfterResize = checked;
+  renderFn();
 }
 
-export async function toggleAutoStart(checked, renderFn) {
+export function toggleAutoStart(checked, renderFn) {
+  if (state.saving) return;
   clearError();
-  const seq = nextSeq();
+  state.draft.autoStart = checked;
+  renderFn();
+}
+
+export function revertDraft(renderFn) {
+  if (state.saving) return;
+  clearError();
+  resetDraft();
+  renderFn();
+}
+
+export async function saveDraft(renderFn) {
+  if (!hasDraftChanges() || state.saving) return;
+  clearError();
+  state.hotkeyError = '';
+  state.saving = true;
+  renderFn();
+
   try {
-    const updated = await SetAutoStart(checked);
-    if (isStale(seq)) return;
-    state.settings = updated;
-    renderFn();
+    const saved = await SaveSettingsIfUnchanged(clone(state.draft), clone(state.draftBase));
+    state.settings = saved;
+    resetDraft();
   } catch (err) {
-    if (!isStale(seq)) setError(err, renderFn);
+    const message = err?.message ?? String(err);
+    if (/settings changed elsewhere/i.test(message)) {
+      try {
+        state.settings = await GetSettings();
+        resetDraft();
+      } catch (loadError) {
+        state.error = `${message} Unable to load the latest settings: ${loadError?.message ?? String(loadError)}`;
+        return;
+      }
+    }
+    if (/register hotkey|already registered/i.test(message)) {
+      state.hotkeyError = friendlyHotkeyError(message);
+    } else {
+      state.error = message;
+    }
+  } finally {
+    state.saving = false;
+    renderFn();
   }
 }
 
@@ -177,8 +200,7 @@ export async function completeFirstRun(enable, renderFn) {
   clearError();
   try {
     const updated = await CompleteFirstRun(enable);
-    state.settings = updated;
-    renderFn();
+    receiveSettingsUpdate(updated, renderFn);
   } catch (err) {
     setError(err, renderFn);
   }
@@ -194,26 +216,22 @@ export async function confirmDialog(renderFn) {
   const width = Math.max(100, Math.min(10000, Number(widthEl?.value) || 1920));
   const height = Math.max(100, Math.min(10000, Number(heightEl?.value) || 1080));
 
+  if (state.saving) return;
   let presets;
   if (d.mode === 'edit') {
-    presets = clone(state.settings.presets).map(p =>
+    presets = clone(state.draft.presets).map(p =>
       p.id === d.id ? { ...p, name, width, height } : p
     );
   } else {
-    presets = [...clone(state.settings.presets), { id: '', name, width, height }];
+    presets = [...clone(state.draft.presets), { id: '', name, width, height }];
   }
-  const updated = { ...clone(state.settings), presets };
-  try {
-    const saved = await SaveSettings(updated);
-    state.settings = saved;
-    state.dialog = null;
-    renderFn();
-  } catch (err) {
-    setError(err, renderFn);
-  }
+  state.draft = { ...clone(state.draft), presets };
+  state.dialog = null;
+  renderFn();
 }
 
 export function openAddDialog(renderFn) {
+  if (state.saving) return;
   state.dialog = { mode: 'add', name: 'Custom', width: 1920, height: 1080 };
   renderFn();
   setTimeout(() => {
@@ -223,7 +241,8 @@ export function openAddDialog(renderFn) {
 }
 
 export function openEditDialog(id, renderFn) {
-  const preset = state.settings.presets.find(p => p.id === id);
+  if (state.saving) return;
+  const preset = state.draft.presets.find(p => p.id === id);
   if (!preset) return;
   state.dialog = { mode: 'edit', id: preset.id, name: preset.name, width: preset.width, height: preset.height };
   renderFn();

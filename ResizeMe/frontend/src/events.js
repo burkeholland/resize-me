@@ -10,6 +10,8 @@ import {
   confirmDialog,
   toggleCenter,
   toggleAutoStart,
+  saveDraft,
+  revertDraft,
   completeFirstRun,
   resizeNow,
 } from './state.js';
@@ -47,6 +49,8 @@ export function bindEvents(app, renderFn) {
         case 'close-dialog-overlay': closeDialog(renderFn); break;
         case 'cancel-dialog':       closeDialog(renderFn); break;
         case 'confirm-dialog':      await confirmDialog(renderFn); break;
+        case 'save-settings':       await saveDraft(renderFn); break;
+        case 'revert-settings':     revertDraft(renderFn); break;
       }
     });
   });

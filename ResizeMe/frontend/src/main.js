@@ -1,5 +1,5 @@
 import './style.css';
-import { state, load, openAboutDialog } from './state.js';
+import { state, load, openAboutDialog, receiveSettingsUpdate } from './state.js';
 import { renderApp } from './render.js';
 import { bindEvents } from './events.js';
 import { EventsOn, WindowHide, WindowMinimise } from '../wailsjs/runtime/runtime';
@@ -12,8 +12,7 @@ function render() {
 }
 
 EventsOn('settings-updated', settings => {
-  state.settings = settings;
-  render();
+  receiveSettingsUpdate(settings, render);
 });
 
 EventsOn('show-about', () => openAboutDialog(render));

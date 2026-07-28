@@ -26,6 +26,10 @@ export function SaveSettings(arg1) {
   return window['go']['main']['App']['SaveSettings'](arg1);
 }
 
+export function SaveSettingsIfUnchanged(arg1, arg2) {
+  return window['go']['main']['App']['SaveSettingsIfUnchanged'](arg1, arg2);
+}
+
 export function SetActivePreset(arg1) {
   return window['go']['main']['App']['SetActivePreset'](arg1);
 }

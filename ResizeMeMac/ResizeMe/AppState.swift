@@ -139,10 +139,11 @@ final class AppState: ObservableObject {
             let normalized = try ConfigNormalizer.normalize(next, fallback: current)
             let previousHotkey = current.hotkey
             let previousAutoStart = current.autoStart
+            let didChangeAutoStart = normalized.autoStart != previousAutoStart
 
             hotkeyService.applyConfigString(normalized.hotkey)
 
-            if normalized.autoStart != current.autoStart {
+            if didChangeAutoStart {
                 do {
                     try launchAtLoginService.setEnabled(normalized.autoStart)
                 } catch {
@@ -156,7 +157,14 @@ final class AppState: ObservableObject {
                 try store.save(normalized)
             } catch {
                 hotkeyService.applyConfigString(previousHotkey)
-                try? launchAtLoginService.setEnabled(previousAutoStart)
+                if didChangeAutoStart {
+                    do {
+                        try launchAtLoginService.setEnabled(previousAutoStart)
+                    } catch {
+                        lastStatusMessage = "Failed to save settings; couldn't restore launch at login: \(error.localizedDescription)"
+                        return false
+                    }
+                }
                 lastStatusMessage = "Failed to save settings"
                 return false
             }

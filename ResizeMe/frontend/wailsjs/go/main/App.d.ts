@@ -14,6 +14,8 @@ export function ResizeNow():Promise<void>;
 
 export function SaveSettings(arg1:main.Config):Promise<main.Config>;
 
+export function SaveSettingsIfUnchanged(arg1:main.Config,arg2:main.Config):Promise<main.Config>;
+
 export function SetActivePreset(arg1:string):Promise<main.Config>;
 
 export function SetAutoStart(arg1:boolean):Promise<main.Config>;

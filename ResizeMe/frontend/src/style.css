@@ -177,6 +177,27 @@ h1, h2, h3, p { margin: 0; }
   margin-bottom: 0;
 }
 
+.settings-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--card-stroke);
+}
+
+.settings-actions-copy {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.settings-actions-buttons {
+  display: flex;
+  gap: 8px;
+}
+
 .section-heading {
   margin-bottom: 10px;
 }

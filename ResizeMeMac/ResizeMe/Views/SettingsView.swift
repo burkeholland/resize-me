@@ -78,11 +78,16 @@ struct SettingsView: View {
                 Divider()
 
                 HStack(spacing: 12) {
-                    if let status = appState.lastStatusMessage {
-                        Label(status, systemImage: "checkmark.circle")
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Changes are applied only when you save.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
-                            .lineLimit(1)
+                        if let status = appState.lastStatusMessage {
+                            Label(status, systemImage: "checkmark.circle")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                        }
                     }
 
                     Spacer()
