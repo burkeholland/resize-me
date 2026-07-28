@@ -79,6 +79,98 @@ func TestResizeOutcomeConstrainedError(t *testing.T) {
 	}
 }
 
+func TestResizePosition(t *testing.T) {
+	tests := []struct {
+		name            string
+		current         rect
+		workArea        rect
+		requestedWidth  int32
+		requestedHeight int32
+		center          bool
+		want            point
+	}{
+		{
+			name:            "centers within work area",
+			current:         rect{Left: 100, Top: 100, Right: 900, Bottom: 700},
+			workArea:        rect{Left: 0, Top: 0, Right: 1920, Bottom: 1040},
+			requestedWidth:  1280,
+			requestedHeight: 720,
+			center:          true,
+			want:            point{X: 320, Y: 160},
+		},
+		{
+			name:            "oversized centered resize keeps title bar reachable",
+			current:         rect{Left: 100, Top: 100, Right: 900, Bottom: 700},
+			workArea:        rect{Left: 0, Top: 0, Right: 1920, Bottom: 1040},
+			requestedWidth:  3840,
+			requestedHeight: 2160,
+			center:          true,
+			want:            point{X: 0, Y: 0},
+		},
+		{
+			name:            "non-centered resize preserves reachable title bar",
+			current:         rect{Left: 120, Top: 400, Right: 920, Bottom: 1000},
+			workArea:        rect{Left: 0, Top: 0, Right: 1920, Bottom: 1040},
+			requestedWidth:  1280,
+			requestedHeight: 720,
+			want:            point{X: 120, Y: 400},
+		},
+		{
+			name:            "non-centered resize brings title bar back onto screen",
+			current:         rect{Left: 120, Top: 1100, Right: 920, Bottom: 1700},
+			workArea:        rect{Left: 0, Top: 0, Right: 1920, Bottom: 1040},
+			requestedWidth:  1280,
+			requestedHeight: 720,
+			want:            point{X: 120, Y: 1000},
+		},
+		{
+			name:            "left monitor with negative origin",
+			current:         rect{Left: -1800, Top: -700, Right: -1000, Bottom: -100},
+			workArea:        rect{Left: -1920, Top: -1080, Right: 0, Bottom: 0},
+			requestedWidth:  1280,
+			requestedHeight: 720,
+			center:          true,
+			want:            point{X: -1600, Y: -900},
+		},
+		{
+			name:            "right monitor",
+			current:         rect{Left: 2000, Top: 100, Right: 2800, Bottom: 700},
+			workArea:        rect{Left: 1920, Top: 0, Right: 3840, Bottom: 1040},
+			requestedWidth:  3840,
+			requestedHeight: 2160,
+			center:          true,
+			want:            point{X: 1920, Y: 0},
+		},
+		{
+			name:            "monitor above primary",
+			current:         rect{Left: 100, Top: -900, Right: 900, Bottom: -300},
+			workArea:        rect{Left: 0, Top: -1040, Right: 1920, Bottom: 0},
+			requestedWidth:  3840,
+			requestedHeight: 2160,
+			center:          true,
+			want:            point{X: 0, Y: -1040},
+		},
+		{
+			name:            "monitor below primary",
+			current:         rect{Left: 100, Top: 1100, Right: 900, Bottom: 1700},
+			workArea:        rect{Left: 0, Top: 1040, Right: 1920, Bottom: 2080},
+			requestedWidth:  3840,
+			requestedHeight: 2160,
+			center:          true,
+			want:            point{X: 0, Y: 1040},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := resizePosition(test.current, test.requestedWidth, test.requestedHeight, test.workArea, test.center)
+			if got != test.want {
+				t.Fatalf("resizePosition() = %+v, want %+v", got, test.want)
+			}
+		})
+	}
+}
+
 func TestQuoteExecutablePath(t *testing.T) {
 	const exePath = `C:\Program Files\ResizeMe\resize-me.exe`
 	const want = `"C:\Program Files\ResizeMe\resize-me.exe"`
