@@ -75,6 +75,7 @@ const (
 	cmdAbout      = 2004
 
 	resizeTolerance = 1
+	titleBarReachableHeight = 40
 )
 
 var (
@@ -190,6 +191,43 @@ func (o resizeOutcome) isExact() bool {
 func (o resizeOutcome) constrainedError(title string) error {
 	return fmt.Errorf("%s constrained resize: requested %dx%d, achieved %dx%d",
 		title, o.requestedWidth, o.requestedHeight, o.achievedWidth, o.achievedHeight)
+}
+
+func resizePosition(current rect, requestedWidth, requestedHeight int32, workArea rect, center bool) point {
+	position := point{X: current.Left, Y: current.Top}
+	if center {
+		position.X = workArea.Left + ((workArea.Right-workArea.Left)-requestedWidth)/2
+		position.Y = workArea.Top + ((workArea.Bottom-workArea.Top)-requestedHeight)/2
+	}
+
+	position.X = clampInt32(
+		position.X,
+		workArea.Left,
+		maxInt32(workArea.Right-requestedWidth, workArea.Left),
+	)
+	position.Y = clampInt32(
+		position.Y,
+		workArea.Top,
+		maxInt32(workArea.Bottom-titleBarReachableHeight, workArea.Top),
+	)
+	return position
+}
+
+func clampInt32(value, minimum, maximum int32) int32 {
+	if value < minimum {
+		return minimum
+	}
+	if value > maximum {
+		return maximum
+	}
+	return value
+}
+
+func maxInt32(left, right int32) int32 {
+	if left > right {
+		return left
+	}
+	return right
 }
 
 type message struct {
@@ -813,22 +851,17 @@ func (w *WindowsAgent) ResizeActiveWindow(preset Preset, center bool) error {
 		return fmt.Errorf("read active window bounds: %w", err)
 	}
 
-	x := current.Left
-	y := current.Top
-	if center {
-		workArea, err := monitorWorkArea(windows.Handle(hwnd))
-		if err != nil {
-			return err
-		}
-		x = workArea.Left + ((workArea.Right-workArea.Left)-int32(preset.Width))/2
-		y = workArea.Top + ((workArea.Bottom-workArea.Top)-int32(preset.Height))/2
+	workArea, err := monitorWorkArea(windows.Handle(hwnd))
+	if err != nil {
+		return err
 	}
+	position := resizePosition(current, int32(preset.Width), int32(preset.Height), workArea, center)
 
 	ret, _, err := procSetWindowPos.Call(
 		hwnd,
 		0,
-		uintptr(int32ToUintptr(x)),
-		uintptr(int32ToUintptr(y)),
+		uintptr(int32ToUintptr(position.X)),
+		uintptr(int32ToUintptr(position.Y)),
 		uintptr(preset.Width),
 		uintptr(preset.Height),
 		swpNoZOrder|swpNoActivate,
