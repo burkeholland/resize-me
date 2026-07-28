@@ -210,26 +210,83 @@ private struct GeneralTab: View {
 private struct PresetsTab: View {
     @Binding var draft: AppConfig
     @State private var selection: String?
+    @State private var hiddenPresetsExpanded = false
+    @State private var actionMessage: String?
+    @FocusState private var focusedPresetAction: String?
+
+    private var visiblePresetIndexes: [Int] {
+        draft.presets.indices.filter { !draft.isPresetHidden(id: draft.presets[$0].id) }
+    }
+
+    private var hiddenPresetIndexes: [Int] {
+        draft.presets.indices.filter { draft.isPresetHidden(id: draft.presets[$0].id) }
+    }
+
+    private var selectedPresetIsOnlyVisible: Bool {
+        guard let selection, !draft.isPresetHidden(id: selection) else {
+            return false
+        }
+        return draft.visiblePresets.count <= 1
+    }
 
     var body: some View {
         VStack(spacing: 0) {
             List(selection: $selection) {
-                ForEach($draft.presets) { $preset in
-                    PresetRow(
-                        preset: $preset,
-                        isActive: preset.id == draft.activePresetId,
-                        makeActive: { draft.activePresetId = preset.id },
-                        isFavorite: draft.favoritePresetIds.contains(preset.id),
-                        toggleFavorite: { toggleFavorite(preset.id) }
-                    )
-                    .tag(preset.id)
+                Section("Visible presets") {
+                    ForEach(visiblePresetIndexes, id: \.self) { index in
+                        PresetRow(
+                            preset: $draft.presets[index],
+                            isActive: draft.presets[index].id == draft.activePresetId,
+                            makeActive: { draft.activePresetId = draft.presets[index].id },
+                            isFavorite: draft.favoritePresetIds.contains(draft.presets[index].id),
+                            toggleFavorite: { toggleFavorite(draft.presets[index].id) },
+                            hide: { hidePreset(draft.presets[index].id) },
+                            delete: { deletePresetIDs([draft.presets[index].id]) },
+                            canHide: draft.visiblePresets.count > 1,
+                            focusedPresetAction: $focusedPresetAction
+                        )
+                        .tag(draft.presets[index].id)
+                    }
+                    .onDelete { offsets in
+                        deletePresetIDs(offsets.map { visiblePresetIndexes[$0] }.map { draft.presets[$0].id })
+                    }
                 }
-                .onDelete { offsets in
-                    deletePresets(at: offsets)
+
+                Section {
+                    DisclosureGroup("Hidden presets (\(hiddenPresetIndexes.count))", isExpanded: $hiddenPresetsExpanded) {
+                        if hiddenPresetIndexes.isEmpty {
+                            Text("No presets are hidden.")
+                                .foregroundStyle(.secondary)
+                        } else {
+                            ForEach(hiddenPresetIndexes, id: \.self) { index in
+                                let preset = draft.presets[index]
+                                HiddenPresetRow(
+                                    preset: preset,
+                                    isFavorite: draft.favoritePresetIds.contains(preset.id),
+                                    show: { showPreset(preset.id) },
+                                    delete: { deletePresetIDs([preset.id]) },
+                                    focusedPresetAction: $focusedPresetAction
+                                )
+                                .tag(preset.id)
+                            }
+                        }
+                    }
+                } footer: {
+                    Text("Hidden presets remain saved but do not appear in resize selectors or quick menus.")
                 }
             }
             .listStyle(.inset)
             .alternatingRowBackgrounds()
+
+            if let actionMessage {
+                Label(actionMessage, systemImage: "checkmark.circle")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .accessibilityLabel(actionMessage)
+            }
 
             Divider()
 
@@ -244,14 +301,14 @@ private struct PresetsTab: View {
 
                 Button {
                     if let selection,
-                       let index = draft.presets.firstIndex(where: { $0.id == selection }) {
-                        deletePresets(at: IndexSet(integer: index))
+                       draft.hasPreset(id: selection) {
+                        deletePresetIDs([selection])
                     }
                 } label: {
                     Image(systemName: "minus")
                 }
-                .disabled(selection == nil)
-                .help("Remove the selected preset")
+                .disabled(selection == nil || selectedPresetIsOnlyVisible)
+                .help("Delete the selected preset permanently")
 
                 Spacer()
 
@@ -266,16 +323,72 @@ private struct PresetsTab: View {
         }
     }
 
-    private func deletePresets(at offsets: IndexSet) {
-        let removedIds = offsets.map { draft.presets[$0].id }
-        draft.presets.remove(atOffsets: offsets)
-        if removedIds.contains(selection ?? "") {
-            selection = nil
+    private func hidePreset(_ id: String) {
+        guard let preset = draft.findPreset(id: id),
+              draft.visiblePresets.contains(where: { $0.id == id }) else {
+            actionMessage = "Preset is no longer available."
+            return
         }
-        if removedIds.contains(draft.activePresetId) {
-            draft.activePresetId = draft.presets.first?.id ?? ""
+        guard draft.visiblePresets.count > 1 else {
+            actionMessage = "At least one visible preset is required."
+            return
         }
-        draft.favoritePresetIds.removeAll(where: { removedIds.contains($0) })
+
+        let replacement = draft.visiblePresets.first(where: { $0.id != id })!
+        draft.hiddenPresetIds.append(id)
+        hiddenPresetsExpanded = true
+        if draft.activePresetId == id {
+            draft.activePresetId = replacement.id
+            actionMessage = "Hidden \(preset.name). \(replacement.name) is now the active preset."
+        } else {
+            actionMessage = "Hidden \(preset.name)."
+        }
+        selection = replacement.id
+        DispatchQueue.main.async {
+            focusedPresetAction = "show-\(id)"
+        }
+    }
+
+    private func showPreset(_ id: String) {
+        guard let preset = draft.findPreset(id: id) else {
+            actionMessage = "Preset no longer exists."
+            return
+        }
+
+        draft.hiddenPresetIds.removeAll(where: { $0 == id })
+        actionMessage = "Restored \(preset.name)."
+        selection = id
+        DispatchQueue.main.async {
+            focusedPresetAction = "hide-\(id)"
+        }
+    }
+
+    private func deletePresetIDs(_ ids: [String]) {
+        let removedIDs = Set(ids.filter { draft.hasPreset(id: $0) })
+        guard !removedIDs.isEmpty else {
+            actionMessage = "Preset no longer exists."
+            return
+        }
+
+        let remainingVisible = draft.visiblePresets.filter { !removedIDs.contains($0.id) }
+        guard !remainingVisible.isEmpty else {
+            actionMessage = "At least one visible preset is required."
+            return
+        }
+
+        let removedActivePreset = removedIDs.contains(draft.activePresetId)
+        draft.presets.removeAll(where: { removedIDs.contains($0.id) })
+        draft.hiddenPresetIds.removeAll(where: { removedIDs.contains($0) })
+        draft.favoritePresetIds.removeAll(where: { removedIDs.contains($0) })
+        if removedActivePreset {
+            draft.activePresetId = remainingVisible[0].id
+        }
+        if let selection, removedIDs.contains(selection) {
+            self.selection = draft.activePresetId
+        }
+        actionMessage = removedIDs.count == 1
+            ? "Deleted preset permanently."
+            : "Deleted \(removedIDs.count) presets permanently."
     }
 
     private func toggleFavorite(_ id: String) {
@@ -293,6 +406,10 @@ private struct PresetRow: View {
     let makeActive: () -> Void
     let isFavorite: Bool
     let toggleFavorite: () -> Void
+    let hide: () -> Void
+    let delete: () -> Void
+    let canHide: Bool
+    let focusedPresetAction: FocusState<String?>.Binding
 
     var body: some View {
         HStack(spacing: 10) {
@@ -309,6 +426,7 @@ private struct PresetRow: View {
             }
             .buttonStyle(.plain)
             .help(isFavorite ? "Remove from favorites" : "Add to favorites")
+            .accessibilityLabel(isFavorite ? "Remove \(preset.name) from favorites" : "Add \(preset.name) to favorites")
 
             TextField("Name", text: $preset.name)
                 .textFieldStyle(.roundedBorder)
@@ -325,6 +443,59 @@ private struct PresetRow: View {
                 .textFieldStyle(.roundedBorder)
                 .frame(width: 64)
                 .multilineTextAlignment(.trailing)
+
+            Button(action: hide) {
+                Image(systemName: "eye.slash")
+            }
+            .buttonStyle(.plain)
+            .disabled(!canHide)
+            .help("Hide \(preset.name)")
+            .accessibilityLabel("Hide \(preset.name)")
+            .focused(focusedPresetAction, equals: "hide-\(preset.id)")
+
+            Button(role: .destructive, action: delete) {
+                Image(systemName: "trash")
+            }
+            .buttonStyle(.plain)
+            .help("Delete \(preset.name) permanently")
+            .accessibilityLabel("Delete \(preset.name) permanently")
+        }
+        .padding(.vertical, 2)
+    }
+}
+
+private struct HiddenPresetRow: View {
+    let preset: Preset
+    let isFavorite: Bool
+    let show: () -> Void
+    let delete: () -> Void
+    let focusedPresetAction: FocusState<String?>.Binding
+
+    var body: some View {
+        HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(preset.name)
+                Text("\(preset.width) × \(preset.height) pt")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                Text(isFavorite ? "Hidden · Favorite" : "Hidden")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            Button("Show", action: show)
+                .help("Show \(preset.name)")
+                .accessibilityLabel("Show \(preset.name)")
+                .focused(focusedPresetAction, equals: "show-\(preset.id)")
+
+            Button(role: .destructive, action: delete) {
+                Image(systemName: "trash")
+            }
+            .buttonStyle(.plain)
+            .help("Delete \(preset.name) permanently")
+            .accessibilityLabel("Delete \(preset.name) permanently")
         }
         .padding(.vertical, 2)
     }

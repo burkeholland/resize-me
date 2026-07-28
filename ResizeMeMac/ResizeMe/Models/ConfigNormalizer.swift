@@ -74,6 +74,24 @@ enum ConfigNormalizer {
             return true
         }
 
+        var seenHiddenIDs = Set<String>()
+        next.hiddenPresetIds = next.hiddenPresetIds.filter { id in
+            guard next.hasPreset(id: id), !seenHiddenIDs.contains(id) else {
+                return false
+            }
+            seenHiddenIDs.insert(id)
+            return true
+        }
+
+        if next.visiblePresets.isEmpty,
+           let activeIndex = next.hiddenPresetIds.firstIndex(of: next.activePresetId) {
+            next.hiddenPresetIds.remove(at: activeIndex)
+        }
+
+        if next.isPresetHidden(id: next.activePresetId) {
+            next.activePresetId = next.visiblePresets[0].id
+        }
+
         return next
     }
 

@@ -22,6 +22,7 @@ export const state = {
   updateActionError: '',
   updateNotice: '',
   checkingForUpdates: false,
+  presetNotice: '',
 };
 
 export function clearError() { state.error = ''; }
@@ -44,7 +45,18 @@ function sameSettings(left, right) {
 }
 
 export function activePreset(settings) {
-  return settings.presets.find(p => p.id === settings.activePresetId) ?? settings.presets[0];
+  const presets = visiblePresets(settings);
+  return presets.find(p => p.id === settings.activePresetId) ?? presets[0];
+}
+
+export function isHiddenPreset(id, settings = state.draft ?? state.settings) {
+  return (settings?.hiddenPresetIds ?? []).includes(id);
+}
+
+export function visiblePresets(settings) {
+  if (!settings) return [];
+  const hiddenPresetIds = new Set(settings.hiddenPresetIds ?? []);
+  return settings.presets.filter(preset => !hiddenPresetIds.has(preset.id));
 }
 
 export function isFavoritePreset(id) {
@@ -60,6 +72,7 @@ function resetDraft() {
   state.draft = clone(state.settings);
   state.draftBase = clone(state.settings);
   state.hotkeyError = '';
+  state.presetNotice = '';
 }
 
 export function receiveSettingsUpdate(settings, renderFn) {
@@ -95,19 +108,89 @@ export function selectPreset(id, renderFn) {
 
 export function deletePreset(id, renderFn) {
   if (state.saving) return;
-  if (state.draft.presets.length <= 1) {
-    state.error = 'At least one preset is required.';
+  const preset = state.draft.presets.find(candidate => candidate.id === id);
+  if (!preset) {
+    state.error = 'Preset no longer exists.';
+    renderFn();
+    return;
+  }
+  const hidden = isHiddenPreset(id);
+  if (!hidden && visiblePresets(state.draft).length <= 1) {
+    state.error = 'At least one visible preset is required.';
     renderFn();
     return;
   }
   clearError();
   const presets = state.draft.presets.filter(p => p.id !== id);
-  const activeId = presets.find(p => p.id === state.draft.activePresetId)
+  const hiddenPresetIds = (state.draft.hiddenPresetIds ?? []).filter(hiddenId => hiddenId !== id);
+  const visible = visiblePresets({ ...state.draft, presets, hiddenPresetIds });
+  const activeId = visible.some(p => p.id === state.draft.activePresetId)
     ? state.draft.activePresetId
-    : presets[0].id;
+    : visible[0].id;
   const favoritePresetIds = (state.draft.favoritePresetIds ?? []).filter(favoriteId => favoriteId !== id);
-  state.draft = { ...clone(state.draft), presets, activePresetId: activeId, favoritePresetIds };
+  state.draft = {
+    ...clone(state.draft),
+    presets,
+    activePresetId: activeId,
+    favoritePresetIds,
+    hiddenPresetIds,
+  };
+  state.presetNotice = `Deleted ${preset.name} permanently.`;
+  renderAndFocus(`select-${activeId}`, renderFn);
+}
+
+export function hidePreset(id, renderFn) {
+  if (state.saving) return;
+  const preset = state.draft.presets.find(candidate => candidate.id === id);
+  const visible = visiblePresets(state.draft);
+  if (!preset || !visible.some(candidate => candidate.id === id)) {
+    state.error = 'Preset is no longer available.';
+    renderFn();
+    return;
+  }
+  if (visible.length <= 1) {
+    state.error = 'At least one visible preset is required.';
+    renderFn();
+    return;
+  }
+
+  clearError();
+  const replacement = visible.find(candidate => candidate.id !== id);
+  const hiddenPresetIds = [...new Set([...(state.draft.hiddenPresetIds ?? []), id])];
+  const hidActivePreset = state.draft.activePresetId === id;
+  const activePresetId = hidActivePreset
+    ? replacement.id
+    : state.draft.activePresetId;
+  state.draft = { ...clone(state.draft), hiddenPresetIds, activePresetId };
+  state.presetNotice = hidActivePreset
+    ? `Hidden ${preset.name}. ${replacement.name} is now the active preset.`
+    : `Hidden ${preset.name}.`;
+  renderAndFocus(`restore-${id}`, renderFn);
+}
+
+export function restorePreset(id, renderFn) {
+  if (state.saving) return;
+  const preset = state.draft.presets.find(candidate => candidate.id === id);
+  if (!preset || !isHiddenPreset(id)) {
+    state.error = 'Preset is no longer hidden.';
+    renderFn();
+    return;
+  }
+
+  clearError();
+  const hiddenPresetIds = (state.draft.hiddenPresetIds ?? []).filter(hiddenId => hiddenId !== id);
+  state.draft = { ...clone(state.draft), hiddenPresetIds };
+  state.presetNotice = `Restored ${preset.name}.`;
+  renderAndFocus(`hide-${id}`, renderFn);
+}
+
+function renderAndFocus(focusId, renderFn) {
   renderFn();
+  requestAnimationFrame(() => {
+    const target = [...document.querySelectorAll('[data-focus-id]')]
+      .find(element => element.dataset.focusId === focusId);
+    target?.focus();
+  });
 }
 
 export function toggleFavoritePreset(id, renderFn) {

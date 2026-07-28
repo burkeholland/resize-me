@@ -22,6 +22,7 @@ export namespace main {
 	    presets: Preset[];
 	    activePresetId: string;
 	    favoritePresetIds: string[];
+	    hiddenPresetIds: string[];
 	    centerAfterResize: boolean;
 	    hotkey: string;
 	    autoStart: boolean;
@@ -37,6 +38,7 @@ export namespace main {
 	        this.presets = this.convertValues(source["presets"], Preset);
 	        this.activePresetId = source["activePresetId"];
 	        this.favoritePresetIds = source["favoritePresetIds"];
+	        this.hiddenPresetIds = source["hiddenPresetIds"];
 	        this.centerAfterResize = source["centerAfterResize"];
 	        this.hotkey = source["hotkey"];
 	        this.autoStart = source["autoStart"];

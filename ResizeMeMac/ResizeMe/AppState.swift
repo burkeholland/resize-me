@@ -103,6 +103,10 @@ final class AppState: ObservableObject {
     }
 
     func setActivePreset(_ id: String) {
+        guard config.hasPreset(id: id), !config.isPresetHidden(id: id) else {
+            lastStatusMessage = "Preset is not available"
+            return
+        }
         var next = config
         next.activePresetId = id
         _ = saveConfig(next)

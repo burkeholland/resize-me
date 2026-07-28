@@ -146,7 +146,7 @@ func (a *App) SetActivePreset(id string) (Config, error) {
 	next := a.config.Clone()
 	a.mu.RUnlock()
 
-	if !next.HasPreset(id) {
+	if !next.HasPreset(id) || next.IsPresetHidden(id) {
 		return next, fmt.Errorf("unknown preset %q", id)
 	}
 	next.ActivePresetID = id

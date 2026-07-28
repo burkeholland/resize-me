@@ -234,7 +234,7 @@ h1, h2, h3, p { margin: 0; }
 /* ─── Preset rows ─── */
 .preset-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 28px 28px 28px;
+  grid-template-columns: minmax(0, 1fr) 28px 44px 28px 28px;
   align-items: center;
   gap: 4px;
   min-height: 48px;
@@ -248,9 +248,13 @@ h1, h2, h3, p { margin: 0; }
 
 .preset-row:hover { background: var(--subtle-fill-secondary); }
 .preset-row:hover .preset-favorite,
+.preset-row:hover .preset-hide,
+.preset-row:hover .preset-show,
 .preset-row:hover .preset-delete,
 .preset-row:hover .preset-edit,
 .preset-row:focus-within .preset-favorite,
+.preset-row:focus-within .preset-hide,
+.preset-row:focus-within .preset-show,
 .preset-row:focus-within .preset-delete,
 .preset-row:focus-within .preset-edit { opacity: 1; }
 .preset-row.active { background: rgba(0, 95, 184, 0.04); }
@@ -323,6 +327,29 @@ h1, h2, h3, p { margin: 0; }
 }
 .preset-favorite:active { background: var(--subtle-fill-tertiary); }
 
+.preset-hide,
+.preset-show {
+  width: 44px;
+  height: 28px;
+  border: none;
+  border-radius: var(--control-corner-radius);
+  color: var(--text-secondary);
+  background: transparent;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.1s, background 0.1s, color 0.1s;
+}
+
+.preset-hide:hover,
+.preset-show:hover {
+  background: var(--subtle-fill-secondary);
+  color: var(--text-primary);
+}
+
+.preset-hide:active,
+.preset-show:active { background: var(--subtle-fill-tertiary); }
+
 .preset-edit {
   width: 28px;
   height: 28px;
@@ -365,6 +392,52 @@ h1, h2, h3, p { margin: 0; }
 }
 
 .preset-delete:active { background: var(--subtle-fill-tertiary); }
+
+.hidden-presets {
+  margin-top: 20px;
+}
+
+.hidden-presets .section-heading {
+  margin-bottom: 8px;
+}
+
+.hidden-presets .section-heading h3 {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+.preset-row-hidden {
+  background: var(--subtle-fill-secondary);
+}
+
+.preset-hidden-copy {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 0 8px;
+}
+
+.preset-hidden-state {
+  grid-column: 1 / -1;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.empty-presets {
+  padding: 12px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.preset-notice {
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 16px;
+}
 
 .section-action {
   padding-top: 4px;
