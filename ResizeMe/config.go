@@ -104,9 +104,6 @@ func (s *ConfigStore) Load() (Config, error) {
 	if err != nil {
 		return Config{}, fmt.Errorf("validate settings: %w", err)
 	}
-	if message := hotkeyValidationMessage(config.Hotkey); message != "" {
-		normalized.LoadError = message
-	}
 	return normalized, nil
 }
 

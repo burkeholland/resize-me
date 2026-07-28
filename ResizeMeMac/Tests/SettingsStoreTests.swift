@@ -37,6 +37,32 @@ final class SettingsStoreTests: XCTestCase {
         XCTAssertNil(result.loadError)
     }
 
+    func testMultipleDraftPresetsKeepIndependentIDsThroughHideDeleteAndPersistence() {
+        let store = makeStore()
+        let firstDraft = Preset.newDraft()
+        let secondDraft = Preset.newDraft()
+        XCTAssertFalse(firstDraft.id.isEmpty)
+        XCTAssertNotEqual(firstDraft.id, secondDraft.id)
+
+        var config = AppConfig(
+            presets: [
+                Preset(id: "existing", name: "Existing", width: 800, height: 600),
+                firstDraft,
+                secondDraft
+            ],
+            activePresetId: "existing",
+            hiddenPresetIds: [firstDraft.id]
+        )
+
+        config.presets.removeAll(where: { $0.id == secondDraft.id })
+        XCTAssertNoThrow(try store.save(config))
+
+        let loaded = store.load().config
+        XCTAssertEqual(loaded.hiddenPresetIds, [firstDraft.id])
+        XCTAssertNotNil(loaded.findPreset(id: firstDraft.id))
+        XCTAssertNil(loaded.findPreset(id: secondDraft.id))
+    }
+
     func testInvalidJSONLoadsDefaultsWithError() {
         let store = makeStore()
         try? "not json {".data(using: .utf8)?.write(to: store.fileURL, options: .atomic)

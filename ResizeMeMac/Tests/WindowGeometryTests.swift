@@ -85,4 +85,41 @@ final class WindowGeometryTests: XCTestCase {
         XCTAssertEqual(WindowPreparation.required(minimized: false, fullscreen: true), .exitFullscreen)
         XCTAssertEqual(WindowPreparation.required(minimized: true, fullscreen: true), .exitFullscreen)
     }
+
+    func testWindowReadinessRetriesUntilAFrameIsReady() {
+        var reads = 0
+        var retries = 0
+        let expected = WindowFrame(position: CGPoint(x: 10, y: 20), size: CGSize(width: 800, height: 600))
+
+        let frame = WindowReadiness.poll(
+            maximumAttempts: 3,
+            retry: { retries += 1 },
+            read: {
+                reads += 1
+                return reads == 3 ? expected : nil
+            }
+        )
+
+        XCTAssertEqual(frame, expected)
+        XCTAssertEqual(reads, 3)
+        XCTAssertEqual(retries, 2)
+    }
+
+    func testWindowReadinessStopsAfterBoundedAttempts() {
+        var reads = 0
+        var retries = 0
+
+        let frame: WindowFrame? = WindowReadiness.poll(
+            maximumAttempts: 3,
+            retry: { retries += 1 },
+            read: {
+                reads += 1
+                return nil
+            }
+        )
+
+        XCTAssertNil(frame)
+        XCTAssertEqual(reads, 3)
+        XCTAssertEqual(retries, 2)
+    }
 }

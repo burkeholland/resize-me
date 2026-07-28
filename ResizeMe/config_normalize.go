@@ -8,8 +8,6 @@ import (
 
 var nonAlphanumericRe = regexp.MustCompile(`[^a-z0-9]+`)
 
-const portableHotkeyHelp = "F21-F24 are not supported on macOS. Choose F1-F20, A-Z, or 0-9 with a modifier."
-
 // NormalizeConfig validates and normalizes a config, falling back to defaults
 // from the provided fallback config where needed.
 func NormalizeConfig(config Config, fallback Config) (Config, error) {
@@ -145,7 +143,7 @@ func normalizeHotkeyText(value string) string {
 }
 
 // isValidHotkeyText checks that a normalized hotkey string has at least one
-// modifier and one portable key (A-Z, 0-9, or F1-F20).
+// modifier and one Windows-supported key (A-Z, 0-9, or F1-F24).
 func isValidHotkeyText(value string) bool {
 	parts := strings.Split(value, "+")
 	hasModifier := false
@@ -155,7 +153,7 @@ func isValidHotkeyText(value string) bool {
 		case "Ctrl", "Alt", "Shift", "Win":
 			hasModifier = true
 		default:
-			if isPortableHotkeyKey(part) {
+			if isWindowsHotkeyKey(part) {
 				hasKey = true
 			}
 		}
@@ -163,7 +161,7 @@ func isValidHotkeyText(value string) bool {
 	return hasModifier && hasKey
 }
 
-func isPortableHotkeyKey(value string) bool {
+func isWindowsHotkeyKey(value string) bool {
 	if len(value) == 1 {
 		ch := value[0]
 		return (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9')
@@ -179,25 +177,5 @@ func isPortableHotkeyKey(value string) bool {
 		}
 		n = n*10 + int(c-'0')
 	}
-	return n >= 1 && n <= 20
-}
-
-func hotkeyValidationMessage(value string) string {
-	for _, part := range strings.Split(normalizeHotkeyText(value), "+") {
-		if !strings.HasPrefix(part, "F") {
-			continue
-		}
-		n := 0
-		for _, c := range strings.TrimPrefix(part, "F") {
-			if c < '0' || c > '9' {
-				n = -1
-				break
-			}
-			n = n*10 + int(c-'0')
-		}
-		if n >= 21 && n <= 24 {
-			return portableHotkeyHelp
-		}
-	}
-	return ""
+	return n >= 1 && n <= 24
 }

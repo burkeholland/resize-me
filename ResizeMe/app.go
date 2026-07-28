@@ -98,10 +98,6 @@ func (a *App) saveSettings(next Config, expected *Config) (Config, error) {
 		return current, errSettingsChanged
 	}
 
-	if message := hotkeyValidationMessage(next.Hotkey); message != "" {
-		return current, fmt.Errorf("%s", message)
-	}
-
 	normalized, err := NormalizeConfig(next, current)
 	if err != nil {
 		return current, err
