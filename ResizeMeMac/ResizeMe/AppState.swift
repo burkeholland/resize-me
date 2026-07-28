@@ -94,9 +94,9 @@ final class AppState: ObservableObject {
         case .noResizableWindow:
             return "No resizable window"
         case .windowFullscreen:
-            return "Window is fullscreen"
+            return "Couldn't exit fullscreen"
         case .windowMinimized:
-            return "Window is minimized"
+            return "Couldn't restore minimized window"
         case .resizeRejected:
             return "App rejected the resize"
         }

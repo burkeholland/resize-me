@@ -34,6 +34,7 @@ wails build
 - Does not send settings, foreground-window metadata, telemetry, or analytics over the network.
 - Runs in the system tray after setup. Launch at sign-in is optional and writes a `ResizeMe` value under the current user's `Run` registry key.
 - Before uninstalling, turn off **Launch at startup** to remove that registry value.
+- Before resizing, ResizeMe restores minimized or maximized windows. Windows does not expose a universal fullscreen state, so fullscreen apps are resized when their window API permits it; otherwise the app reports the resize failure.
 
 ## Notes
 

@@ -164,6 +164,15 @@ type resizeOutcome struct {
 	achievedHeight  int32
 }
 
+type windowState struct {
+	minimized bool
+	maximized bool
+}
+
+func (s windowState) requiresRestore() bool {
+	return s.minimized || s.maximized
+}
+
 func classifyResizeOutcome(preset Preset, achieved rect) resizeOutcome {
 	return resizeOutcome{
 		requestedWidth:  int32(preset.Width),
@@ -778,11 +787,25 @@ func (w *WindowsAgent) ResizeActiveWindow(preset Preset, center bool) error {
 		return fmt.Errorf("the Windows desktop or taskbar cannot be resized")
 	}
 
+	state := windowState{}
 	if ret, _, _ := procIsIconic.Call(hwnd); ret != 0 {
-		_, _, _ = procShowWindow.Call(hwnd, swRestore)
+		state.minimized = true
 	}
 	if ret, _, _ := procIsZoomed.Call(hwnd); ret != 0 {
+		state.maximized = true
+	}
+	if state.requiresRestore() {
 		_, _, _ = procShowWindow.Call(hwnd, swRestore)
+	}
+	if state.minimized {
+		if ret, _, _ := procIsIconic.Call(hwnd); ret != 0 {
+			return fmt.Errorf("could not restore the minimized window")
+		}
+	}
+	if state.maximized {
+		if ret, _, _ := procIsZoomed.Call(hwnd); ret != 0 {
+			return fmt.Errorf("could not restore the maximized window")
+		}
 	}
 
 	var current rect

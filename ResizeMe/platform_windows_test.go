@@ -44,6 +44,27 @@ func TestClassifyResizeOutcome(t *testing.T) {
 	}
 }
 
+func TestWindowStateRequiresRestore(t *testing.T) {
+	tests := []struct {
+		name  string
+		state windowState
+		want  bool
+	}{
+		{name: "normal window", state: windowState{}, want: false},
+		{name: "minimized window", state: windowState{minimized: true}, want: true},
+		{name: "maximized window", state: windowState{maximized: true}, want: true},
+		{name: "minimized and maximized window", state: windowState{minimized: true, maximized: true}, want: true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := test.state.requiresRestore(); got != test.want {
+				t.Fatalf("requiresRestore() = %t, want %t", got, test.want)
+			}
+		})
+	}
+}
+
 func TestResizeOutcomeConstrainedError(t *testing.T) {
 	outcome := resizeOutcome{
 		requestedWidth:  1280,
