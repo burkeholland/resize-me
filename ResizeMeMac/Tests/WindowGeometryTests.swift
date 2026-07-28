@@ -85,4 +85,24 @@ final class WindowGeometryTests: XCTestCase {
         XCTAssertEqual(WindowPreparation.required(minimized: false, fullscreen: true), .exitFullscreen)
         XCTAssertEqual(WindowPreparation.required(minimized: true, fullscreen: true), .exitFullscreen)
     }
+
+    func testWindowReadinessWaitsForTransitionAndBoundsObservations() {
+        let transitioning = WindowState(
+            minimized: false,
+            fullscreen: true,
+            position: CGPoint(x: 10, y: 20),
+            size: CGSize(width: 800, height: 600)
+        )
+        let ready = WindowState(
+            minimized: false,
+            fullscreen: false,
+            position: CGPoint(x: 10, y: 20),
+            size: CGSize(width: 800, height: 600)
+        )
+
+        XCTAssertFalse(WindowReadiness.isUsable(transitioning))
+        XCTAssertTrue(WindowReadiness.shouldObserveAgain(afterAttempt: 0))
+        XCTAssertTrue(WindowReadiness.isUsable(ready))
+        XCTAssertFalse(WindowReadiness.shouldObserveAgain(afterAttempt: WindowReadiness.maximumObservationCount - 1))
+    }
 }

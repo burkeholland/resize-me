@@ -159,7 +159,11 @@ func TestConfigStorePersistsHiddenPresetIDs(t *testing.T) {
 	}
 }
 
-func TestNormalizeConfigUsesPortableFunctionKeyLimit(t *testing.T) {
+func TestNormalizeConfigUsesWindowsFunctionKeyLimit(t *testing.T) {
+	if maximumSupportedFunctionKey() != 24 {
+		t.Skip("F21-F24 are only supported on Windows")
+	}
+
 	config := DefaultConfig()
 	config.Hotkey = "Ctrl+Alt+F20"
 
@@ -176,15 +180,19 @@ func TestNormalizeConfigUsesPortableFunctionKeyLimit(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NormalizeConfig returned error: %v", err)
 	}
-	if normalized.Hotkey != defaultHotkey {
-		t.Fatalf("expected F21 hotkey to fall back to %q, got %q", defaultHotkey, normalized.Hotkey)
+	if normalized.Hotkey != "Ctrl+Alt+F21" {
+		t.Fatalf("expected F21 hotkey to remain valid on Windows, got %q", normalized.Hotkey)
 	}
-	if got := hotkeyValidationMessage(config.Hotkey); got != portableHotkeyHelp {
-		t.Fatalf("expected portable hotkey guidance %q, got %q", portableHotkeyHelp, got)
+	if got := hotkeyValidationMessage(config.Hotkey); got != "" {
+		t.Fatalf("expected no Windows hotkey guidance, got %q", got)
 	}
 }
 
-func TestConfigStoreMigratesLegacyFunctionKeysWithoutDiscardingSettings(t *testing.T) {
+func TestConfigStorePreservesWindowsFunctionKeysWithoutDiscardingSettings(t *testing.T) {
+	if maximumSupportedFunctionKey() != 24 {
+		t.Skip("F21-F24 are only supported on Windows")
+	}
+
 	config := DefaultConfig()
 	config.Hotkey = "Ctrl+Alt+F24"
 	config.Presets = []Preset{{ID: "custom", Name: "Custom", Width: 800, Height: 600}}
@@ -203,24 +211,34 @@ func TestConfigStoreMigratesLegacyFunctionKeysWithoutDiscardingSettings(t *testi
 	if err != nil {
 		t.Fatalf("Load returned error: %v", err)
 	}
-	if loaded.Hotkey != defaultHotkey {
-		t.Fatalf("expected legacy hotkey to fall back to %q, got %q", defaultHotkey, loaded.Hotkey)
+	if loaded.Hotkey != "Ctrl+Alt+F24" {
+		t.Fatalf("expected persisted Windows hotkey to be preserved, got %q", loaded.Hotkey)
 	}
-	if loaded.LoadError != portableHotkeyHelp {
-		t.Fatalf("expected migration guidance %q, got %q", portableHotkeyHelp, loaded.LoadError)
+	if loaded.LoadError != "" {
+		t.Fatalf("expected no load error for a supported Windows hotkey, got %q", loaded.LoadError)
 	}
 	if len(loaded.Presets) != 1 || loaded.Presets[0].ID != "custom" {
 		t.Fatalf("expected existing presets to be preserved, got %#v", loaded.Presets)
 	}
 }
 
-func TestSaveSettingsRejectsLegacyFunctionKeys(t *testing.T) {
-	app := &App{config: DefaultConfig()}
+func TestSaveSettingsAcceptsWindowsFunctionKeys(t *testing.T) {
+	if maximumSupportedFunctionKey() != 24 {
+		t.Skip("F21-F24 are only supported on Windows")
+	}
+
+	app := &App{
+		config: DefaultConfig(),
+		store:  &ConfigStore{path: filepath.Join(t.TempDir(), settingsFile)},
+	}
 	next := DefaultConfig()
 	next.Hotkey = "Ctrl+Alt+F21"
 
-	_, err := app.SaveSettings(next)
-	if err == nil || err.Error() != portableHotkeyHelp {
-		t.Fatalf("expected portable hotkey guidance error %q, got %v", portableHotkeyHelp, err)
+	saved, err := app.SaveSettings(next)
+	if err != nil {
+		t.Fatalf("expected F21 to be accepted on Windows, got %v", err)
+	}
+	if saved.Hotkey != next.Hotkey {
+		t.Fatalf("saved hotkey = %q, want %q", saved.Hotkey, next.Hotkey)
 	}
 }
