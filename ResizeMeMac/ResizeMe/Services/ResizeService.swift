@@ -119,11 +119,11 @@ final class ResizeService {
             guard CFGetTypeID(value as CFTypeRef) == AXValueGetTypeID() else { return nil }
             return point(from: value as! AXValue)
         }
-        let size = copyAttribute(element, kAXSizeAttribute as String).flatMap { value -> CGSize? in
+        let windowSize = copyAttribute(element, kAXSizeAttribute as String).flatMap { value -> CGSize? in
             guard CFGetTypeID(value as CFTypeRef) == AXValueGetTypeID() else { return nil }
             return size(from: value as! AXValue)
         }
-        return WindowState(minimized: minimized, fullscreen: fullscreen, position: position, size: size)
+        return WindowState(minimized: minimized, fullscreen: fullscreen, position: position, size: windowSize)
     }
 
     private func waitForUsableWindow(_ element: AXUIElement) -> WindowState {
