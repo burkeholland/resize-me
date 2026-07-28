@@ -15,6 +15,7 @@ type App struct {
 	ctx       context.Context
 	store     *ConfigStore
 	agent     PlatformAgent
+	updates   updateChecker
 	loadError string
 
 	mu     sync.RWMutex
@@ -38,6 +39,7 @@ func NewApp() *App {
 	return &App{
 		store:     store,
 		config:    config,
+		updates:   newGitHubReleaseChecker(defaultUpdateHTTPClient(), githubReleasesEndpoint, runtimeArchitecture()),
 		loadError: loadError,
 	}
 }
@@ -214,6 +216,14 @@ func (a *App) ShowAbout() {
 
 func (a *App) GetVersion() string {
 	return applicationVersion()
+}
+
+func (a *App) CheckForUpdates() (UpdateInfo, error) {
+	checker := a.updates
+	if checker == nil {
+		checker = newGitHubReleaseChecker(defaultUpdateHTTPClient(), githubReleasesEndpoint, runtimeArchitecture())
+	}
+	return checker.Check(applicationVersion())
 }
 
 func (a *App) Quit() {

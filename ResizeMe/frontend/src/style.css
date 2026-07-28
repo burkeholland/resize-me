@@ -663,6 +663,59 @@ input:not([type="checkbox"]):focus {
   font-size: 11px;
 }
 
+.about-update {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--card-stroke);
+  border-radius: var(--control-corner-radius);
+  background: var(--subtle-fill-secondary);
+  text-align: left;
+}
+
+.about-update-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.about-update-heading .setting-label {
+  font-size: 13px;
+}
+
+.update-command {
+  display: block;
+  padding: 8px;
+  border: 1px solid var(--control-stroke-default);
+  border-radius: var(--control-corner-radius);
+  background: var(--control-fill-input-active);
+  overflow-wrap: anywhere;
+}
+
+.about-update-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.about-update-actions .hyperlink-btn {
+  padding: 4px 0;
+}
+
+.about-update-error {
+  color: var(--danger);
+}
+
+.about-update-notice {
+  color: var(--accent-default);
+}
+
+.about-update-note {
+  color: var(--text-tertiary);
+}
+
 .about-link {
   justify-self: center;
 }

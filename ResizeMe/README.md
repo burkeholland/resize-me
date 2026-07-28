@@ -40,6 +40,9 @@ wails build
 - Before uninstalling, turn off **Launch at startup** to remove that registry value.
 - Before resizing, ResizeMe restores minimized or maximized windows. Windows does not expose a universal fullscreen state, so fullscreen apps are resized when their window API permits it; otherwise the app reports the resize failure.
 - ResizeMe keeps the title bar reachable on the target monitor when a preset is larger than its work area.
+- Select **About ResizeMe** and then **Check for updates** to query published GitHub Windows releases. The check ignores draft and prerelease entries and requires the release asset that matches the running x64 or ARM64 binary.
+- When an update is found, ResizeMe shows the safe winget command (`winget upgrade --id BurkeHolland.ResizeMe --exact`). It does not download or replace its own executable. GitHub release publication can precede winget availability, so retry the winget command later if winget has not indexed the release yet.
+- A failed or incompatible update check is shown as an error in the About dialog; it is never reported as an up-to-date result.
 
 ## Notes
 

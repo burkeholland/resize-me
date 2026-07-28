@@ -310,7 +310,7 @@ function renderAboutDialog() {
         <div class="about-version">Version ${escHtml(state.version)}</div>
         <div class="dialog-body about-body">
           <p>Quickly resize the active window with custom presets and a global hotkey.</p>
-          <p>Updates are available through GitHub Releases or <code>winget upgrade BurkeHolland.ResizeMe</code>.</p>
+          ${renderUpdateStatus()}
           <button type="button" class="hyperlink-btn about-link" data-action="open-project">View project on GitHub</button>
         </div>
         <div class="dialog-actions">
@@ -318,4 +318,68 @@ function renderAboutDialog() {
         </div>
       </div>
     </div>`;
+}
+
+function renderUpdateStatus() {
+  if (state.checkingForUpdates) {
+    return `
+      <section class="about-update" aria-labelledby="update-title" aria-live="polite">
+        <div class="about-update-heading">
+          <span class="setting-label" id="update-title">Updates</span>
+          <button type="button" class="standard-btn" disabled>Checking…</button>
+        </div>
+        <p>Checking compatible published Windows releases…</p>
+      </section>`;
+  }
+
+  if (state.updateError) {
+    return `
+      <section class="about-update" aria-labelledby="update-title" aria-live="polite">
+        <div class="about-update-heading">
+          <span class="setting-label" id="update-title">Updates</span>
+          <button type="button" class="standard-btn" data-action="check-for-updates">Try again</button>
+        </div>
+        <p class="about-update-error" role="alert">${escHtml(state.updateError)}</p>
+      </section>`;
+  }
+
+  if (state.update?.available) {
+    return `
+      <section class="about-update" aria-labelledby="update-title" aria-live="polite">
+        <div class="about-update-heading">
+          <span class="setting-label" id="update-title">Updates</span>
+          <button type="button" class="standard-btn" data-action="check-for-updates">Check again</button>
+        </div>
+        <p>Version ${escHtml(state.update.latestVersion)} is published for this Windows architecture.</p>
+        <p>ResizeMe updates safely through winget. Close ResizeMe, then run:</p>
+        <code class="update-command">${escHtml(state.update.updateCommand)}</code>
+        <div class="about-update-actions">
+          <button type="button" class="standard-btn" data-action="copy-update-command">Copy command</button>
+          <button type="button" class="hyperlink-btn" data-action="open-release">View release notes</button>
+        </div>
+        ${state.updateActionError ? `<p class="about-update-error" role="alert">${escHtml(state.updateActionError)}</p>` : ''}
+        ${state.updateNotice ? `<p class="about-update-notice" role="status">${escHtml(state.updateNotice)}</p>` : ''}
+        <p class="about-update-note">Winget publication can take a little time after a GitHub release is published.</p>
+      </section>`;
+  }
+
+  if (state.update) {
+    return `
+      <section class="about-update" aria-labelledby="update-title" aria-live="polite">
+        <div class="about-update-heading">
+          <span class="setting-label" id="update-title">Updates</span>
+          <button type="button" class="standard-btn" data-action="check-for-updates">Check again</button>
+        </div>
+        <p>You are up to date. Version ${escHtml(state.update.latestVersion)} is the latest compatible published Windows release.</p>
+      </section>`;
+  }
+
+  return `
+    <section class="about-update" aria-labelledby="update-title">
+      <div class="about-update-heading">
+        <span class="setting-label" id="update-title">Updates</span>
+        <button type="button" class="standard-btn" data-action="check-for-updates">Check for updates</button>
+      </div>
+      <p>Check GitHub Releases for a compatible Windows update. ResizeMe installs updates only through winget.</p>
+    </section>`;
 }
