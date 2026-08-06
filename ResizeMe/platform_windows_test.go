@@ -8,9 +8,9 @@ func TestClassifyResizeOutcome(t *testing.T) {
 	preset := Preset{Width: 1280, Height: 720}
 
 	tests := []struct {
-		name    string
+		name     string
 		achieved rect
-		exact   bool
+		exact    bool
 	}{
 		{
 			name:     "exact dimensions",
@@ -75,6 +75,53 @@ func TestParseHotkeySupportsF24(t *testing.T) {
 	}
 	if key != 0x87 {
 		t.Fatalf("key = %#x, want %#x", key, uint32(0x87))
+	}
+}
+
+func TestPresetMenuItemsPutFavoritesFirstAndSkipHiddenPresets(t *testing.T) {
+	config := Config{
+		Presets: []Preset{
+			{ID: "a", Name: "A", Width: 800, Height: 600},
+			{ID: "b", Name: "B", Width: 900, Height: 700},
+			{ID: "c", Name: "C", Width: 1000, Height: 800},
+		},
+		ActivePresetID:    "b",
+		FavoritePresetIDs: []string{"b"},
+		HiddenPresetIDs:   []string{"c"},
+	}
+
+	items, next := presetMenuItems(config, cmdQuickPickBase)
+
+	if len(items) != 5 {
+		t.Fatalf("expected favorites heading, two preset rows, separator, and all-presets heading, got %#v", items)
+	}
+	if items[0].label != "Favorites" || items[1].presetID != "b" {
+		t.Fatalf("unexpected favorite items: %#v", items[:2])
+	}
+	if items[2].flags != mfSeparator || items[3].label != "All Presets" || items[4].presetID != "a" {
+		t.Fatalf("unexpected remaining items: %#v", items[2:])
+	}
+	if items[1].flags&mfChecked == 0 {
+		t.Fatalf("expected active favorite to be checked")
+	}
+	if next != cmdQuickPickBase+2 {
+		t.Fatalf("next command = %d, want %d", next, cmdQuickPickBase+2)
+	}
+}
+
+func TestQuickPickMenuPointUsesWindowTopLeft(t *testing.T) {
+	target := rect{Left: -1200, Top: 80, Right: -400, Bottom: 680}
+	workArea := rect{Left: -1920, Top: 0, Right: 0, Bottom: 1040}
+	if got, want := quickPickMenuPoint(target, workArea), (point{X: -1200, Y: 80}); got != want {
+		t.Fatalf("quickPickMenuPoint() = %+v, want %+v", got, want)
+	}
+}
+
+func TestQuickPickMenuPointClampsWindowTopLeftToWorkArea(t *testing.T) {
+	target := rect{Left: -120, Top: -30, Right: 800, Bottom: 700}
+	workArea := rect{Left: 0, Top: 0, Right: 1920, Bottom: 1040}
+	if got, want := quickPickMenuPoint(target, workArea), (point{X: 0, Y: 0}); got != want {
+		t.Fatalf("quickPickMenuPoint() = %+v, want %+v", got, want)
 	}
 }
 

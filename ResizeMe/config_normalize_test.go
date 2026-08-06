@@ -188,6 +188,59 @@ func TestNormalizeConfigUsesWindowsFunctionKeyLimit(t *testing.T) {
 	}
 }
 
+func TestNormalizeConfigDefaultsQuickPickHotkey(t *testing.T) {
+	config := DefaultConfig()
+	config.QuickPickHotkey = ""
+
+	normalized, err := NormalizeConfig(config, DefaultConfig())
+	if err != nil {
+		t.Fatalf("NormalizeConfig returned error: %v", err)
+	}
+	if normalized.QuickPickHotkey != defaultQuickPickHotkey {
+		t.Fatalf("quickPickHotkey = %q, want %q", normalized.QuickPickHotkey, defaultQuickPickHotkey)
+	}
+}
+
+func TestNormalizeConfigKeepsLegacyResizeHotkeyWhenItUsesTheNewDefault(t *testing.T) {
+	config := DefaultConfig()
+	config.Hotkey = defaultQuickPickHotkey
+	config.QuickPickHotkey = ""
+
+	normalized, err := NormalizeConfig(config, DefaultConfig())
+	if err != nil {
+		t.Fatalf("NormalizeConfig returned error: %v", err)
+	}
+	if normalized.Hotkey != defaultQuickPickHotkey {
+		t.Fatalf("hotkey = %q, want %q", normalized.Hotkey, defaultQuickPickHotkey)
+	}
+	if normalized.QuickPickHotkey != legacyQuickPickHotkeyFallback {
+		t.Fatalf("quickPickHotkey = %q, want %q", normalized.QuickPickHotkey, legacyQuickPickHotkeyFallback)
+	}
+}
+
+func TestNormalizeConfigNormalizesCustomQuickPickHotkey(t *testing.T) {
+	config := DefaultConfig()
+	config.QuickPickHotkey = "alt shift q"
+
+	normalized, err := NormalizeConfig(config, DefaultConfig())
+	if err != nil {
+		t.Fatalf("NormalizeConfig returned error: %v", err)
+	}
+	if normalized.QuickPickHotkey != "Alt+Shift+Q" {
+		t.Fatalf("quickPickHotkey = %q, want %q", normalized.QuickPickHotkey, "Alt+Shift+Q")
+	}
+}
+
+func TestNormalizeConfigRejectsDuplicateHotkeys(t *testing.T) {
+	config := DefaultConfig()
+	config.QuickPickHotkey = config.Hotkey
+
+	_, err := NormalizeConfig(config, DefaultConfig())
+	if err == nil || err.Error() != "quick-pick hotkey must differ from the resize hotkey" {
+		t.Fatalf("expected duplicate hotkey error, got %v", err)
+	}
+}
+
 func TestConfigStorePreservesWindowsFunctionKeysWithoutDiscardingSettings(t *testing.T) {
 	if maximumSupportedFunctionKey() != 24 {
 		t.Skip("F21-F24 are only supported on Windows")

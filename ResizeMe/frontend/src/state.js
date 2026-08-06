@@ -16,6 +16,7 @@ export const state = {
   dialog: null,
   error: '',
   hotkeyError: '',
+  quickPickHotkeyError: '',
   saving: false,
   update: null,
   updateError: '',
@@ -72,6 +73,7 @@ function resetDraft() {
   state.draft = clone(state.settings);
   state.draftBase = clone(state.settings);
   state.hotkeyError = '';
+  state.quickPickHotkeyError = '';
   state.presetNotice = '';
 }
 
@@ -208,10 +210,12 @@ export function toggleFavoritePreset(id, renderFn) {
   renderFn();
 }
 
-export function saveHotkey(hotkey, renderFn) {
-  if (!hotkey || hotkey === state.draft.hotkey || state.saving) return;
-  state.hotkeyError = '';
-  state.draft = { ...clone(state.draft), hotkey };
+export function saveHotkey(hotkey, target, renderFn) {
+  const field = target === 'quickPickHotkey' ? 'quickPickHotkey' : 'hotkey';
+  const errorField = field === 'quickPickHotkey' ? 'quickPickHotkeyError' : 'hotkeyError';
+  if (!hotkey || hotkey === state.draft[field] || state.saving) return;
+  state[errorField] = '';
+  state.draft = { ...clone(state.draft), [field]: hotkey };
   renderFn();
 }
 
@@ -247,6 +251,14 @@ export async function saveDraft(renderFn) {
   if (!hasDraftChanges() || state.saving) return;
   clearError();
   state.hotkeyError = '';
+  state.quickPickHotkeyError = '';
+  if (state.draft.hotkey && state.draft.quickPickHotkey && state.draft.hotkey === state.draft.quickPickHotkey) {
+    const message = 'Resize and pick-a-size hotkeys must be different.';
+    state.hotkeyError = message;
+    state.quickPickHotkeyError = message;
+    renderFn();
+    return;
+  }
   state.saving = true;
   renderFn();
 
@@ -265,7 +277,9 @@ export async function saveDraft(renderFn) {
         return;
       }
     }
-    if (/register hotkey|already registered/i.test(message)) {
+    if (/quick-pick hotkey/i.test(message) || (state.draft.quickPickHotkey && message.includes(state.draft.quickPickHotkey))) {
+      state.quickPickHotkeyError = friendlyHotkeyError(message);
+    } else if (/register hotkey|already registered/i.test(message)) {
       state.hotkeyError = friendlyHotkeyError(message);
     } else {
       state.error = message;

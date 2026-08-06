@@ -19,19 +19,21 @@ import (
 )
 
 const (
-	hotkeyID = 0x524d
+	hotkeyID          = 0x524d
+	quickPickHotkeyID = 0x5251
 
-	wmDestroy        = 0x0002
-	wmCommand        = 0x0111
-	wmHotkey         = 0x0312
-	wmUser           = 0x0400
-	wmTrayIcon       = wmUser + 1
-	wmApplyHotkey    = wmUser + 2 // dispatches hotkey registration to the message-loop thread
-	wmShowMenu       = wmUser + 3 // dispatches tray menu display to the message-loop thread
-	wmLButtonUp      = 0x0202
-	wmRButtonUp      = 0x0205
-	wmContextMenu    = 0x007B
-	gwHwndNext       = 2
+	wmDestroy       = 0x0002
+	wmCommand       = 0x0111
+	wmHotkey        = 0x0312
+	wmUser          = 0x0400
+	wmTrayIcon      = wmUser + 1
+	wmApplyHotkey   = wmUser + 2 // dispatches hotkey registration to the message-loop thread
+	wmShowMenu      = wmUser + 3 // dispatches tray menu display to the message-loop thread
+	wmShowQuickPick = wmUser + 4 // dispatches quick-pick menu display to the message-loop thread
+	wmLButtonUp     = 0x0202
+	wmRButtonUp     = 0x0205
+	wmContextMenu   = 0x007B
+	gwHwndNext      = 2
 
 	modAlt      = 0x0001
 	modControl  = 0x0002
@@ -68,15 +70,16 @@ const (
 	monitorDefaultToNearest = 0x00000002
 	dwmwaCloaked            = 14
 
-	cmdPresetBase = 1000
-	cmdCenter     = 2000
-	cmdResize     = 2001
-	cmdSettings   = 2002
-	cmdQuit       = 2003
-	cmdAbout      = 2004
+	cmdPresetBase    = 1000
+	cmdCenter        = 2000
+	cmdResize        = 2001
+	cmdSettings      = 2002
+	cmdQuit          = 2003
+	cmdAbout         = 2004
+	cmdQuickPickBase = 3000
 
-	resizeTolerance = 1
-	titleBarReachableHeight = 40
+	resizeTolerance                = 1
+	titleBarReachableHeight        = 40
 	processQueryLimitedInformation = 0x1000
 )
 
@@ -132,23 +135,37 @@ var (
 )
 
 type hotkeyReq struct {
-	mods, vk uint32
-	result    chan error
+	id     uint32
+	value  string
+	mods   uint32
+	vk     uint32
+	result chan error
+}
+
+type registeredHotkey struct {
+	mods   uint32
+	vk     uint32
+	active bool
+}
+
+type quickPickCommand struct {
+	presetID string
+	target   uintptr
 }
 
 type WindowsAgent struct {
 	app *App
 
-	mu           sync.RWMutex
-	config       Config
-	presetByCmd  map[uint32]string
-	hwnd         windows.Handle
-	hIcon        windows.Handle
-	currentMods  uint32
-	currentVK    uint32
-	hotkeyActive bool
-	stopped      bool
-	hotkeyCh     chan hotkeyReq // dispatches RegisterHotKey to the message-loop OS thread
+	mu              sync.RWMutex
+	config          Config
+	presetByCmd     map[uint32]string
+	quickPickByCmd  map[uint32]quickPickCommand
+	hwnd            windows.Handle
+	hIcon           windows.Handle
+	resizeHotkey    registeredHotkey
+	quickPickHotkey registeredHotkey
+	stopped         bool
+	hotkeyCh        chan hotkeyReq // dispatches RegisterHotKey to the message-loop OS thread
 }
 
 type point struct {
@@ -289,10 +306,11 @@ func NewPlatformAgent(app *App) PlatformAgent {
 	config := app.config.Clone()
 	app.mu.RUnlock()
 	return &WindowsAgent{
-		app:        app,
-		config:     config,
-		presetByCmd: map[uint32]string{},
-		hotkeyCh:   make(chan hotkeyReq, 1),
+		app:            app,
+		config:         config,
+		presetByCmd:    map[uint32]string{},
+		quickPickByCmd: map[uint32]quickPickCommand{},
+		hotkeyCh:       make(chan hotkeyReq, 1),
 	}
 }
 
@@ -318,29 +336,59 @@ func (w *WindowsAgent) Stop() {
 	if hwnd != 0 {
 		w.deleteTrayIcon()
 		_, _, _ = procUnregisterHotKey.Call(uintptr(hwnd), hotkeyID)
+		_, _, _ = procUnregisterHotKey.Call(uintptr(hwnd), quickPickHotkeyID)
 		_, _, _ = procDestroyWindow.Call(uintptr(hwnd))
 	}
 }
 
 func (w *WindowsAgent) ApplySettings(config Config) error {
-	mods, vk, err := parseHotkey(config.Hotkey)
+	resizeMods, resizeVK, err := parseHotkey(config.Hotkey)
+	if err != nil {
+		return err
+	}
+	quickPickMods, quickPickVK, err := parseHotkey(config.QuickPickHotkey)
 	if err != nil {
 		return err
 	}
 
 	w.mu.Lock()
 	hwnd := w.hwnd
-	needsHotkey := !w.hotkeyActive || w.currentMods != mods || w.currentVK != vk
+	needsResizeHotkey := !w.resizeHotkey.active ||
+		w.resizeHotkey.mods != resizeMods ||
+		w.resizeHotkey.vk != resizeVK
+	needsQuickPickHotkey := !w.quickPickHotkey.active ||
+		w.quickPickHotkey.mods != quickPickMods ||
+		w.quickPickHotkey.vk != quickPickVK
 	w.mu.Unlock()
 
 	// RegisterHotKey must run on the OS thread that owns the hidden window.
 	// We send the request through hotkeyCh and wake the message loop via PostMessage.
-	if hwnd != 0 && needsHotkey {
-		req := hotkeyReq{mods: mods, vk: vk, result: make(chan error, 1)}
-		w.hotkeyCh <- req
-		_, _, _ = procPostMessage.Call(uintptr(hwnd), wmApplyHotkey, 0, 0)
-		if err := <-req.result; err != nil {
-			return err
+	if hwnd != 0 {
+		requests := make([]hotkeyReq, 0, 2)
+		if needsResizeHotkey {
+			requests = append(requests, hotkeyReq{
+				id:     hotkeyID,
+				value:  config.Hotkey,
+				mods:   resizeMods,
+				vk:     resizeVK,
+				result: make(chan error, 1),
+			})
+		}
+		if needsQuickPickHotkey {
+			requests = append(requests, hotkeyReq{
+				id:     quickPickHotkeyID,
+				value:  config.QuickPickHotkey,
+				mods:   quickPickMods,
+				vk:     quickPickVK,
+				result: make(chan error, 1),
+			})
+		}
+		for _, req := range requests {
+			w.hotkeyCh <- req
+			_, _, _ = procPostMessage.Call(uintptr(hwnd), wmApplyHotkey, 0, 0)
+			if err := <-req.result; err != nil {
+				return err
+			}
 		}
 	}
 
@@ -386,8 +434,8 @@ func (w *WindowsAgent) run(started chan<- error) {
 	lpszFile, _ := windows.UTF16PtrFromString(exePath)
 	count, _, _ := procExtractIconEx.Call(
 		uintptr(unsafe.Pointer(lpszFile)),
-		0,                                   // first icon group, index 0
-		0,                                   // skip large icon
+		0, // first icon group, index 0
+		0, // skip large icon
 		uintptr(unsafe.Pointer(&hSmallIcon)),
 		1,
 	)
@@ -467,13 +515,17 @@ func windowProc(hwnd uintptr, msg uint32, wParam uintptr, lParam uintptr) uintpt
 			// Drain one pending hotkey request and register it on this OS thread.
 			select {
 			case req := <-agent.hotkeyCh:
-				req.result <- agent.registerHotkey(req.mods, req.vk)
+				req.result <- agent.registerHotkey(req.id, req.value, req.mods, req.vk)
 			default:
 			}
 			return 0
 		case wmShowMenu:
 			// TrackPopupMenu must run on the thread that owns the window.
 			agent.showMenu()
+			return 0
+		case wmShowQuickPick:
+			// TrackPopupMenu must run on the thread that owns the window.
+			agent.showQuickPickMenu()
 			return 0
 		case wmTrayIcon:
 			if lParam == wmLButtonUp || lParam == wmRButtonUp || lParam == wmContextMenu {
@@ -489,12 +541,17 @@ func windowProc(hwnd uintptr, msg uint32, wParam uintptr, lParam uintptr) uintpt
 				}()
 				return 0
 			}
+			if wParam == quickPickHotkeyID {
+				_, _, _ = procPostMessage.Call(hwnd, wmShowQuickPick, 0, 0)
+				return 0
+			}
 		case wmCommand:
 			go agent.handleCommand(uint32(wParam & 0xffff))
 			return 0
 		case wmDestroy:
 			agent.deleteTrayIcon()
 			_, _, _ = procUnregisterHotKey.Call(hwnd, hotkeyID)
+			_, _, _ = procUnregisterHotKey.Call(hwnd, quickPickHotkeyID)
 			_, _, _ = procPostQuitMessage.Call(0)
 			return 0
 		}
@@ -504,12 +561,10 @@ func windowProc(hwnd uintptr, msg uint32, wParam uintptr, lParam uintptr) uintpt
 	return ret
 }
 
-func (w *WindowsAgent) registerHotkey(mods uint32, vk uint32) error {
+func (w *WindowsAgent) registerHotkey(id uint32, value string, mods uint32, vk uint32) error {
 	w.mu.RLock()
 	hwnd := w.hwnd
-	prevMods := w.currentMods
-	prevVK := w.currentVK
-	wasActive := w.hotkeyActive
+	previous := w.registeredHotkey(id)
 	w.mu.RUnlock()
 	if hwnd == 0 {
 		return nil
@@ -517,26 +572,46 @@ func (w *WindowsAgent) registerHotkey(mods uint32, vk uint32) error {
 
 	// Temporarily unregister to free the ID so we can re-register.
 	// We'll restore the old hotkey if the new one fails.
-	if wasActive {
-		_, _, _ = procUnregisterHotKey.Call(uintptr(hwnd), hotkeyID)
+	if previous.active {
+		_, _, _ = procUnregisterHotKey.Call(uintptr(hwnd), uintptr(id))
 	}
 
-	ret, _, err := procRegisterHotKey.Call(uintptr(hwnd), hotkeyID, uintptr(mods|modNoRepeat), uintptr(vk))
+	ret, _, err := procRegisterHotKey.Call(uintptr(hwnd), uintptr(id), uintptr(mods|modNoRepeat), uintptr(vk))
 	if ret == 0 {
 		// New hotkey failed — restore the previous one so the user isn't left
 		// without a working hotkey.
-		if wasActive {
-			_, _, _ = procRegisterHotKey.Call(uintptr(hwnd), hotkeyID, uintptr(prevMods|modNoRepeat), uintptr(prevVK))
+		if previous.active {
+			_, _, _ = procRegisterHotKey.Call(uintptr(hwnd), uintptr(id), uintptr(previous.mods|modNoRepeat), uintptr(previous.vk))
 		}
-		return fmt.Errorf("register hotkey %s: %w", w.config.Hotkey, err)
+		return fmt.Errorf("register %s hotkey %s: %w", hotkeyName(id), value, err)
 	}
 
 	w.mu.Lock()
-	w.currentMods = mods
-	w.currentVK = vk
-	w.hotkeyActive = true
+	w.setRegisteredHotkey(id, registeredHotkey{mods: mods, vk: vk, active: true})
 	w.mu.Unlock()
 	return nil
+}
+
+func (w *WindowsAgent) registeredHotkey(id uint32) registeredHotkey {
+	if id == quickPickHotkeyID {
+		return w.quickPickHotkey
+	}
+	return w.resizeHotkey
+}
+
+func (w *WindowsAgent) setRegisteredHotkey(id uint32, hotkey registeredHotkey) {
+	if id == quickPickHotkeyID {
+		w.quickPickHotkey = hotkey
+		return
+	}
+	w.resizeHotkey = hotkey
+}
+
+func hotkeyName(id uint32) string {
+	if id == quickPickHotkeyID {
+		return "quick-pick"
+	}
+	return "resize"
 }
 
 func parseHotkey(value string) (uint32, uint32, error) {
@@ -671,6 +746,86 @@ func (w *WindowsAgent) Notify(title string, body string, warning bool) {
 	_, _, _ = procShellNotifyIcon.Call(nimModify, uintptr(unsafe.Pointer(&nid)))
 }
 
+type presetMenuItem struct {
+	flags    uint32
+	command  uint32
+	label    string
+	presetID string
+}
+
+func presetMenuItems(config Config, commandBase uint32) ([]presetMenuItem, uint32) {
+	visiblePresets := config.VisiblePresets()
+	items := make([]presetMenuItem, 0, len(visiblePresets)+4)
+	nextPresetCommand := commandBase
+	appendPreset := func(preset Preset) {
+		flags := uint32(mfString)
+		if preset.ID == config.ActivePresetID {
+			flags |= mfChecked
+		}
+		items = append(items, presetMenuItem{
+			flags:    flags,
+			command:  nextPresetCommand,
+			label:    fmt.Sprintf("%s  %dx%d", preset.Name, preset.Width, preset.Height),
+			presetID: preset.ID,
+		})
+		nextPresetCommand++
+	}
+
+	favoriteSet := make(map[string]bool, len(config.FavoritePresetIDs))
+	for _, id := range config.FavoritePresetIDs {
+		favoriteSet[id] = true
+	}
+
+	hasFavorites := false
+	for _, id := range config.FavoritePresetIDs {
+		preset, ok := config.FindPreset(id)
+		if !ok || config.IsPresetHidden(id) {
+			continue
+		}
+		if !hasFavorites {
+			items = append(items, presetMenuItem{flags: mfString | mfDisabled, label: "Favorites"})
+			hasFavorites = true
+		}
+		appendPreset(preset)
+	}
+
+	otherPresets := make([]Preset, 0, len(visiblePresets))
+	for _, preset := range visiblePresets {
+		if favoriteSet[preset.ID] {
+			continue
+		}
+		otherPresets = append(otherPresets, preset)
+	}
+
+	if hasFavorites && len(otherPresets) > 0 {
+		items = append(items,
+			presetMenuItem{flags: mfSeparator},
+			presetMenuItem{flags: mfString | mfDisabled, label: "All Presets"},
+		)
+	} else if !hasFavorites {
+		items = append(items, presetMenuItem{flags: mfString | mfDisabled, label: "Presets"})
+	}
+	for _, preset := range otherPresets {
+		appendPreset(preset)
+	}
+
+	return items, nextPresetCommand
+}
+
+func (w *WindowsAgent) buildPresetMenu(menu uintptr, config Config, presetByCmd map[uint32]string, commandBase uint32) uint32 {
+	appendMenu(menu, mfString|mfDisabled, 0, w.resizeTargetMenuLabel())
+	appendMenu(menu, mfSeparator, 0, "")
+
+	items, nextPresetCommand := presetMenuItems(config, commandBase)
+	for _, item := range items {
+		if item.presetID != "" {
+			presetByCmd[item.command] = item.presetID
+		}
+		appendMenu(menu, item.flags, item.command, item.label)
+	}
+	return nextPresetCommand
+}
+
 func (w *WindowsAgent) showMenu() {
 	w.mu.RLock()
 	config := w.config.Clone()
@@ -686,58 +841,8 @@ func (w *WindowsAgent) showMenu() {
 	}
 	defer procDestroyMenu.Call(menu)
 
-	visiblePresets := config.VisiblePresets()
-	presetByCmd := make(map[uint32]string, len(visiblePresets))
-	nextPresetCommand := uint32(cmdPresetBase)
-	appendPreset := func(preset Preset) {
-		flags := uint32(mfString)
-		if preset.ID == config.ActivePresetID {
-			flags |= mfChecked
-		}
-		command := nextPresetCommand
-		nextPresetCommand++
-		presetByCmd[command] = preset.ID
-		appendMenu(menu, flags, command, fmt.Sprintf("%s  %dx%d", preset.Name, preset.Width, preset.Height))
-	}
-
-	appendMenu(menu, mfString|mfDisabled, 0, w.resizeTargetMenuLabel())
-	appendMenu(menu, mfSeparator, 0, "")
-
-	favoriteSet := make(map[string]bool, len(config.FavoritePresetIDs))
-	for _, id := range config.FavoritePresetIDs {
-		favoriteSet[id] = true
-	}
-
-	hasFavorites := false
-	for _, id := range config.FavoritePresetIDs {
-		preset, ok := config.FindPreset(id)
-		if !ok || config.IsPresetHidden(id) {
-			continue
-		}
-		if !hasFavorites {
-			appendMenu(menu, mfString|mfDisabled, 0, "Favorites")
-			hasFavorites = true
-		}
-		appendPreset(preset)
-	}
-
-	otherPresets := make([]Preset, 0, len(visiblePresets))
-	for _, preset := range visiblePresets {
-		if favoriteSet[preset.ID] {
-			continue
-		}
-		otherPresets = append(otherPresets, preset)
-	}
-
-	if hasFavorites && len(otherPresets) > 0 {
-		appendMenu(menu, mfSeparator, 0, "")
-		appendMenu(menu, mfString|mfDisabled, 0, "All Presets")
-	} else if !hasFavorites {
-		appendMenu(menu, mfString|mfDisabled, 0, "Presets")
-	}
-	for _, preset := range otherPresets {
-		appendPreset(preset)
-	}
+	presetByCmd := make(map[uint32]string, len(config.VisiblePresets()))
+	w.buildPresetMenu(menu, config, presetByCmd, cmdPresetBase)
 
 	w.mu.Lock()
 	w.presetByCmd = presetByCmd
@@ -745,7 +850,7 @@ func (w *WindowsAgent) showMenu() {
 
 	appendMenu(menu, mfSeparator, 0, "")
 	appendMenu(menu, mfString, cmdResize, fmt.Sprintf("Resize Now\t%s", config.Hotkey))
-	appendMenu(menu, mfString|mfDisabled, 0, fmt.Sprintf("Hotkey: %s", config.Hotkey))
+	appendMenu(menu, mfString|mfDisabled, 0, fmt.Sprintf("Resize hotkey: %s  |  Pick a size: %s", config.Hotkey, config.QuickPickHotkey))
 	appendMenu(menu, mfSeparator, 0, "")
 
 	centerFlags := uint32(mfString)
@@ -760,8 +865,100 @@ func (w *WindowsAgent) showMenu() {
 
 	var pt point
 	_, _, _ = procGetCursorPos.Call(uintptr(unsafe.Pointer(&pt)))
+	w.trackPopupMenu(menu, pt, hwnd)
+}
+
+func (w *WindowsAgent) showQuickPickMenu() {
+	w.mu.RLock()
+	config := w.config.Clone()
+	hwnd := w.hwnd
+	w.mu.RUnlock()
+	if hwnd == 0 {
+		return
+	}
+
+	target := w.resizeTarget()
+	var targetRect rect
+	targetAvailable := target != 0 && !w.isGuardedResizeTarget(target)
+	if targetAvailable {
+		if ret, _, _ := procGetWindowRect.Call(target, uintptr(unsafe.Pointer(&targetRect))); ret == 0 {
+			targetAvailable = false
+		}
+	}
+
+	menu, _, _ := procCreatePopupMenu.Call()
+	if menu == 0 {
+		return
+	}
+	defer procDestroyMenu.Call(menu)
+
+	if !targetAvailable {
+		appendMenu(menu, mfString|mfDisabled, 0, "No resizable window was in front")
+		appendMenu(menu, mfString|mfDisabled, 0, "Click a window, then press the hotkey again")
+		var cursor point
+		_, _, _ = procGetCursorPos.Call(uintptr(unsafe.Pointer(&cursor)))
+		w.mu.Lock()
+		w.quickPickByCmd = map[uint32]quickPickCommand{}
+		w.mu.Unlock()
+		w.trackPopupMenu(menu, cursor, hwnd)
+		return
+	}
+
+	presetByCmd := make(map[uint32]string, len(config.VisiblePresets()))
+	w.buildPresetMenu(menu, config, presetByCmd, cmdQuickPickBase)
+	quickPickByCmd := make(map[uint32]quickPickCommand, len(presetByCmd))
+	for command, presetID := range presetByCmd {
+		quickPickByCmd[command] = quickPickCommand{presetID: presetID, target: target}
+	}
+
+	appendMenu(menu, mfSeparator, 0, "")
+	centerFlags := uint32(mfString)
+	if config.CenterAfterResize {
+		centerFlags |= mfChecked
+	}
+	appendMenu(menu, centerFlags, cmdCenter, "Center after resize")
+	appendMenu(menu, mfString, cmdSettings, "Settings...")
+
+	w.mu.Lock()
+	w.quickPickByCmd = quickPickByCmd
+	w.mu.Unlock()
+
+	workArea, err := monitorWorkArea(windows.Handle(target))
+	if err != nil {
+		workArea = rect{}
+	}
+	w.trackPopupMenu(menu, quickPickMenuPoint(targetRect, workArea), hwnd)
+}
+
+func quickPickMenuPoint(target rect, workArea rect) point {
+	point := point{X: target.Left, Y: target.Top}
+	if workArea.Right <= workArea.Left || workArea.Bottom <= workArea.Top {
+		return point
+	}
+	if point.X < workArea.Left {
+		point.X = workArea.Left
+	} else if point.X >= workArea.Right {
+		point.X = workArea.Right - 1
+	}
+	if point.Y < workArea.Top {
+		point.Y = workArea.Top
+	} else if point.Y >= workArea.Bottom {
+		point.Y = workArea.Bottom - 1
+	}
+	return point
+}
+
+func (w *WindowsAgent) trackPopupMenu(menu uintptr, pt point, hwnd windows.Handle) {
 	_, _, _ = procSetForegroundWindow.Call(uintptr(hwnd))
-	cmd, _, _ := procTrackPopupMenu.Call(menu, tpmRightButton|tpmReturnCmd|tpmNonotify, uintptr(pt.X), uintptr(pt.Y), 0, uintptr(hwnd), 0)
+	cmd, _, _ := procTrackPopupMenu.Call(
+		menu,
+		tpmRightButton|tpmReturnCmd|tpmNonotify,
+		uintptr(int32ToUintptr(pt.X)),
+		uintptr(int32ToUintptr(pt.Y)),
+		0,
+		uintptr(hwnd),
+		0,
+	)
 	if cmd != 0 {
 		// handleCommand calls Go/Wails methods — run off the message-loop thread.
 		go w.handleCommand(uint32(cmd))
@@ -780,9 +977,24 @@ func (w *WindowsAgent) handleCommand(command uint32) {
 	w.mu.RLock()
 	config := w.config.Clone()
 	presetID, isPreset := w.presetByCmd[command]
+	quickPick, isQuickPick := w.quickPickByCmd[command]
 	w.mu.RUnlock()
 
 	switch {
+	case isQuickPick:
+		selected, err := w.app.SetActivePreset(quickPick.presetID)
+		if err != nil {
+			w.Notify("ResizeMe", err.Error(), true)
+			return
+		}
+		preset, ok := selected.ActivePreset()
+		if !ok {
+			w.Notify("ResizeMe", fmt.Sprintf("unknown preset %q", quickPick.presetID), true)
+			return
+		}
+		if err := w.resizeWindow(quickPick.target, preset, selected.CenterAfterResize); err != nil {
+			w.Notify("ResizeMe", err.Error(), true)
+		}
 	case isPreset:
 		if _, err := w.app.SetActivePreset(presetID); err != nil {
 			w.Notify("ResizeMe", err.Error(), true)
@@ -806,6 +1018,10 @@ func (w *WindowsAgent) handleCommand(command uint32) {
 
 func (w *WindowsAgent) ResizeActiveWindow(preset Preset, center bool) error {
 	hwnd := w.resizeTarget()
+	return w.resizeWindow(hwnd, preset, center)
+}
+
+func (w *WindowsAgent) resizeWindow(hwnd uintptr, preset Preset, center bool) error {
 	if hwnd == 0 {
 		return fmt.Errorf("no active window to resize")
 	}
@@ -930,6 +1146,37 @@ func targetMenuLabel(className, processName string, isResizeMe bool) string {
 	default:
 		return "Target: Active window"
 	}
+}
+
+func (w *WindowsAgent) isGuardedResizeTarget(hwnd uintptr) bool {
+	if hwnd == 0 {
+		return true
+	}
+
+	w.mu.RLock()
+	agentHwnd := w.hwnd
+	w.mu.RUnlock()
+
+	var pid uint32
+	_, _, _ = procGetWindowThreadProcID.Call(hwnd, uintptr(unsafe.Pointer(&pid)))
+	if windows.Handle(hwnd) == agentHwnd || pid == uint32(os.Getpid()) {
+		return true
+	}
+
+	visible, _, _ := procIsWindowVisible.Call(hwnd)
+	if visible == 0 {
+		return true
+	}
+	minimized, _, _ := procIsIconic.Call(hwnd)
+	if minimized != 0 {
+		return true
+	}
+
+	switch getWindowClass(windows.Handle(hwnd)) {
+	case "Progman", "WorkerW", "Shell_TrayWnd", "Shell_SecondaryTrayWnd", "ResizeMeTrayWindow":
+		return true
+	}
+	return isWindowCloaked(windows.Handle(hwnd))
 }
 
 func (w *WindowsAgent) resizeTarget() uintptr {

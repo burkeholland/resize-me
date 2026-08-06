@@ -25,6 +25,21 @@ func NormalizeConfig(config Config, fallback Config) (Config, error) {
 		next.Hotkey = defaultHotkey
 	}
 
+	if strings.TrimSpace(next.QuickPickHotkey) == "" {
+		next.QuickPickHotkey = defaultQuickPickHotkey
+		if next.Hotkey == next.QuickPickHotkey {
+			// Keep legacy custom resize bindings working when they use the new default.
+			next.QuickPickHotkey = legacyQuickPickHotkeyFallback
+		}
+	}
+	next.QuickPickHotkey = normalizeHotkeyText(next.QuickPickHotkey)
+	if !isValidHotkeyText(next.QuickPickHotkey) {
+		next.QuickPickHotkey = defaultQuickPickHotkey
+	}
+	if next.Hotkey == next.QuickPickHotkey {
+		return Config{}, fmt.Errorf("quick-pick hotkey must differ from the resize hotkey")
+	}
+
 	if len(next.Presets) == 0 {
 		next.Presets = append([]Preset(nil), fallback.Presets...)
 	}
@@ -194,6 +209,7 @@ func hotkeyValidationMessage(value string) string {
 	if maximumSupportedFunctionKey() >= 24 {
 		return ""
 	}
+
 	for _, part := range strings.Split(normalizeHotkeyText(value), "+") {
 		if !strings.HasPrefix(part, "F") {
 			continue
@@ -208,6 +224,15 @@ func hotkeyValidationMessage(value string) string {
 		}
 		if n >= 21 && n <= 24 {
 			return portableHotkeyHelp
+		}
+	}
+	return ""
+}
+
+func configHotkeyValidationMessage(config Config) string {
+	for _, value := range []string{config.Hotkey, config.QuickPickHotkey} {
+		if message := hotkeyValidationMessage(value); message != "" {
+			return message
 		}
 	}
 	return ""
