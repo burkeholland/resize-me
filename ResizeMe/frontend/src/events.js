@@ -53,7 +53,7 @@ export function bindEvents(app, renderFn) {
         case 'copy-update-command': await copyUpdateCommand(renderFn); break;
         case 'close-about':         closeDialog(renderFn); break;
         case 'resize-now':          await resizeNow(renderFn); break;
-        case 'start-capture':       startCapture(renderFn); break;
+        case 'start-capture':       startCapture(renderFn, el.dataset.target); break;
         case 'cancel-capture':      stopCapture(renderFn); break;
         case 'close-dialog-overlay': closeDialog(renderFn); break;
         case 'cancel-dialog':       closeDialog(renderFn); break;

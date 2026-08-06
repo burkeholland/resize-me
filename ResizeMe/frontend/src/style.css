@@ -912,6 +912,10 @@ input:not([type="checkbox"]):focus {
   background: var(--subtle-fill-secondary);
 }
 
+.hotkey-capture-card + .hotkey-capture-card {
+  border-top: 1px solid var(--card-stroke);
+}
+
 .hotkey-capture-card.capturing {
   cursor: default;
   display: flex;

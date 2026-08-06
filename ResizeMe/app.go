@@ -98,7 +98,7 @@ func (a *App) saveSettings(next Config, expected *Config) (Config, error) {
 		return current, errSettingsChanged
 	}
 
-	if message := hotkeyValidationMessage(next.Hotkey); message != "" {
+	if message := configHotkeyValidationMessage(next); message != "" {
 		return current, fmt.Errorf("%s", message)
 	}
 

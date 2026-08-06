@@ -25,6 +25,7 @@ export namespace main {
 	    hiddenPresetIds: string[];
 	    centerAfterResize: boolean;
 	    hotkey: string;
+	    quickPickHotkey: string;
 	    autoStart: boolean;
 	    firstRun: boolean;
 	    loadError?: string;
@@ -41,6 +42,7 @@ export namespace main {
 	        this.hiddenPresetIds = source["hiddenPresetIds"];
 	        this.centerAfterResize = source["centerAfterResize"];
 	        this.hotkey = source["hotkey"];
+	        this.quickPickHotkey = source["quickPickHotkey"];
 	        this.autoStart = source["autoStart"];
 	        this.firstRun = source["firstRun"];
 	        this.loadError = source["loadError"];

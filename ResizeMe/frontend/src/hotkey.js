@@ -8,6 +8,7 @@ export const capture = {
   win: false,
   key: null,
   hint: '',
+  target: 'hotkey',
 };
 
 function mapKey(key) {
@@ -55,8 +56,9 @@ function updateCaptureUI() {
 
 let renderFnRef = null;
 
-export function startCapture(renderFn) {
+export function startCapture(renderFn, target = 'hotkey') {
   renderFnRef = renderFn;
+  capture.target = target === 'quickPickHotkey' ? target : 'hotkey';
   capture.active = true;
   capture.ctrl = false;
   capture.alt = false;
@@ -114,7 +116,8 @@ async function onCaptureKeyUp(e) {
     return;
   }
   const combo = buildCombo();
+  const target = capture.target;
   const renderFn = renderFnRef;
   stopCapture(renderFn);
-  await saveHotkey(combo, renderFn);
+  await saveHotkey(combo, target, renderFn);
 }

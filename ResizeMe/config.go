@@ -8,9 +8,11 @@ import (
 )
 
 const (
-	defaultHotkey = "Ctrl+Alt+R"
-	appDirName    = "ResizeMe"
-	settingsFile  = "settings.json"
+	defaultHotkey                 = "Ctrl+Alt+R"
+	defaultQuickPickHotkey        = "Ctrl+Alt+Shift+R"
+	legacyQuickPickHotkeyFallback = "Ctrl+Alt+Shift+P"
+	appDirName                    = "ResizeMe"
+	settingsFile                  = "settings.json"
 )
 
 type Preset struct {
@@ -27,6 +29,7 @@ type Config struct {
 	HiddenPresetIDs   []string `json:"hiddenPresetIds"`
 	CenterAfterResize bool     `json:"centerAfterResize"`
 	Hotkey            string   `json:"hotkey"`
+	QuickPickHotkey   string   `json:"quickPickHotkey,omitempty"`
 	AutoStart         bool     `json:"autoStart"`
 	FirstRun          bool     `json:"firstRun"`
 	LoadError         string   `json:"loadError,omitempty"`
@@ -42,9 +45,15 @@ func NewConfigStore() *ConfigStore {
 
 func (c Config) Clone() Config {
 	clone := c
-	clone.Presets = append([]Preset(nil), c.Presets...)
-	clone.FavoritePresetIDs = append([]string(nil), c.FavoritePresetIDs...)
-	clone.HiddenPresetIDs = append([]string(nil), c.HiddenPresetIDs...)
+	if c.Presets != nil {
+		clone.Presets = append([]Preset{}, c.Presets...)
+	}
+	if c.FavoritePresetIDs != nil {
+		clone.FavoritePresetIDs = append([]string{}, c.FavoritePresetIDs...)
+	}
+	if c.HiddenPresetIDs != nil {
+		clone.HiddenPresetIDs = append([]string{}, c.HiddenPresetIDs...)
+	}
 	return clone
 }
 
@@ -104,7 +113,7 @@ func (s *ConfigStore) Load() (Config, error) {
 	if err != nil {
 		return Config{}, fmt.Errorf("validate settings: %w", err)
 	}
-	if message := hotkeyValidationMessage(config.Hotkey); message != "" {
+	if message := configHotkeyValidationMessage(config); message != "" {
 		normalized.LoadError = message
 	}
 	return normalized, nil
@@ -160,6 +169,7 @@ func DefaultConfig() Config {
 		HiddenPresetIDs:   []string{},
 		CenterAfterResize: true,
 		Hotkey:            defaultHotkey,
+		QuickPickHotkey:   defaultQuickPickHotkey,
 		AutoStart:         false,
 		FirstRun:          true,
 	}

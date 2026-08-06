@@ -123,7 +123,7 @@ export function renderApp(app) {
         <section class="settings-section" aria-labelledby="hotkey-title">
           <div class="section-heading">
             <h2 id="hotkey-title">Hotkey</h2>
-            <p>Run the current resize preset from anywhere in Windows.</p>
+            <p>Resize the active window or open a quick-pick flyout from anywhere in Windows.</p>
           </div>
           ${renderHotkeyCard(s)}
         </section>
@@ -261,11 +261,12 @@ function renderHotkeyCard(s) {
     const previewHtml = parts.length > 0
       ? parts.map(p => `<kbd>${escHtml(p)}</kbd>`).join('<span class="key-sep">+</span>')
       : '<span class="capture-placeholder">Press a key combination…</span>';
+    const targetLabel = capture.target === 'quickPickHotkey' ? 'Pick a size hotkey' : 'Resize hotkey';
     return `
       <div class="card-group">
         <div class="hotkey-capture-card capturing">
           <div class="hotkey-header">
-            <span class="setting-label">Global hotkey</span>
+            <span class="setting-label">${targetLabel}</span>
             <div class="recording-indicator"><span class="recording-dot"></span> Recording</div>
           </div>
           <div class="capture-preview" id="capture-preview">${previewHtml}</div>
@@ -275,28 +276,36 @@ function renderHotkeyCard(s) {
       </div>`;
   }
 
-  const keysHtml = renderHotkeyKeys(s.hotkey);
+  const conflictError = s.hotkey && s.quickPickHotkey && s.hotkey === s.quickPickHotkey
+      ? 'Resize and pick-a-size hotkeys must be different.'
+      : '';
 
   return `
-    <div class="card-group">
-      <button type="button" class="hotkey-capture-card" data-action="start-capture">
-        <div class="hotkey-header">
-          <span class="setting-copy">
-            <span class="setting-label">Global hotkey</span>
-            <span class="setting-description">Select this row, then press a new key combination.</span>
-          </span>
-          <span class="hotkey-edit-hint">Change</span>
-        </div>
-        <div class="hotkey-key-display">${keysHtml}</div>
-        ${state.hotkeyError ? `<div class="hotkey-error" role="alert">${escHtml(state.hotkeyError)}</div>` : ''}
-      </button>
-    </div>`;
+      <div class="card-group">
+        ${renderHotkeyOption('hotkey', 'Resize hotkey', 'Run the active resize preset immediately.', s.hotkey, state.hotkeyError || conflictError)}
+        ${renderHotkeyOption('quickPickHotkey', 'Pick a size hotkey', 'Open the preset flyout at the focused window.', s.quickPickHotkey, state.quickPickHotkeyError || conflictError)}
+      </div>`;
 }
 
-function renderHotkeyKeys(hotkey) {
-  return (hotkey || 'Ctrl+Alt+R').split('+')
-    .map(part => `<kbd>${escHtml(part)}</kbd>`)
-    .join('<span class="key-sep">+</span>');
+function renderHotkeyOption(target, label, description, hotkey, error) {
+  return `
+        <button type="button" class="hotkey-capture-card" data-action="start-capture" data-target="${target}">
+          <div class="hotkey-header">
+            <span class="setting-copy">
+              <span class="setting-label">${label}</span>
+              <span class="setting-description">${description}</span>
+            </span>
+            <span class="hotkey-edit-hint">Change</span>
+          </div>
+          <div class="hotkey-key-display">${renderHotkeyKeys(hotkey, target === 'quickPickHotkey' ? 'Ctrl+Alt+Shift+R' : 'Ctrl+Alt+R')}</div>
+          ${error ? `<div class="hotkey-error" role="alert">${escHtml(error)}</div>` : ''}
+        </button>`;
+}
+
+function renderHotkeyKeys(hotkey, fallback) {
+  return (hotkey || fallback || 'Ctrl+Alt+R').split('+')
+      .map(part => `<kbd>${escHtml(part)}</kbd>`)
+      .join('<span class="key-sep">+</span>');
 }
 
 function renderDialog() {
